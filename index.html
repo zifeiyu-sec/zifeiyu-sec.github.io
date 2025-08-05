@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width">
@@ -17,24 +17,24 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
 
     <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
+<meta property="og:title" content="子非鱼的博客">
 <meta property="og:url" content="http://example.com/index.html">
-<meta property="og:site_name" content="Hexo">
-<meta property="og:locale" content="en_US">
-<meta property="article:author" content="John Doe">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:author" content="子非鱼">
 <meta name="twitter:card" content="summary">
 
 
 <link rel="canonical" href="http://example.com/">
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":true,"isPost":false,"lang":"en","comments":"","permalink":"","path":"index.html","title":""}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":true,"isPost":false,"lang":"zh-CN","comments":"","permalink":"","path":"index.html","title":""}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Hexo</title>
+<title>子非鱼的博客</title>
   
 
 
@@ -73,7 +73,10 @@
     <div class="column">
       <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
   <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
     </div>
   </div>
 
@@ -81,19 +84,24 @@
 
     <a href="/" class="brand" rel="start">
       <i class="logo-line"></i>
-      <h1 class="site-title">Hexo</h1>
+      <h1 class="site-title">子非鱼的博客</h1>
       <i class="logo-line"></i>
     </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
   </div>
 
   <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
     </div>
   </div>
 </div>
 
 
 
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
 
 
 
@@ -106,10 +114,10 @@
     <div class="sidebar-inner sidebar-overview-active">
       <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
-          Table of Contents
+          文章目录
         </li>
         <li class="sidebar-nav-overview">
-          Overview
+          站点概览
         </li>
       </ul>
 
@@ -121,7 +129,9 @@
 
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">John Doe</p>
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
   <div class="site-description" itemprop="description"></div>
 </div>
 <div class="site-state-wrap animated">
@@ -129,17 +139,47 @@
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
           <span class="site-state-item-count">2</span>
-          <span class="site-state-item-name">posts</span>
+          <span class="site-state-item-name">日志</span>
         </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
 </div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
 
         </div>
       </div>
     </div>
 
     
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
   </aside>
 
 
@@ -158,17 +198,17 @@
     <link itemprop="mainEntityOfPage" href="http://example.com/2025/08/05/Java%E5%AE%89%E5%85%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="John Doe">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
+      <meta itemprop="name" content="子非鱼的博客">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Hexo">
+      <meta itemprop="name" content=" | 子非鱼的博客">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
@@ -182,10 +222,25 @@
       <span class="post-meta-item-icon">
         <i class="far fa-calendar"></i>
       </span>
-      <span class="post-meta-item-text">Posted on</span>
-      
+      <span class="post-meta-item-text">发表于</span>
 
-      <time title="Created: 2025-08-05 22:43:31 / Modified: 22:45:41" itemprop="dateCreated datePublished" datetime="2025-08-05T22:43:31+08:00">2025-08-05</time>
+      <time title="创建时间：2025-08-05 22:43:31" itemprop="dateCreated datePublished" datetime="2025-08-05T22:43:31+08:00">2025-08-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-08-06 01:28:07" itemprop="dateModified" datetime="2025-08-06T01:28:07+08:00">2025-08-06</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java%E6%94%BB%E9%98%B2/" itemprop="url" rel="index"><span itemprop="name">Java攻防</span></a>
+        </span>
     </span>
 
   
@@ -199,70 +254,14 @@
     
     <div class="post-body" itemprop="articleBody">
           <h1 id="Java安全编程：从基础到高级防护实践"><a href="#Java安全编程：从基础到高级防护实践" class="headerlink" title="Java安全编程：从基础到高级防护实践"></a>Java安全编程：从基础到高级防护实践</h1><h2 id="一、Java安全概述"><a href="#一、Java安全概述" class="headerlink" title="一、Java安全概述"></a>一、Java安全概述</h2><p>Java作为企业级应用开发的主流语言，其安全性一直是开发者关注的重点。Java安全体系建立在三个核心支柱上：</p>
-<ol>
-<li><strong>语言设计安全特性</strong>：自动内存管理、强类型检查、字节码验证</li>
-<li><strong>运行时安全机制</strong>：安全管理器(SecurityManager)、访问控制器(AccessController)</li>
-<li><strong>加密体系架构</strong>：JCA(Java Cryptography Architecture)、JCE(Java Cryptography Extension)</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// 基本的安全管理器启用示例</span><br><span class="line">public class SecurityDemo &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        System.setSecurityManager(new SecurityManager());</span><br><span class="line">        try &#123;</span><br><span class="line">            System.exit(0); // 将抛出SecurityException</span><br><span class="line">        &#125; catch (SecurityException e) &#123;</span><br><span class="line">            System.out.println(&quot;安全拦截：禁止系统退出&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="二、常见Java安全漏洞及防护"><a href="#二、常见Java安全漏洞及防护" class="headerlink" title="二、常见Java安全漏洞及防护"></a>二、常见Java安全漏洞及防护</h2><h3 id="1-注入攻击防护"><a href="#1-注入攻击防护" class="headerlink" title="1. 注入攻击防护"></a>1. 注入攻击防护</h3><h4 id="SQL注入防护"><a href="#SQL注入防护" class="headerlink" title="SQL注入防护"></a>SQL注入防护</h4><p><strong>错误做法</strong>：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">String query = &quot;SELECT * FROM users WHERE username = &#x27;&quot; + username + &quot;&#x27;&quot;;</span><br><span class="line">Statement stmt = conn.createStatement();</span><br><span class="line">ResultSet rs = stmt.executeQuery(query);</span><br></pre></td></tr></table></figure>
-
-<p><strong>正确做法</strong>：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">String query = &quot;SELECT * FROM users WHERE username = ?&quot;;</span><br><span class="line">PreparedStatement pstmt = conn.prepareStatement(query);</span><br><span class="line">pstmt.setString(1, username);</span><br><span class="line">ResultSet rs = pstmt.executeQuery();</span><br></pre></td></tr></table></figure>
-
-<h4 id="XML外部实体-XXE-防护"><a href="#XML外部实体-XXE-防护" class="headerlink" title="XML外部实体(XXE)防护"></a>XML外部实体(XXE)防护</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// 禁用XXE的SAX解析器配置</span><br><span class="line">DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();</span><br><span class="line">dbf.setFeature(&quot;http://apache.org/xml/features/disallow-doctype-decl&quot;, true);</span><br><span class="line">dbf.setFeature(&quot;http://xml.org/sax/features/external-general-entities&quot;, false);</span><br><span class="line">dbf.setFeature(&quot;http://xml.org/sax/features/external-parameter-entities&quot;, false);</span><br></pre></td></tr></table></figure>
-
-<h3 id="2-反序列化漏洞防护"><a href="#2-反序列化漏洞防护" class="headerlink" title="2. 反序列化漏洞防护"></a>2. 反序列化漏洞防护</h3><p><strong>危险示例</strong>：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ObjectInputStream ois = new ObjectInputStream(inputStream);</span><br><span class="line">Object obj = ois.readObject(); // 可能执行恶意代码</span><br></pre></td></tr></table></figure>
-
-<p><strong>防护方案</strong>：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public class SafeObjectInputStream extends ObjectInputStream &#123;</span><br><span class="line">    private static final Set&lt;String&gt; ALLOWED_CLASSES = </span><br><span class="line">        Set.of(&quot;java.lang.String&quot;, &quot;java.util.HashMap&quot;);</span><br><span class="line">    </span><br><span class="line">    protected SafeObjectInputStream(InputStream in) throws IOException &#123;</span><br><span class="line">        super(in);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    protected Class&lt;?&gt; resolveClass(ObjectStreamClass desc) </span><br><span class="line">        throws IOException, ClassNotFoundException &#123;</span><br><span class="line">        if (!ALLOWED_CLASSES.contains(desc.getName())) &#123;</span><br><span class="line">            throw new InvalidClassException(&quot;Unauthorized deserialization attempt&quot;, desc.getName());</span><br><span class="line">        &#125;</span><br><span class="line">        return super.resolveClass(desc);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="三、认证与授权"><a href="#三、认证与授权" class="headerlink" title="三、认证与授权"></a>三、认证与授权</h2><h3 id="1-密码安全存储"><a href="#1-密码安全存储" class="headerlink" title="1. 密码安全存储"></a>1. 密码安全存储</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">import javax.crypto.SecretKeyFactory;</span><br><span class="line">import javax.crypto.spec.PBEKeySpec;</span><br><span class="line">import java.security.SecureRandom;</span><br><span class="line">import java.security.spec.KeySpec;</span><br><span class="line">import java.util.Base64;</span><br><span class="line"></span><br><span class="line">public class PasswordHasher &#123;</span><br><span class="line">    private static final int ITERATIONS = 65536;</span><br><span class="line">    private static final int KEY_LENGTH = 256;</span><br><span class="line">    private static final int SALT_LENGTH = 16;</span><br><span class="line">    </span><br><span class="line">    public static String hashPassword(String password) throws Exception &#123;</span><br><span class="line">        byte[] salt = new byte[SALT_LENGTH];</span><br><span class="line">        new SecureRandom().nextBytes(salt);</span><br><span class="line">        </span><br><span class="line">        KeySpec spec = new PBEKeySpec(</span><br><span class="line">            password.toCharArray(), salt, ITERATIONS, KEY_LENGTH);</span><br><span class="line">        SecretKeyFactory factory = SecretKeyFactory.getInstance(&quot;PBKDF2WithHmacSHA256&quot;);</span><br><span class="line">        </span><br><span class="line">        byte[] hash = factory.generateSecret(spec).getEncoded();</span><br><span class="line">        return Base64.getEncoder().encodeToString(salt) + &quot;:&quot; + </span><br><span class="line">               Base64.getEncoder().encodeToString(hash);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="2-基于角色的访问控制-RBAC"><a href="#2-基于角色的访问控制-RBAC" class="headerlink" title="2. 基于角色的访问控制(RBAC)"></a>2. 基于角色的访问控制(RBAC)</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">@Retention(RetentionPolicy.RUNTIME)</span><br><span class="line">@Target(ElementType.METHOD)</span><br><span class="line">public @interface RequiresRole &#123;</span><br><span class="line">    String value();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public class RBACInterceptor implements MethodInterceptor &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public Object invoke(MethodInvocation invocation) throws Throwable &#123;</span><br><span class="line">        Method method = invocation.getMethod();</span><br><span class="line">        RequiresRole annotation = method.getAnnotation(RequiresRole.class);</span><br><span class="line">        </span><br><span class="line">        if (annotation != null) &#123;</span><br><span class="line">            String requiredRole = annotation.value();</span><br><span class="line">            String userRole = getCurrentUserRole(); // 获取当前用户角色</span><br><span class="line">            </span><br><span class="line">            if (!requiredRole.equals(userRole)) &#123;</span><br><span class="line">                throw new AccessDeniedException(&quot;Requires role: &quot; + requiredRole);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return invocation.proceed();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="四、安全通信"><a href="#四、安全通信" class="headerlink" title="四、安全通信"></a>四、安全通信</h2><h3 id="1-TLS配置最佳实践"><a href="#1-TLS配置最佳实践" class="headerlink" title="1. TLS配置最佳实践"></a>1. TLS配置最佳实践</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">SSLContext sslContext = SSLContext.getInstance(&quot;TLS&quot;);</span><br><span class="line">sslContext.init(null, null, new SecureRandom());</span><br><span class="line"></span><br><span class="line">HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());</span><br><span class="line">HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -&gt; &#123;</span><br><span class="line">    // 实现严格的主机名验证</span><br><span class="line">    return hostname.equals(&quot;trusted.example.com&quot;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h3 id="2-HTTP安全头设置"><a href="#2-HTTP安全头设置" class="headerlink" title="2. HTTP安全头设置"></a>2. HTTP安全头设置</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">public class SecurityHeadersFilter implements Filter &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) </span><br><span class="line">        throws IOException, ServletException &#123;</span><br><span class="line">        </span><br><span class="line">        HttpServletResponse response = (HttpServletResponse) res;</span><br><span class="line">        response.setHeader(&quot;X-Content-Type-Options&quot;, &quot;nosniff&quot;);</span><br><span class="line">        response.setHeader(&quot;X-Frame-Options&quot;, &quot;DENY&quot;);</span><br><span class="line">        response.setHeader(&quot;X-XSS-Protection&quot;, &quot;1; mode=block&quot;);</span><br><span class="line">        response.setHeader(&quot;Content-Security-Policy&quot;, </span><br><span class="line">            &quot;default-src &#x27;self&#x27;; script-src &#x27;self&#x27; &#x27;unsafe-inline&#x27;&quot;);</span><br><span class="line">        </span><br><span class="line">        chain.doFilter(req, res);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="五、日志与审计安全"><a href="#五、日志与审计安全" class="headerlink" title="五、日志与审计安全"></a>五、日志与审计安全</h2><h3 id="1-敏感信息过滤"><a href="#1-敏感信息过滤" class="headerlink" title="1. 敏感信息过滤"></a>1. 敏感信息过滤</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">public class SensitiveDataFilter extends Formatter &#123;</span><br><span class="line">    private static final Pattern CREDIT_CARD = Pattern.compile(&quot;\\b\\d&#123;4&#125;[ -]?\\d&#123;4&#125;[ -]?\\d&#123;4&#125;[ -]?\\d&#123;4&#125;\\b&quot;);</span><br><span class="line">    </span><br><span class="line">    @Override</span><br><span class="line">    public String format(LogRecord record) &#123;</span><br><span class="line">        String message = super.format(record);</span><br><span class="line">        return CREDIT_CARD.matcher(message).replaceAll(&quot;[REDACTED]&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="2-安全审计日志"><a href="#2-安全审计日志" class="headerlink" title="2. 安全审计日志"></a>2. 安全审计日志</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public class SecurityAudit &#123;</span><br><span class="line">    private static final Logger AUDIT_LOG = Logger.getLogger(&quot;SecurityAudit&quot;);</span><br><span class="line">    </span><br><span class="line">    public static void logSecurityEvent(String userId, String action, </span><br><span class="line">                                      String resource, boolean success) &#123;</span><br><span class="line">        LogRecord record = new LogRecord(Level.INFO, </span><br><span class="line">            String.format(&quot;user=%s | action=%s | resource=%s | success=%b&quot;,</span><br><span class="line">                userId, action, resource, success));</span><br><span class="line">        record.setLoggerName(AUDIT_LOG.getName());</span><br><span class="line">        AUDIT_LOG.log(record);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="六、Java安全开发最佳实践"><a href="#六、Java安全开发最佳实践" class="headerlink" title="六、Java安全开发最佳实践"></a>六、Java安全开发最佳实践</h2><ol>
-<li><p><strong>依赖管理安全</strong>：</p>
-<ul>
-<li>使用Maven&#x2F;Gradle依赖验证工具</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- 在pom.xml中配置OWASP依赖检查插件 --&gt;</span><br><span class="line">&lt;plugin&gt;</span><br><span class="line">    &lt;groupId&gt;org.owasp&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;dependency-check-maven&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;6.5.3&lt;/version&gt;</span><br><span class="line">    &lt;executions&gt;</span><br><span class="line">        &lt;execution&gt;</span><br><span class="line">            &lt;goals&gt;</span><br><span class="line">                &lt;goal&gt;check&lt;/goal&gt;</span><br><span class="line">            &lt;/goals&gt;</span><br><span class="line">        &lt;/execution&gt;</span><br><span class="line">    &lt;/executions&gt;</span><br><span class="line">&lt;/plugin&gt;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p><strong>内存安全</strong>：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// 敏感数据使用后立即清除</span><br><span class="line">public class PasswordHandler &#123;</span><br><span class="line">    private final char[] password;</span><br><span class="line">    </span><br><span class="line">    public PasswordHandler(char[] password) &#123;</span><br><span class="line">        this.password = Arrays.copyOf(password, password.length);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    public void dispose() &#123;</span><br><span class="line">        Arrays.fill(password, &#x27;\0&#x27;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p><strong>安全编码规范</strong>：</p>
-<ul>
-<li>遵循Oracle安全编码指南</li>
-<li>使用FindSecBugs等静态分析工具</li>
-<li>定期进行代码安全评审</li>
-</ul>
-</li>
-</ol>
-<h2 id="七、新兴安全威胁防护"><a href="#七、新兴安全威胁防护" class="headerlink" title="七、新兴安全威胁防护"></a>七、新兴安全威胁防护</h2><h3 id="1-针对JNDI注入的防护"><a href="#1-针对JNDI注入的防护" class="headerlink" title="1. 针对JNDI注入的防护"></a>1. 针对JNDI注入的防护</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// 防止Log4j式漏洞的系统级防护</span><br><span class="line">System.setProperty(&quot;com.sun.jndi.ldap.object.trustURLCodebase&quot;, &quot;false&quot;);</span><br><span class="line">System.setProperty(&quot;com.sun.jndi.rmi.object.trustURLCodebase&quot;, &quot;false&quot;);</span><br></pre></td></tr></table></figure>
-
-<h3 id="2-模块系统-JPMS-安全配置"><a href="#2-模块系统-JPMS-安全配置" class="headerlink" title="2. 模块系统(JPMS)安全配置"></a>2. 模块系统(JPMS)安全配置</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">module com.example.myapp &#123;</span><br><span class="line">    requires java.base;</span><br><span class="line">    requires java.sql;</span><br><span class="line">    </span><br><span class="line">    // 显式导出包</span><br><span class="line">    exports com.example.myapp.api to </span><br><span class="line">        com.example.client1, com.example.client2;</span><br><span class="line">    </span><br><span class="line">    // 禁止反射访问</span><br><span class="line">    opens com.example.myapp.internal to </span><br><span class="line">        com.example.testframework;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>Java安全是一个需要持续关注的领域，开发者应当：</p>
-<ol>
-<li>保持对最新安全威胁的了解</li>
-<li>定期更新JDK和依赖库</li>
-<li>实施纵深防御策略</li>
-<li>进行定期的安全测试和代码审计</li>
-</ol>
-<p>通过将本文介绍的技术与实践相结合，可以显著提高Java应用程序的安全性，有效防御大多数已知攻击模式。</p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/08/05/Java%E5%AE%89%E5%85%A8/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -291,17 +290,17 @@
     <link itemprop="mainEntityOfPage" href="http://example.com/2025/08/05/hello-world/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="John Doe">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
+      <meta itemprop="name" content="子非鱼的博客">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Hexo">
+      <meta itemprop="name" content=" | 子非鱼的博客">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
@@ -315,9 +314,9 @@
       <span class="post-meta-item-icon">
         <i class="far fa-calendar"></i>
       </span>
-      <span class="post-meta-item-text">Posted on</span>
+      <span class="post-meta-item-text">发表于</span>
 
-      <time title="Created: 2025-08-05 22:35:42" itemprop="dateCreated datePublished" datetime="2025-08-05T22:35:42+08:00">2025-08-05</time>
+      <time title="创建时间：2025-08-05 22:35:42" itemprop="dateCreated datePublished" datetime="2025-08-05T22:35:42+08:00">2025-08-05</time>
     </span>
 
   
@@ -374,9 +373,9 @@
     <span class="with-love">
       <i class="fa fa-heart"></i>
     </span>
-    <span class="author" itemprop="copyrightHolder">John Doe</span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
   </div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 
     </div>
@@ -389,7 +388,7 @@
     <span class="toggle-line"></span>
   </div>
   <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
+  <div class="back-to-top" role="button" aria-label="返回顶部">
     <i class="fa fa-arrow-up fa-lg"></i>
     <span>0%</span>
   </div>
