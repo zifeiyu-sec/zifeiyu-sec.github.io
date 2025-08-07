@@ -148,13 +148,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-count">9</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -284,7 +284,7 @@
 <p>攻击案例</p>
 <p>ObjectInputStream ois &#x3D; new ObjectInputStream(inputStream);<br>Object obj &#x3D; ois.readObject(); &#x2F;&#x2F; 可能执行恶意代码</p>
 <p>防御方案</p>
-<p>public class SafeObjectInputStream extends ObjectInputStream {<br>    private static final Set<String> ALLOWED_CLASSES &#x3D;<br>        Set.of(“java.lang.String”, “java.util.HashMap”);</String></p>
+<p>public class SafeObjectInputStream extends ObjectInputStream {<br>    private static final Set<String> ALLOWED_CLASSES &#x3D;<br>        Set.of(“java.lang.String”, “java.util.HashMap”);</p>
 <pre><code>protected Class&lt;?&gt; resolveClass(ObjectStreamClass desc) 
     throws IOException, ClassNotFoundException &#123;
     if (!ALLOWED_CLASSES.contains(desc.getName())) &#123;
@@ -426,7 +426,7 @@ return Base64.getEncoder().encodeToString(iv) + &quot;:&quot; +
 
           <div class="post-nav">
             <div class="post-nav-item">
-                <a href="/2025/08/05/Java%E5%AE%89%E5%85%A8/" rel="prev" title="Java安全">
+                <a href="/2025/08/05/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8/" rel="prev" title="Java安全">
                   <i class="fa fa-angle-left"></i> Java安全
                 </a>
             </div>
