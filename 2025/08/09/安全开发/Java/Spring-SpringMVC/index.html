@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Spring 是一个轻量级的 Java 企业级开发框架">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring&amp;SpringMVC">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/Spring-SpringMVC/index.html">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:description" content="Spring 是一个轻量级的 Java 企业级开发框架">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-08-08T17:58:27.000Z">
+<meta property="article:modified_time" content="2025-08-08T18:04:42.949Z">
+<meta property="article:author" content="子非鱼">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/Spring-SpringMVC/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/Spring-SpringMVC/","path":"2025/08/09/安全开发/Java/Spring-SpringMVC/","title":"Spring&SpringMVC"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Spring&SpringMVC | 子非鱼的博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">子非鱼的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%A7%A9-%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF-Spring%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">🧩 一、什么是 Spring？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%85-1-%E6%A6%82%E5%BF%B5%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">✅ 1. 概念：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%F0%9F%94%A7-2-Spring-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%A8%A1%E5%9D%97%EF%BC%88%E6%9C%80%E5%B8%B8%E7%94%A8%E7%9A%84%E5%87%A0%E4%B8%AA%EF%BC%89%EF%BC%9A"><span class="nav-number">1.2.</span> <span class="nav-text">🔧 2. Spring 的核心模块（最常用的几个）：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%F0%9F%8E%AF-3-%E6%A0%B8%E5%BF%83%E7%89%B9%E6%80%A7%EF%BC%88%E6%80%BB%E7%BB%93%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">🎯 3. 核心特性（总结）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%8D-%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81%EF%BC%88IoC-%E6%B3%A8%E8%A7%A3%E6%B3%A8%E5%85%A5%EF%BC%89%EF%BC%9A"><span class="nav-number">1.4.</span> <span class="nav-text">✍ 示例代码（IoC + 注解注入）：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%A7%B1-%E4%BA%8C%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF-Spring-MVC%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">🧱 二、什么是 Spring MVC？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%85-1-%E6%A6%82%E5%BF%B5%EF%BC%9A-1"><span class="nav-number">2.1.</span> <span class="nav-text">✅ 1. 概念：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%F0%9F%8C%90-2-%E6%A0%B8%E5%BF%83%E7%BB%93%E6%9E%84%EF%BC%88MVC-%E5%88%86%E5%B1%82%EF%BC%89"><span class="nav-number">2.2.</span> <span class="nav-text">🌐 2. 核心结构（MVC 分层）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9A%99%EF%B8%8F-3-%E8%AF%B7%E6%B1%82%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B%EF%BC%88%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%EF%BC%89"><span class="nav-number">2.3.</span> <span class="nav-text">⚙️ 3. 请求处理流程（核心组件）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%85-4-%E6%B3%A8%E8%A7%A3%E5%BC%80%E5%8F%91%EF%BC%88%E5%B8%B8%E7%94%A8%E6%B3%A8%E8%A7%A3%EF%BC%89"><span class="nav-number">2.4.</span> <span class="nav-text">✅ 4. 注解开发（常用注解）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%8D-%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81%EF%BC%9A"><span class="nav-number">2.5.</span> <span class="nav-text">✍ 示例代码：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%94%84-%E4%B8%89%E3%80%81Spring-%E4%B8%8E-Spring-MVC-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">3.</span> <span class="nav-text">🔄 三、Spring 与 Spring MVC 的关系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%93%A6-%E5%9B%9B%E3%80%81Spring-%E9%A1%B9%E7%9B%AE%E5%B8%B8%E8%A7%81%E7%BB%93%E6%9E%84%EF%BC%88Spring-MVC%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">📦 四、Spring 项目常见结构（Spring MVC）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%9A%80-%E4%BA%94%E3%80%81%E7%8E%B0%E4%BB%A3%E9%A1%B9%E7%9B%AE%E5%8F%91%E5%B1%95%EF%BC%9ASpring-Boot"><span class="nav-number">5.</span> <span class="nav-text">🚀 五、现代项目发展：Spring Boot</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%A7%A0-%E6%80%BB%E7%BB%93%E4%B8%80%E5%8F%A5%E8%AF%9D%EF%BC%9A"><span class="nav-number">6.</span> <span class="nav-text">🧠 总结一句话：</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
+  <div class="site-description" itemprop="description">学习过程的记录</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com" rel="noopener" target="_blank">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/Spring-SpringMVC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Spring&amp;SpringMVC | 子非鱼的博客">
+      <meta itemprop="description" content="Spring 是一个轻量级的 Java 企业级开发框架">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spring&SpringMVC
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-09 01:58:27 / 修改时间：02:04:42" itemprop="dateCreated datePublished" datetime="2025-08-09T01:58:27+08:00">2025-08-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">安全开发</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Spring 是一个轻量级的 Java 企业级开发框架</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><hr>
+<h2 id="🧩-一、什么是-Spring？"><a href="#🧩-一、什么是-Spring？" class="headerlink" title="🧩 一、什么是 Spring？"></a>🧩 一、什么是 Spring？</h2><h3 id="✅-1-概念："><a href="#✅-1-概念：" class="headerlink" title="✅ 1. 概念："></a>✅ 1. 概念：</h3><p><strong>Spring 是一个轻量级的 Java 企业级开发框架</strong>，最初为了解决<strong>企业级开发中的复杂性（如耦合高、开发慢）</strong>，由 Rod Johnson 于 2003 年发布。</p>
+<blockquote>
+<p><strong>Spring 的核心理念是“控制反转（IoC）” 和 “面向切面编程（AOP）”。</strong></p>
+</blockquote>
+<hr>
+<h3 id="🔧-2-Spring-的核心模块（最常用的几个）："><a href="#🔧-2-Spring-的核心模块（最常用的几个）：" class="headerlink" title="🔧 2. Spring 的核心模块（最常用的几个）："></a>🔧 2. Spring 的核心模块（最常用的几个）：</h3><table>
+<thead>
+<tr>
+<th>模块</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Spring Core（IoC）</strong></td>
+<td>控制反转（依赖注入）容器的核心</td>
+</tr>
+<tr>
+<td><strong>Spring AOP</strong></td>
+<td>面向切面编程，例如日志、事务、权限等横切逻辑</td>
+</tr>
+<tr>
+<td><strong>Spring Context</strong></td>
+<td>上下文支持，类似于高级 BeanFactory</td>
+</tr>
+<tr>
+<td><strong>Spring JDBC &#x2F; ORM</strong></td>
+<td>简化数据库开发</td>
+</tr>
+<tr>
+<td><strong>Spring Transaction</strong></td>
+<td>声明式事务管理</td>
+</tr>
+<tr>
+<td><strong>Spring Web（Spring MVC）</strong></td>
+<td>支持 Web 开发，是 MVC 框架的一部分</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="🎯-3-核心特性（总结）"><a href="#🎯-3-核心特性（总结）" class="headerlink" title="🎯 3. 核心特性（总结）"></a>🎯 3. 核心特性（总结）</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>IoC（控制反转）</strong></td>
+<td>框架控制对象的创建和生命周期，开发者只需声明</td>
+</tr>
+<tr>
+<td><strong>DI（依赖注入）</strong></td>
+<td>把对象之间的依赖关系交给 Spring 自动注入</td>
+</tr>
+<tr>
+<td><strong>AOP（面向切面）</strong></td>
+<td>实现日志、事务、安全等横切逻辑</td>
+</tr>
+<tr>
+<td><strong>声明式事务管理</strong></td>
+<td>用注解或 XML 管理事务</td>
+</tr>
+<tr>
+<td><strong>模块化</strong></td>
+<td>可按需使用模块，如 Web、JDBC、Security 等</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="✍-示例代码（IoC-注解注入）："><a href="#✍-示例代码（IoC-注解注入）：" class="headerlink" title="✍ 示例代码（IoC + 注解注入）："></a>✍ 示例代码（IoC + 注解注入）：</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">sayHello</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Hello, Spring!&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan(&quot;com.example&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AppConfig</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Main</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">ApplicationContext</span> <span class="variable">ctx</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AnnotationConfigApplicationContext</span>(AppConfig.class);</span><br><span class="line">        <span class="type">UserService</span> <span class="variable">userService</span> <span class="operator">=</span> ctx.getBean(UserService.class);</span><br><span class="line">        userService.sayHello();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧱-二、什么是-Spring-MVC？"><a href="#🧱-二、什么是-Spring-MVC？" class="headerlink" title="🧱 二、什么是 Spring MVC？"></a>🧱 二、什么是 Spring MVC？</h2><h3 id="✅-1-概念：-1"><a href="#✅-1-概念：-1" class="headerlink" title="✅ 1. 概念："></a>✅ 1. 概念：</h3><p><strong>Spring MVC 是 Spring Framework 的一部分，用于构建 Web 应用程序的 MVC 框架</strong>（Model-View-Controller 模式）。</p>
+<p>它使开发者能以清晰的层次结构编写<strong>控制器逻辑、路由映射、数据模型和视图渲染</strong>。</p>
+<hr>
+<h3 id="🌐-2-核心结构（MVC-分层）"><a href="#🌐-2-核心结构（MVC-分层）" class="headerlink" title="🌐 2. 核心结构（MVC 分层）"></a>🌐 2. 核心结构（MVC 分层）</h3><table>
+<thead>
+<tr>
+<th>层</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Model（模型）</td>
+<td>封装业务数据（POJO、DTO）</td>
+</tr>
+<tr>
+<td>View（视图）</td>
+<td>展示数据，JSP、Thymeleaf、Freemarker 等</td>
+</tr>
+<tr>
+<td>Controller（控制器）</td>
+<td>接收请求、调用服务层、返回视图&#x2F;JSON</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="⚙️-3-请求处理流程（核心组件）"><a href="#⚙️-3-请求处理流程（核心组件）" class="headerlink" title="⚙️ 3. 请求处理流程（核心组件）"></a>⚙️ 3. 请求处理流程（核心组件）</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Client Request → DispatcherServlet（前端控制器）</span><br><span class="line">    ↓</span><br><span class="line">HandlerMapping（找到对应的控制器）</span><br><span class="line">    ↓</span><br><span class="line">Controller（处理请求）</span><br><span class="line">    ↓</span><br><span class="line">ViewResolver（视图解析器）</span><br><span class="line">    ↓</span><br><span class="line">响应返回客户端</span><br></pre></td></tr></table></figure>
+
+<h3 id="✅-4-注解开发（常用注解）"><a href="#✅-4-注解开发（常用注解）" class="headerlink" title="✅ 4. 注解开发（常用注解）"></a>✅ 4. 注解开发（常用注解）</h3><table>
+<thead>
+<tr>
+<th>注解</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>@Controller</code></td>
+<td>标识控制器类</td>
+</tr>
+<tr>
+<td><code>@RequestMapping</code></td>
+<td>映射请求路径</td>
+</tr>
+<tr>
+<td><code>@GetMapping / @PostMapping</code></td>
+<td>映射 GET&#x2F;POST 请求</td>
+</tr>
+<tr>
+<td><code>@ResponseBody</code></td>
+<td>将返回值直接作为响应体</td>
+</tr>
+<tr>
+<td><code>@RestController</code></td>
+<td>等同于 <code>@Controller + @ResponseBody</code></td>
+</tr>
+<tr>
+<td><code>@RequestParam</code></td>
+<td>获取 URL 参数</td>
+</tr>
+<tr>
+<td><code>@PathVariable</code></td>
+<td>获取路径中的参数</td>
+</tr>
+<tr>
+<td><code>@ModelAttribute</code></td>
+<td>绑定表单参数到对象</td>
+</tr>
+<tr>
+<td><code>@RequestBody</code></td>
+<td>接收 JSON 数据</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="✍-示例代码："><a href="#✍-示例代码：" class="headerlink" title="✍ 示例代码："></a>✍ 示例代码：</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/user&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/&#123;id&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> User <span class="title function_">getUser</span><span class="params">(<span class="meta">@PathVariable</span> <span class="type">int</span> id)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">User</span>(id, <span class="string">&quot;Tom&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostMapping(&quot;/add&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">addUser</span><span class="params">(<span class="meta">@RequestBody</span> User user)</span> &#123;</span><br><span class="line">        <span class="comment">// 假装保存逻辑</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;用户添加成功：&quot;</span> + user.getName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🔄-三、Spring-与-Spring-MVC-的关系"><a href="#🔄-三、Spring-与-Spring-MVC-的关系" class="headerlink" title="🔄 三、Spring 与 Spring MVC 的关系"></a>🔄 三、Spring 与 Spring MVC 的关系</h2><table>
+<thead>
+<tr>
+<th>对比点</th>
+<th>Spring</th>
+<th>Spring MVC</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>类型</td>
+<td>通用开发框架</td>
+<td>专注于 Web 层</td>
+</tr>
+<tr>
+<td>功能</td>
+<td>控制反转、事务、数据访问、AOP</td>
+<td>请求处理、路由、视图解析</td>
+</tr>
+<tr>
+<td>依赖</td>
+<td>是 Spring MVC 的基础</td>
+<td>依赖 Spring 核心容器</td>
+</tr>
+<tr>
+<td>使用范围</td>
+<td>可用于任何 Java 项目</td>
+<td>专用于 Web 应用（基于 Servlet）</td>
+</tr>
+<tr>
+<td>Bean 管理</td>
+<td>管理所有组件</td>
+<td>主要用于控制器层和 Web 组件</td>
+</tr>
+</tbody></table>
+<p>你可以这样理解：</p>
+<blockquote>
+<p><strong>Spring 是地基，Spring MVC 是搭建在上面的 Web 构建模块。</strong></p>
+</blockquote>
+<hr>
+<h2 id="📦-四、Spring-项目常见结构（Spring-MVC）"><a href="#📦-四、Spring-项目常见结构（Spring-MVC）" class="headerlink" title="📦 四、Spring 项目常见结构（Spring MVC）"></a>📦 四、Spring 项目常见结构（Spring MVC）</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">src/</span><br><span class="line"> └── com.example</span><br><span class="line">     ├── controller      # 控制器层（Spring MVC）</span><br><span class="line">     ├── service         # 业务逻辑层（Spring Bean）</span><br><span class="line">     ├── dao             # 数据访问层</span><br><span class="line">     ├── model           # 实体类</span><br><span class="line">     └── config          # Spring 配置类</span><br><span class="line">resources/</span><br><span class="line"> ├── templates/          # 视图层（JSP、Thymeleaf）</span><br><span class="line"> └── application.properties</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🚀-五、现代项目发展：Spring-Boot"><a href="#🚀-五、现代项目发展：Spring-Boot" class="headerlink" title="🚀 五、现代项目发展：Spring Boot"></a>🚀 五、现代项目发展：Spring Boot</h2><p>由于 Spring + Spring MVC 配置复杂（XML、繁琐 Bean 声明等），官方后来推出了：</p>
+<blockquote>
+<p><strong>Spring Boot：一个快速构建 Spring 应用的开发框架。</strong></p>
+</blockquote>
+<p>它整合了 Spring、Spring MVC、Spring Data 等模块，并通过“<strong>自动配置</strong>”、“<strong>约定优于配置</strong>”大大简化开发。</p>
+<hr>
+<h2 id="🧠-总结一句话："><a href="#🧠-总结一句话：" class="headerlink" title="🧠 总结一句话："></a>🧠 总结一句话：</h2><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>一句话描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Spring</strong></td>
+<td>用来管理 Bean，控制依赖关系，实现 AOP 等</td>
+</tr>
+<tr>
+<td><strong>Spring MVC</strong></td>
+<td>用来处理 Web 请求的 MVC 框架，控制器层实现</td>
+</tr>
+<tr>
+<td><strong>Spring Boot</strong></td>
+<td>用来快速集成 Spring + MVC + 数据库等，简化配置</td>
+</tr>
+</tbody></table>
+<hr>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="子非鱼 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="子非鱼 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/JSP%E5%9F%BA%E7%A1%80/" rel="prev" title="JSP基础">
+                  <i class="fa fa-angle-left"></i> JSP基础
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/Spring-Boot-Spring-Cloud/" rel="next" title="Spring_Boot&amp;Spring_Cloud">
+                  Spring_Boot&Spring_Cloud <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

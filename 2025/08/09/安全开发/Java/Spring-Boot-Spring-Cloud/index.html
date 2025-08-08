@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Spring Boot 是构建单体应用的最佳选择，而 Spring Cloud 则是构建微服务架构的系统性解决方案。两者组合是现代 Java 云原生开发的主流技术栈。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring_Boot&amp;Spring_Cloud">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/Spring-Boot-Spring-Cloud/index.html">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:description" content="Spring Boot 是构建单体应用的最佳选择，而 Spring Cloud 则是构建微服务架构的系统性解决方案。两者组合是现代 Java 云原生开发的主流技术栈。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-08-08T17:58:45.000Z">
+<meta property="article:modified_time" content="2025-08-08T18:03:11.293Z">
+<meta property="article:author" content="子非鱼">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/Spring-Boot-Spring-Cloud/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/Spring-Boot-Spring-Cloud/","path":"2025/08/09/安全开发/Java/Spring-Boot-Spring-Cloud/","title":"Spring_Boot&Spring_Cloud"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Spring_Boot&Spring_Cloud | 子非鱼的博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">子非鱼的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%A7%A9-%E4%B8%80%E3%80%81Spring-Boot-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">🧩 一、Spring Boot 是什么？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%85-%E6%A6%82%E5%BF%B5%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">✅ 概念：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9A%99%EF%B8%8F-Spring-Boot-%E7%9A%84%E6%A0%B8%E5%BF%83%E7%89%B9%E6%80%A7%EF%BC%9A"><span class="nav-number">1.2.</span> <span class="nav-text">⚙️ Spring Boot 的核心特性：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%F0%9F%93%A6-%E5%B8%B8%E8%A7%81-Starter-%E6%A8%A1%E5%9D%97"><span class="nav-number">1.3.</span> <span class="nav-text">📦 常见 Starter 模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%85-%E7%A4%BA%E4%BE%8B%EF%BC%9A%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA-REST-%E6%8E%A5%E5%8F%A3%E6%9C%8D%E5%8A%A1"><span class="nav-number">1.4.</span> <span class="nav-text">✅ 示例：创建一个 REST 接口服务</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-pom-xml-%E4%BE%9D%E8%B5%96%EF%BC%9A"><span class="nav-number">1.4.1.</span> <span class="nav-text">1. pom.xml 依赖：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Application-java"><span class="nav-number">1.4.2.</span> <span class="nav-text">2. Application.java</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E6%8E%A7%E5%88%B6%E5%99%A8"><span class="nav-number">1.4.3.</span> <span class="nav-text">3. 控制器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-%E8%BF%90%E8%A1%8C%EF%BC%9A"><span class="nav-number">1.4.4.</span> <span class="nav-text">4. 运行：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E2%98%81%EF%B8%8F-%E4%BA%8C%E3%80%81Spring-Cloud-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">☁️ 二、Spring Cloud 是什么？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%85-%E6%A6%82%E5%BF%B5%EF%BC%9A-1"><span class="nav-number">2.1.</span> <span class="nav-text">✅ 概念：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%F0%9F%8C%90-%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%9A%84%E6%A0%B8%E5%BF%83%E9%97%AE%E9%A2%98%EF%BC%88Spring-Cloud-%E8%A7%A3%E5%86%B3%E8%BF%99%E4%BA%9B%EF%BC%89%EF%BC%9A"><span class="nav-number">2.2.</span> <span class="nav-text">🌐 微服务的核心问题（Spring Cloud 解决这些）：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E2%9A%99%EF%B8%8F-Spring-Boot-vs-Spring-Cloud"><span class="nav-number">3.</span> <span class="nav-text">⚙️ Spring Boot vs Spring Cloud</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%A7%B1-Spring-Cloud-%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E6%A6%82%E8%A7%88"><span class="nav-number">4.</span> <span class="nav-text">🧱 Spring Cloud 核心组件概览</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Eureka%EF%BC%88%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C%E4%B8%AD%E5%BF%83%EF%BC%89"><span class="nav-number">4.1.</span> <span class="nav-text">1. Eureka（服务注册中心）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Config%EF%BC%88%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83%EF%BC%89"><span class="nav-number">4.2.</span> <span class="nav-text">2. Config（配置中心）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Ribbon%EF%BC%88%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%EF%BC%89"><span class="nav-number">4.3.</span> <span class="nav-text">3. Ribbon（负载均衡）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-Feign%EF%BC%88%E5%A3%B0%E6%98%8E%E5%BC%8F%E6%9C%8D%E5%8A%A1%E8%B0%83%E7%94%A8%EF%BC%89"><span class="nav-number">4.4.</span> <span class="nav-text">4. Feign（声明式服务调用）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-Hystrix-Resilience4j%EF%BC%88%E5%AE%B9%E9%94%99%EF%BC%89"><span class="nav-number">4.5.</span> <span class="nav-text">5. Hystrix &#x2F; Resilience4j（容错）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-Gateway%EF%BC%88%E7%BD%91%E5%85%B3%EF%BC%89"><span class="nav-number">4.6.</span> <span class="nav-text">6. Gateway（网关）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-Sleuth-Zipkin%EF%BC%88%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA%EF%BC%89"><span class="nav-number">4.7.</span> <span class="nav-text">7. Sleuth + Zipkin（链路追踪）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%9A%80-%E7%A4%BA%E4%BE%8B%EF%BC%9A%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%B3%BB%E7%BB%9F%E7%BB%93%E6%9E%84"><span class="nav-number">5.</span> <span class="nav-text">🚀 示例：构建一个简单微服务系统结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E2%9C%85-Spring-Boot-Spring-Cloud-%E6%9E%84%E5%BB%BA%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%B3%BB%E7%BB%9F%E4%BC%98%E7%82%B9"><span class="nav-number">6.</span> <span class="nav-text">✅ Spring Boot + Spring Cloud 构建微服务系统优点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%A7%A0-%E6%80%BB%E7%BB%93%E4%B8%80%E5%8F%A5%E8%AF%9D%EF%BC%9A"><span class="nav-number">7.</span> <span class="nav-text">🧠 总结一句话：</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
+  <div class="site-description" itemprop="description">学习过程的记录</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com" rel="noopener" target="_blank">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/Spring-Boot-Spring-Cloud/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Spring_Boot&amp;Spring_Cloud | 子非鱼的博客">
+      <meta itemprop="description" content="Spring Boot 是构建单体应用的最佳选择，而 Spring Cloud 则是构建微服务架构的系统性解决方案。两者组合是现代 Java 云原生开发的主流技术栈。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spring_Boot&Spring_Cloud
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-09 01:58:45 / 修改时间：02:03:11" itemprop="dateCreated datePublished" datetime="2025-08-09T01:58:45+08:00">2025-08-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">安全开发</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Spring Boot 是构建单体应用的最佳选择，而 Spring Cloud 则是构建微服务架构的系统性解决方案。两者组合是现代 Java 云原生开发的主流技术栈。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><hr>
+<h2 id="🧩-一、Spring-Boot-是什么？"><a href="#🧩-一、Spring-Boot-是什么？" class="headerlink" title="🧩 一、Spring Boot 是什么？"></a>🧩 一、Spring Boot 是什么？</h2><h3 id="✅-概念："><a href="#✅-概念：" class="headerlink" title="✅ 概念："></a>✅ 概念：</h3><blockquote>
+<p><strong>Spring Boot 是一个基于 Spring 的快速开发框架</strong>，用于简化 Spring 应用的开发和部署。</p>
+</blockquote>
+<p>它通过<strong>自动配置</strong>、<strong>开箱即用的依赖管理</strong>，以及<strong>内嵌服务器</strong>，大大降低了 Spring 项目的配置复杂度。</p>
+<hr>
+<h3 id="⚙️-Spring-Boot-的核心特性："><a href="#⚙️-Spring-Boot-的核心特性：" class="headerlink" title="⚙️ Spring Boot 的核心特性："></a>⚙️ Spring Boot 的核心特性：</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>自动配置</strong></td>
+<td>自动推断项目需要的配置，如数据库、MVC、AOP 等</td>
+</tr>
+<tr>
+<td><strong>内嵌服务器</strong></td>
+<td>内置 Tomcat&#x2F;Jetty&#x2F;Undertow，无需部署 war 包</td>
+</tr>
+<tr>
+<td><strong>零 XML 配置</strong></td>
+<td>使用注解和 Java 配置类，取代繁琐的 XML</td>
+</tr>
+<tr>
+<td><strong>统一的依赖管理</strong></td>
+<td>基于 <code>starter</code> 的模块化依赖封装</td>
+</tr>
+<tr>
+<td><strong>生产准备</strong></td>
+<td>提供监控、健康检查、外部配置等运维支持（Spring Boot Actuator）</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="📦-常见-Starter-模块"><a href="#📦-常见-Starter-模块" class="headerlink" title="📦 常见 Starter 模块"></a>📦 常见 Starter 模块</h3><table>
+<thead>
+<tr>
+<th>模块</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>spring-boot-starter-web</code></td>
+<td>包含 Spring MVC 和 Tomcat</td>
+</tr>
+<tr>
+<td><code>spring-boot-starter-data-jpa</code></td>
+<td>用于数据库访问（JPA）</td>
+</tr>
+<tr>
+<td><code>spring-boot-starter-security</code></td>
+<td>添加安全支持</td>
+</tr>
+<tr>
+<td><code>spring-boot-starter-test</code></td>
+<td>测试框架</td>
+</tr>
+<tr>
+<td><code>spring-boot-starter-actuator</code></td>
+<td>应用监控和指标接口</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="✅-示例：创建一个-REST-接口服务"><a href="#✅-示例：创建一个-REST-接口服务" class="headerlink" title="✅ 示例：创建一个 REST 接口服务"></a>✅ 示例：创建一个 REST 接口服务</h3><h4 id="1-pom-xml-依赖："><a href="#1-pom-xml-依赖：" class="headerlink" title="1. pom.xml 依赖："></a>1. <code>pom.xml</code> 依赖：</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="2-Application-java"><a href="#2-Application-java" class="headerlink" title="2. Application.java"></a>2. <code>Application.java</code></h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyApplication</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        SpringApplication.run(MyApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-控制器"><a href="#3-控制器" class="headerlink" title="3. 控制器"></a>3. 控制器</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/hello&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HelloController</span> &#123;</span><br><span class="line">    <span class="meta">@GetMapping</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">hello</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;Hello Spring Boot!&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="4-运行："><a href="#4-运行：" class="headerlink" title="4. 运行："></a>4. 运行：</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn spring-boot:run</span><br></pre></td></tr></table></figure>
+
+<p>浏览器访问：<code>http://localhost:8080/hello</code></p>
+<hr>
+<h2 id="☁️-二、Spring-Cloud-是什么？"><a href="#☁️-二、Spring-Cloud-是什么？" class="headerlink" title="☁️ 二、Spring Cloud 是什么？"></a>☁️ 二、Spring Cloud 是什么？</h2><h3 id="✅-概念：-1"><a href="#✅-概念：-1" class="headerlink" title="✅ 概念："></a>✅ 概念：</h3><blockquote>
+<p><strong>Spring Cloud 是一套基于 Spring Boot 的微服务开发框架集合</strong>，用于快速构建分布式系统，如服务注册、配置中心、服务调用、熔断、链路追踪等。</p>
+</blockquote>
+<hr>
+<h3 id="🌐-微服务的核心问题（Spring-Cloud-解决这些）："><a href="#🌐-微服务的核心问题（Spring-Cloud-解决这些）：" class="headerlink" title="🌐 微服务的核心问题（Spring Cloud 解决这些）："></a>🌐 微服务的核心问题（Spring Cloud 解决这些）：</h3><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>Spring Cloud 组件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>服务注册与发现</td>
+<td><strong>Eureka</strong>、Consul、Nacos</td>
+</tr>
+<tr>
+<td>配置中心</td>
+<td><strong>Spring Cloud Config</strong></td>
+</tr>
+<tr>
+<td>客户端负载均衡</td>
+<td><strong>Ribbon</strong>、<strong>Spring Cloud LoadBalancer</strong></td>
+</tr>
+<tr>
+<td>服务间调用</td>
+<td><strong>Feign</strong></td>
+</tr>
+<tr>
+<td>服务容错</td>
+<td><strong>Hystrix</strong>、<strong>Resilience4j</strong></td>
+</tr>
+<tr>
+<td>网关</td>
+<td><strong>Spring Cloud Gateway</strong></td>
+</tr>
+<tr>
+<td>链路追踪</td>
+<td><strong>Sleuth + Zipkin</strong></td>
+</tr>
+<tr>
+<td>服务总线</td>
+<td><strong>Spring Cloud Bus</strong>（消息驱动配置刷新）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="⚙️-Spring-Boot-vs-Spring-Cloud"><a href="#⚙️-Spring-Boot-vs-Spring-Cloud" class="headerlink" title="⚙️ Spring Boot vs Spring Cloud"></a>⚙️ Spring Boot vs Spring Cloud</h2><table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>Spring Boot</th>
+<th>Spring Cloud</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目的</td>
+<td>简化单体应用开发</td>
+<td>简化分布式系统开发</td>
+</tr>
+<tr>
+<td>功能</td>
+<td>快速构建 REST 服务</td>
+<td>服务治理、注册、熔断、配置、调用</td>
+</tr>
+<tr>
+<td>启动器</td>
+<td><code>spring-boot-starter-*</code></td>
+<td><code>spring-cloud-starter-*</code></td>
+</tr>
+<tr>
+<td>依赖</td>
+<td>独立使用</td>
+<td>构建在 Spring Boot 基础上</td>
+</tr>
+<tr>
+<td>应用规模</td>
+<td>单体项目、小型服务</td>
+<td>微服务系统</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧱-Spring-Cloud-核心组件概览"><a href="#🧱-Spring-Cloud-核心组件概览" class="headerlink" title="🧱 Spring Cloud 核心组件概览"></a>🧱 Spring Cloud 核心组件概览</h2><h3 id="1-Eureka（服务注册中心）"><a href="#1-Eureka（服务注册中心）" class="headerlink" title="1. Eureka（服务注册中心）"></a>1. Eureka（服务注册中心）</h3><p>服务注册与发现，类似 Dubbo 的注册中心。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">eureka:</span></span><br><span class="line">  <span class="attr">client:</span></span><br><span class="line">    <span class="attr">register-with-eureka:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">fetch-registry:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-Config（配置中心）"><a href="#2-Config（配置中心）" class="headerlink" title="2. Config（配置中心）"></a>2. Config（配置中心）</h3><p>集中管理所有微服务的配置文件。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">cloud:</span></span><br><span class="line">    <span class="attr">config:</span></span><br><span class="line">      <span class="attr">uri:</span> <span class="string">http://localhost:8888</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-Ribbon（负载均衡）"><a href="#3-Ribbon（负载均衡）" class="headerlink" title="3. Ribbon（负载均衡）"></a>3. Ribbon（负载均衡）</h3><p>客户端轮询、权重控制等策略。</p>
+<h3 id="4-Feign（声明式服务调用）"><a href="#4-Feign（声明式服务调用）" class="headerlink" title="4. Feign（声明式服务调用）"></a>4. Feign（声明式服务调用）</h3><p>简化服务之间的 HTTP 调用，只需接口+注解即可。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FeignClient(&quot;user-service&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserClient</span> &#123;</span><br><span class="line">    <span class="meta">@GetMapping(&quot;/user/&#123;id&#125;&quot;)</span></span><br><span class="line">    User <span class="title function_">getUser</span><span class="params">(<span class="meta">@PathVariable(&quot;id&quot;)</span> Long id)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-Hystrix-Resilience4j（容错）"><a href="#5-Hystrix-Resilience4j（容错）" class="headerlink" title="5. Hystrix &#x2F; Resilience4j（容错）"></a>5. Hystrix &#x2F; Resilience4j（容错）</h3><p>应对网络问题、雪崩效应，支持降级、限流、断路器等。</p>
+<h3 id="6-Gateway（网关）"><a href="#6-Gateway（网关）" class="headerlink" title="6. Gateway（网关）"></a>6. Gateway（网关）</h3><p>微服务 API 的统一入口，支持过滤、路由、限流、认证。</p>
+<h3 id="7-Sleuth-Zipkin（链路追踪）"><a href="#7-Sleuth-Zipkin（链路追踪）" class="headerlink" title="7. Sleuth + Zipkin（链路追踪）"></a>7. Sleuth + Zipkin（链路追踪）</h3><p>自动跟踪各服务间调用链，方便问题排查。</p>
+<hr>
+<h2 id="🚀-示例：构建一个简单微服务系统结构"><a href="#🚀-示例：构建一个简单微服务系统结构" class="headerlink" title="🚀 示例：构建一个简单微服务系统结构"></a>🚀 示例：构建一个简单微服务系统结构</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cloud-demo/</span><br><span class="line"> ├── discovery-server   # 注册中心 Eureka</span><br><span class="line"> ├── config-server      # 配置中心</span><br><span class="line"> ├── user-service       # 用户服务</span><br><span class="line"> ├── order-service      # 订单服务</span><br><span class="line"> └── api-gateway        # 网关服务</span><br></pre></td></tr></table></figure>
+
+<p>服务之间通过 Feign 互相调用，由 Eureka 注册中心发现地址，Gateway 提供统一入口。</p>
+<hr>
+<h2 id="✅-Spring-Boot-Spring-Cloud-构建微服务系统优点"><a href="#✅-Spring-Boot-Spring-Cloud-构建微服务系统优点" class="headerlink" title="✅ Spring Boot + Spring Cloud 构建微服务系统优点"></a>✅ Spring Boot + Spring Cloud 构建微服务系统优点</h2><table>
+<thead>
+<tr>
+<th>优点</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>分布式治理组件齐全</td>
+<td>服务注册、配置、监控、容错全覆盖</td>
+</tr>
+<tr>
+<td>基于 Boot 易上手</td>
+<td>用法统一，生态完善</td>
+</tr>
+<tr>
+<td>解耦</td>
+<td>每个服务职责单一</td>
+</tr>
+<tr>
+<td>易扩展</td>
+<td>横向扩展能力强</td>
+</tr>
+<tr>
+<td>自动化</td>
+<td>与 DevOps、Docker&#x2F;K8s 配合良好</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧠-总结一句话："><a href="#🧠-总结一句话：" class="headerlink" title="🧠 总结一句话："></a>🧠 总结一句话：</h2><blockquote>
+<p><strong>Spring Boot 是构建单体应用的最佳选择，而 Spring Cloud 则是构建微服务架构的系统性解决方案。两者组合是现代 Java 云原生开发的主流技术栈。</strong></p>
+</blockquote>
+<hr>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="子非鱼 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="子非鱼 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/Spring-SpringMVC/" rel="prev" title="Spring&amp;SpringMVC">
+                  <i class="fa fa-angle-left"></i> Spring&SpringMVC
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="HashMap 是 Java 集合框架中的一个 哈希表（散列表）实现，用于存储键值对（key-value）。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HashMap介绍">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/HashMap%E4%BB%8B%E7%BB%8D/index.html">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:description" content="HashMap 是 Java 集合框架中的一个 哈希表（散列表）实现，用于存储键值对（key-value）。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A02/image-20250809004714552.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A02/image-20250809005801446.png">
+<meta property="article:published_time" content="2025-08-08T17:56:46.000Z">
+<meta property="article:modified_time" content="2025-08-08T18:05:39.503Z">
+<meta property="article:author" content="子非鱼">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://zifeiyu-sec.github.io/images/%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A02/image-20250809004714552.png">
+
+
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/HashMap%E4%BB%8B%E7%BB%8D/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/HashMap%E4%BB%8B%E7%BB%8D/","path":"2025/08/09/安全开发/Java/HashMap介绍/","title":"HashMap介绍"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>HashMap介绍 | 子非鱼的博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">子非鱼的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0"><span class="nav-number">1.</span> <span class="nav-text">基础学习</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#HashMap"><span class="nav-number">1.1.</span> <span class="nav-text">HashMap</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9A%A0%EF%B8%8F-%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="nav-number">1.1.1.</span> <span class="nav-text">⚠️ 注意事项</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#StringBuilder"><span class="nav-number">1.2.</span> <span class="nav-text">StringBuilder</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%F0%9F%86%9A-%E4%B8%8E-String-%E5%92%8C-StringBuffer-%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="nav-number">1.2.1.</span> <span class="nav-text">🆚 与 String 和 StringBuffer 的对比</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#StringBuffer"><span class="nav-number">1.3.</span> <span class="nav-text">StringBuffer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E7%89%B9%E7%82%B9"><span class="nav-number">1.3.1.</span> <span class="nav-text">核心特点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IO%E6%B5%81"><span class="nav-number">1.4.</span> <span class="nav-text">IO流</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%A7%A9-%E4%B8%80%E3%80%81Java-IO-%E6%B5%81%E7%9A%84%E5%88%86%E7%B1%BB"><span class="nav-number">1.5.</span> <span class="nav-text">🧩 一、Java IO 流的分类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%85-%E9%80%89%E6%8B%A9%E8%A7%84%E5%88%99%EF%BC%9A"><span class="nav-number">1.5.1.</span> <span class="nav-text">✅ 选择规则：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%93%A6-%E4%BA%8C%E3%80%81%E5%B8%B8%E7%94%A8%E7%B1%BB%EF%BC%88%E7%BB%A7%E6%89%BF%E4%BD%93%E7%B3%BB%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">📦 二、常用类（继承体系）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%AD%97%E8%8A%82%E6%B5%81"><span class="nav-number">1.6.1.</span> <span class="nav-text">1. 字节流</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%AD%97%E7%AC%A6%E6%B5%81"><span class="nav-number">1.6.2.</span> <span class="nav-text">2. 字符流</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%9B%A0-%E4%B8%89%E3%80%81%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B"><span class="nav-number">1.7.</span> <span class="nav-text">🛠 三、基本使用示例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B1%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%AD%97%E7%AC%A6%E6%B5%81%E8%AF%BB%E5%8F%96%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9%EF%BC%88%E6%8E%A8%E8%8D%90%E6%96%B9%E5%BC%8F%EF%BC%89"><span class="nav-number">1.7.1.</span> <span class="nav-text">示例1：使用字符流读取文件内容（推荐方式）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B2%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%AD%97%E8%8A%82%E6%B5%81%E5%86%99%E5%85%A5%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9"><span class="nav-number">1.7.2.</span> <span class="nav-text">示例2：使用字节流写入文件内容</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%A7%A0-%E5%9B%9B%E3%80%81IO-%E6%B5%81%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="nav-number">1.8.</span> <span class="nav-text">🧠 四、IO 流的设计原则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E2%9A%99%EF%B8%8F-%E4%BA%94%E3%80%81%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E4%B8%BE%E4%BE%8B"><span class="nav-number">1.9.</span> <span class="nav-text">⚙️ 五、使用场景举例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%94%92-%E5%85%AD%E3%80%81%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="nav-number">1.10.</span> <span class="nav-text">🔒 六、注意事项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Object"><span class="nav-number">1.11.</span> <span class="nav-text">Object</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF-Object-%E7%B1%BB%EF%BC%9F"><span class="nav-number">1.12.</span> <span class="nav-text">一、什么是 Object 类？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%93%A6-%E4%BA%8C%E3%80%81Object-%E7%B1%BB%E4%B8%AD%E6%9C%89%E5%93%AA%E4%BA%9B%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95%EF%BC%9F"><span class="nav-number">1.13.</span> <span class="nav-text">📦 二、Object 类中有哪些常用方法？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%A7%A0-%E4%B8%89%E3%80%81%E9%87%8D%E7%82%B9%E6%96%B9%E6%B3%95%E8%AF%A6%E8%A7%A3"><span class="nav-number">1.14.</span> <span class="nav-text">🧠 三、重点方法详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-equals-Object-obj"><span class="nav-number">1.14.1.</span> <span class="nav-text">1. equals(Object obj)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-hashCode"><span class="nav-number">1.14.2.</span> <span class="nav-text">2. hashCode()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-toString"><span class="nav-number">1.14.3.</span> <span class="nav-text">3. toString()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-getClass"><span class="nav-number">1.14.4.</span> <span class="nav-text">4. getClass()</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%A7%AA-%E5%9B%9B%E3%80%81Object-%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81"><span class="nav-number">1.15.</span> <span class="nav-text">🧪 四、Object 示例代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%8F%97-%E4%BA%94%E3%80%81Object-%E7%9A%84%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">1.16.</span> <span class="nav-text">🏗 五、Object 的使用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E2%9D%97-%E5%85%AD%E3%80%81%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="nav-number">1.17.</span> <span class="nav-text">❗ 六、注意事项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%94%9A-%E6%80%BB%E7%BB%93%E4%B8%80%E5%8F%A5%E8%AF%9D%EF%BC%9A"><span class="nav-number">1.18.</span> <span class="nav-text">🔚 总结一句话：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%9A%AA-1-Servlet%EF%BC%88%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%A8%8B%E5%BA%8F%E5%85%A5%E5%8F%A3%EF%BC%89"><span class="nav-number">1.19.</span> <span class="nav-text">🚪 1. Servlet（服务端程序入口）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%85-%E6%A6%82%E5%BF%B5%EF%BC%9A"><span class="nav-number">1.19.1.</span> <span class="nav-text">✅ 概念：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%F0%9F%93%A6-%E4%BD%9C%E7%94%A8%EF%BC%9A"><span class="nav-number">1.19.2.</span> <span class="nav-text">📦 作用：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%F0%9F%A7%B1-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%9A"><span class="nav-number">1.19.3.</span> <span class="nav-text">🧱 生命周期：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%8D-%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81%EF%BC%9A"><span class="nav-number">1.19.4.</span> <span class="nav-text">✍ 示例代码：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%91%82-2-Listener%EF%BC%88%E7%9B%91%E5%90%AC%E5%99%A8%EF%BC%89"><span class="nav-number">1.20.</span> <span class="nav-text">👂 2. Listener（监听器）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%85-%E6%A6%82%E5%BF%B5%EF%BC%9A-1"><span class="nav-number">1.20.1.</span> <span class="nav-text">✅ 概念：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%F0%9F%93%A6-%E5%B8%B8%E8%A7%81%E7%9B%91%E5%90%AC%E5%99%A8%E7%B1%BB%E5%9E%8B%EF%BC%9A"><span class="nav-number">1.20.2.</span> <span class="nav-text">📦 常见监听器类型：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%8D-%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81%EF%BC%88%E5%BA%94%E7%94%A8%E5%90%AF%E5%8A%A8%E7%9B%91%E5%90%AC%E5%99%A8%EF%BC%89%EF%BC%9A"><span class="nav-number">1.20.3.</span> <span class="nav-text">✍ 示例代码（应用启动监听器）：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%9A%A7-3-Filter%EF%BC%88%E8%BF%87%E6%BB%A4%E5%99%A8%EF%BC%89"><span class="nav-number">1.21.</span> <span class="nav-text">🚧 3. Filter（过滤器）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%85-%E6%A6%82%E5%BF%B5%EF%BC%9A-2"><span class="nav-number">1.21.1.</span> <span class="nav-text">✅ 概念：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%F0%9F%93%A6-%E7%94%A8%E9%80%94%EF%BC%9A"><span class="nav-number">1.21.2.</span> <span class="nav-text">📦 用途：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%8D-%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81%EF%BC%9A-1"><span class="nav-number">1.21.3.</span> <span class="nav-text">✍ 示例代码：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%A7%B2-4-Interceptor%EF%BC%88%E6%8B%A6%E6%88%AA%E5%99%A8%EF%BC%8CSpring-MVC-%E6%8F%90%E4%BE%9B%EF%BC%89"><span class="nav-number">1.22.</span> <span class="nav-text">🧲 4. Interceptor（拦截器，Spring MVC 提供）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%85-%E6%A6%82%E5%BF%B5%EF%BC%9A-3"><span class="nav-number">1.22.1.</span> <span class="nav-text">✅ 概念：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%F0%9F%93%A6-%E7%94%A8%E9%80%94%EF%BC%9A-1"><span class="nav-number">1.22.2.</span> <span class="nav-text">📦 用途：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%F0%9F%A7%B1-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E6%96%B9%E6%B3%95%EF%BC%9A"><span class="nav-number">1.22.3.</span> <span class="nav-text">🧱 生命周期方法：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%8D-%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81%EF%BC%9A-2"><span class="nav-number">1.22.4.</span> <span class="nav-text">✍ 示例代码：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%94%8D-%E5%AF%B9%E6%AF%94%E6%80%BB%E7%BB%93"><span class="nav-number">1.23.</span> <span class="nav-text">🔍 对比总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E2%9C%85-%E4%BD%BF%E7%94%A8%E5%BB%BA%E8%AE%AE"><span class="nav-number">1.24.</span> <span class="nav-text">✅ 使用建议</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
+  <div class="site-description" itemprop="description">学习过程的记录</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com" rel="noopener" target="_blank">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/HashMap%E4%BB%8B%E7%BB%8D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="HashMap介绍 | 子非鱼的博客">
+      <meta itemprop="description" content="HashMap 是 Java 集合框架中的一个 哈希表（散列表）实现，用于存储键值对（key-value）。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          HashMap介绍
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-09 01:56:46 / 修改时间：02:05:39" itemprop="dateCreated datePublished" datetime="2025-08-09T01:56:46+08:00">2025-08-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">安全开发</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">HashMap 是 Java 集合框架中的一个 哈希表（散列表）实现，用于存储键值对（key-value）。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="基础学习"><a href="#基础学习" class="headerlink" title="基础学习"></a>基础学习</h1><h2 id="HashMap"><a href="#HashMap" class="headerlink" title="HashMap"></a>HashMap</h2><p><code>HashMap</code> 是 Java 集合框架中的一个 <strong>哈希表（散列表）实现</strong>，用于存储<strong>键值对（key-value）</strong>。</p>
+<p>它的特点是：</p>
+<ul>
+<li><strong>键唯一</strong>，值可以重复</li>
+<li>查询、插入、删除操作的时间复杂度通常是 <strong>O(1)</strong></li>
+<li>允许存储 <code>null</code> 键和 <code>null</code> 值（键最多一个为 null）</li>
+</ul>
+<p>基础用法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Demo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        HashMap&lt;String, Integer&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 添加元素</span></span><br><span class="line">        map.put(<span class="string">&quot;apple&quot;</span>, <span class="number">3</span>);</span><br><span class="line">        map.put(<span class="string">&quot;banana&quot;</span>, <span class="number">5</span>);</span><br><span class="line">        map.put(<span class="string">&quot;orange&quot;</span>, <span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 获取元素</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">appleCount</span> <span class="operator">=</span> map.get(<span class="string">&quot;apple&quot;</span>); <span class="comment">// 返回 3</span></span><br><span class="line">        System.out.println(<span class="string">&quot;Apple count: &quot;</span> + appleCount);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 判断键或值是否存在</span></span><br><span class="line">        System.out.println(map.containsKey(<span class="string">&quot;banana&quot;</span>)); <span class="comment">// true</span></span><br><span class="line">        System.out.println(map.containsValue(<span class="number">5</span>)); <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 遍历</span></span><br><span class="line">        <span class="keyword">for</span> (String key : map.keySet()) &#123;</span><br><span class="line">            System.out.println(key + <span class="string">&quot; =&gt; &quot;</span> + map.get(key));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 删除元素</span></span><br><span class="line">        map.remove(<span class="string">&quot;banana&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 大小</span></span><br><span class="line">        System.out.println(<span class="string">&quot;Size: &quot;</span> + map.size());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<p><img src="/./images/%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A02/image-20250809004714552.png" alt="image-20250809004714552"></p>
+<h3 id="⚠️-注意事项"><a href="#⚠️-注意事项" class="headerlink" title="⚠️ 注意事项"></a>⚠️ 注意事项</h3><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>不保证顺序</td>
+<td>插入顺序不会被保留，如需顺序，用 <code>LinkedHashMap</code></td>
+</tr>
+<tr>
+<td>线程不安全</td>
+<td>多线程场景下使用 <code>ConcurrentHashMap</code> 替代</td>
+</tr>
+<tr>
+<td>键需实现 <code>hashCode()</code> 与 <code>equals()</code></td>
+<td>否则可能无法正确定位元素</td>
+</tr>
+<tr>
+<td>null</td>
+<td>键最多允许一个为 <code>null</code>，值可以有多个为 <code>null</code></td>
+</tr>
+</tbody></table>
+<h2 id="StringBuilder"><a href="#StringBuilder" class="headerlink" title="StringBuilder"></a>StringBuilder</h2><p><code>StringBuilder</code> 是 Java 中用于<strong>构建可变字符串</strong>的类，位于 <code>java.lang</code> 包中。它在需要频繁修改字符串内容（如拼接、插入、删除等）的场景下，性能远优于 <code>String</code>。</p>
+<h3 id="🆚-与-String-和-StringBuffer-的对比"><a href="#🆚-与-String-和-StringBuffer-的对比" class="headerlink" title="🆚 与 String 和 StringBuffer 的对比"></a>🆚 与 <code>String</code> 和 <code>StringBuffer</code> 的对比</h3><table>
+<thead>
+<tr>
+<th>类名</th>
+<th>可变性</th>
+<th>线程安全</th>
+<th>性能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>String</code></td>
+<td>不可变</td>
+<td>线程安全（因为不可变）</td>
+<td>最慢（每次操作都会创建新对象）</td>
+</tr>
+<tr>
+<td><code>StringBuilder</code></td>
+<td>可变</td>
+<td><strong>不线程安全</strong></td>
+<td>最快，适合单线程</td>
+</tr>
+<tr>
+<td><code>StringBuffer</code></td>
+<td>可变</td>
+<td><strong>线程安全</strong></td>
+<td>较慢，适合多线程</td>
+</tr>
+</tbody></table>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> sec.basec.yufa.String_Builder;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Demo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">StringBuilder</span> <span class="variable">sb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 添加内容（拼接）</span></span><br><span class="line">        sb.append(<span class="string">&quot;Hello&quot;</span>);</span><br><span class="line">        sb.append(<span class="string">&quot; &quot;</span>);</span><br><span class="line">        sb.append(<span class="string">&quot;World!&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;拼接:&quot;</span>+sb);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 插入</span></span><br><span class="line">        sb.insert(<span class="number">6</span>, <span class="string">&quot;Java &quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;插入:&quot;</span>+sb);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 删除</span></span><br><span class="line">        sb.delete(<span class="number">11</span>, <span class="number">17</span>); <span class="comment">// 删除 &quot;World&quot;</span></span><br><span class="line">        System.out.println(<span class="string">&quot;删除：&quot;</span>+sb);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 替换</span></span><br><span class="line">        sb.replace(<span class="number">6</span>, <span class="number">10</span>, <span class="string">&quot;StringBuilder&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;替换：&quot;</span>+sb);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 反转</span></span><br><span class="line">        sb.reverse();</span><br><span class="line">        System.out.println(<span class="string">&quot;反转：&quot;</span>+sb);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 转换为 String</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">result</span> <span class="operator">=</span> sb.toString();</span><br><span class="line">        System.out.println(<span class="string">&quot;转换：&quot;</span>+sb);</span><br><span class="line"></span><br><span class="line"><span class="comment">//        System.out.println(result);  // 输出反转后的字符串</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/./images/%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A02/image-20250809005801446.png" alt="image-20250809005801446"></p>
+<h2 id="StringBuffer"><a href="#StringBuffer" class="headerlink" title="StringBuffer"></a>StringBuffer</h2><p><code>StringBuffer</code> 是 Java 中用于操作 <strong>可变字符串</strong> 的类，它的功能和 <code>StringBuilder</code> 基本相同，但<strong>线程安全</strong>。</p>
+<h3 id="核心特点"><a href="#核心特点" class="headerlink" title="核心特点"></a>核心特点</h3><table>
+<thead>
+<tr>
+<th>特点</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>可变性</td>
+<td>字符串内容可以修改，不像 <code>String</code> 一样每次生成新对象</td>
+</tr>
+<tr>
+<td>线程安全</td>
+<td>所有方法基本都使用了 <code>synchronized</code> 修饰，<strong>适合多线程环境</strong></td>
+</tr>
+<tr>
+<td>效率略低</td>
+<td>因为加了线程锁，在单线程下性能不如 <code>StringBuilder</code></td>
+</tr>
+</tbody></table>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Demo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">StringBuffer</span> <span class="variable">sb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuffer</span>(<span class="string">&quot;Hello&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 追加字符串</span></span><br><span class="line">        sb.append(<span class="string">&quot; World&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 插入内容</span></span><br><span class="line">        sb.insert(<span class="number">6</span>, <span class="string">&quot;Java &quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 替换部分内容</span></span><br><span class="line">        sb.replace(<span class="number">6</span>, <span class="number">10</span>, <span class="string">&quot;StringBuffer&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 删除内容</span></span><br><span class="line">        sb.delete(<span class="number">0</span>, <span class="number">6</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 反转字符串</span></span><br><span class="line">        sb.reverse();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 输出结果</span></span><br><span class="line">        System.out.println(sb.toString());  <span class="comment">// 输出反转后的字符串</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="IO流"><a href="#IO流" class="headerlink" title="IO流"></a>IO流</h2><blockquote>
+<p>Java 中的 IO（Input&#x2F;Output）流是用来处理<strong>数据的输入与输出</strong>的机制，是 Java 编程中非常核心的部分之一，常用于<strong>读写文件、网络通信、控制台交互</strong>等。</p>
+<hr>
+<h2 id="🧩-一、Java-IO-流的分类"><a href="#🧩-一、Java-IO-流的分类" class="headerlink" title="🧩 一、Java IO 流的分类"></a>🧩 一、Java IO 流的分类</h2><p>Java IO 流分为以下四大类：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>字节流（8位）</th>
+<th>字符流（16位）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>输入（读）</td>
+<td><code>InputStream</code></td>
+<td><code>Reader</code></td>
+</tr>
+<tr>
+<td>输出（写）</td>
+<td><code>OutputStream</code></td>
+<td><code>Writer</code></td>
+</tr>
+</tbody></table>
+<h3 id="✅-选择规则："><a href="#✅-选择规则：" class="headerlink" title="✅ 选择规则："></a>✅ 选择规则：</h3><ul>
+<li>处理<strong>二进制数据</strong>（如图片、音频、文件）：用 <strong>字节流</strong></li>
+<li>处理<strong>文本数据</strong>：用 <strong>字符流</strong></li>
+</ul>
+<hr>
+<h2 id="📦-二、常用类（继承体系）"><a href="#📦-二、常用类（继承体系）" class="headerlink" title="📦 二、常用类（继承体系）"></a>📦 二、常用类（继承体系）</h2><h3 id="1-字节流"><a href="#1-字节流" class="headerlink" title="1. 字节流"></a>1. 字节流</h3><table>
+<thead>
+<tr>
+<th>类名</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>FileInputStream</code></td>
+<td>读取文件的字节流</td>
+</tr>
+<tr>
+<td><code>FileOutputStream</code></td>
+<td>写入文件的字节流</td>
+</tr>
+<tr>
+<td><code>BufferedInputStream</code></td>
+<td>带缓冲的字节输入流（提高效率）</td>
+</tr>
+<tr>
+<td><code>BufferedOutputStream</code></td>
+<td>带缓冲的字节输出流</td>
+</tr>
+<tr>
+<td><code>ObjectInputStream</code></td>
+<td>用于反序列化对象</td>
+</tr>
+<tr>
+<td><code>ObjectOutputStream</code></td>
+<td>用于序列化对象</td>
+</tr>
+</tbody></table>
+<h3 id="2-字符流"><a href="#2-字符流" class="headerlink" title="2. 字符流"></a>2. 字符流</h3><table>
+<thead>
+<tr>
+<th>类名</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>FileReader</code></td>
+<td>读取文件的字符流</td>
+</tr>
+<tr>
+<td><code>FileWriter</code></td>
+<td>写入文件的字符流</td>
+</tr>
+<tr>
+<td><code>BufferedReader</code></td>
+<td>带缓冲的字符输入流（支持 <code>readLine()</code>）</td>
+</tr>
+<tr>
+<td><code>BufferedWriter</code></td>
+<td>带缓冲的字符输出流</td>
+</tr>
+<tr>
+<td><code>InputStreamReader</code></td>
+<td>字节流 → 字符流的桥梁</td>
+</tr>
+<tr>
+<td><code>OutputStreamWriter</code></td>
+<td>字符流 → 字节流的桥梁</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🛠-三、基本使用示例"><a href="#🛠-三、基本使用示例" class="headerlink" title="🛠 三、基本使用示例"></a>🛠 三、基本使用示例</h2><h3 id="示例1：使用字符流读取文件内容（推荐方式）"><a href="#示例1：使用字符流读取文件内容（推荐方式）" class="headerlink" title="示例1：使用字符流读取文件内容（推荐方式）"></a>示例1：使用字符流读取文件内容（推荐方式）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">java复制编辑import java.io.*;</span><br><span class="line"></span><br><span class="line">public class ReadFileDemo &#123;</span><br><span class="line">    public static void main(String[] args) throws IOException &#123;</span><br><span class="line">        try (BufferedReader reader = new BufferedReader(new FileReader(&quot;example.txt&quot;))) &#123;</span><br><span class="line">            String line;</span><br><span class="line">            while ((line = reader.readLine()) != null) &#123;</span><br><span class="line">                System.out.println(line);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="示例2：使用字节流写入文件内容"><a href="#示例2：使用字节流写入文件内容" class="headerlink" title="示例2：使用字节流写入文件内容"></a>示例2：使用字节流写入文件内容</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">java复制编辑import java.io.*;</span><br><span class="line"></span><br><span class="line">public class WriteFileDemo &#123;</span><br><span class="line">    public static void main(String[] args) throws IOException &#123;</span><br><span class="line">        try (FileOutputStream fos = new FileOutputStream(&quot;output.bin&quot;)) &#123;</span><br><span class="line">            String data = &quot;Hello, IO!&quot;;</span><br><span class="line">            fos.write(data.getBytes()); // 字符串转字节</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧠-四、IO-流的设计原则"><a href="#🧠-四、IO-流的设计原则" class="headerlink" title="🧠 四、IO 流的设计原则"></a>🧠 四、IO 流的设计原则</h2><ol>
+<li><strong>面向抽象（接口&#x2F;父类）编程</strong>：例如接受 <code>InputStream</code> 而非具体类。</li>
+<li><strong>装饰者模式（Decorator）</strong>：<code>BufferedReader</code> 是对 <code>Reader</code> 的包装。</li>
+<li><strong>关闭资源使用 try-with-resources</strong>（JDK 7+）。</li>
+</ol>
+<hr>
+<h2 id="⚙️-五、使用场景举例"><a href="#⚙️-五、使用场景举例" class="headerlink" title="⚙️ 五、使用场景举例"></a>⚙️ 五、使用场景举例</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>推荐使用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>读写文本文件</td>
+<td><code>BufferedReader</code> &#x2F; <code>BufferedWriter</code></td>
+</tr>
+<tr>
+<td>读写二进制文件（图片、视频）</td>
+<td><code>FileInputStream</code> &#x2F; <code>FileOutputStream</code></td>
+</tr>
+<tr>
+<td>对象持久化</td>
+<td><code>ObjectOutputStream</code> &#x2F; <code>ObjectInputStream</code></td>
+</tr>
+<tr>
+<td>网络通信（低级）</td>
+<td><code>InputStream</code> &#x2F; <code>OutputStream</code></td>
+</tr>
+<tr>
+<td>字节转字符（带编码）</td>
+<td><code>InputStreamReader</code> &#x2F; <code>OutputStreamWriter</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🔒-六、注意事项"><a href="#🔒-六、注意事项" class="headerlink" title="🔒 六、注意事项"></a>🔒 六、注意事项</h2><ul>
+<li>文件读写前建议判断文件是否存在</li>
+<li>流使用后要<strong>关闭</strong>（或用 try-with-resources 自动关闭）</li>
+<li>字符流编码问题可能会导致乱码，推荐显式指定编码，例如：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">java</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">复制编辑</span><br><span class="line">new InputStreamReader(new FileInputStream(&quot;file.txt&quot;), &quot;UTF-8&quot;);</span><br></pre></td></tr></table></figure></blockquote>
+<h2 id="Object"><a href="#Object" class="headerlink" title="Object"></a>Object</h2><blockquote>
+<h2 id="一、什么是-Object-类？"><a href="#一、什么是-Object-类？" class="headerlink" title="一、什么是 Object 类？"></a>一、什么是 <code>Object</code> 类？</h2><p><code>Object</code> 是 Java 中所有类的<strong>直接或间接父类</strong>，也就是说：</p>
+<blockquote>
+<p><strong>每一个类</strong>，如果没有显式继承其他类，<strong>默认就继承 <code>Object</code></strong>。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">java复制编辑public class MyClass &#123;</span><br><span class="line">    // 等同于：public class MyClass extends Object</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="📦-二、Object-类中有哪些常用方法？"><a href="#📦-二、Object-类中有哪些常用方法？" class="headerlink" title="📦 二、Object 类中有哪些常用方法？"></a>📦 二、<code>Object</code> 类中有哪些常用方法？</h2><p><code>Object</code> 提供了一组基础方法，所有 Java 对象都可以使用或重写：</p>
+<table>
+<thead>
+<tr>
+<th>方法名</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>equals(Object obj)</code></td>
+<td>比较两个对象是否“相等”</td>
+</tr>
+<tr>
+<td><code>hashCode()</code></td>
+<td>返回对象的哈希码，用于哈希结构如 <code>HashMap</code></td>
+</tr>
+<tr>
+<td><code>toString()</code></td>
+<td>返回对象的字符串表示</td>
+</tr>
+<tr>
+<td><code>getClass()</code></td>
+<td>获取运行时类对象</td>
+</tr>
+<tr>
+<td><code>clone()</code></td>
+<td>创建并返回对象副本（需要实现 <code>Cloneable</code> 接口）</td>
+</tr>
+<tr>
+<td><code>finalize()</code></td>
+<td>对象被 GC 回收前调用（不推荐使用）</td>
+</tr>
+<tr>
+<td><code>wait()</code> &#x2F; <code>notify()</code> &#x2F; <code>notifyAll()</code></td>
+<td>线程通信相关，配合 <code>synchronized</code> 使用</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧠-三、重点方法详解"><a href="#🧠-三、重点方法详解" class="headerlink" title="🧠 三、重点方法详解"></a>🧠 三、重点方法详解</h2><h3 id="1-equals-Object-obj"><a href="#1-equals-Object-obj" class="headerlink" title="1. equals(Object obj)"></a>1. <code>equals(Object obj)</code></h3><p>默认实现是“<strong>地址比较</strong>”，如果你想比较内容，要重写：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">java复制编辑@Override</span><br><span class="line">public boolean equals(Object obj) &#123;</span><br><span class="line">    if (this == obj) return true;</span><br><span class="line">    if (obj == null || getClass() != obj.getClass()) return false;</span><br><span class="line">    MyClass other = (MyClass) obj;</span><br><span class="line">    return this.id == other.id;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-hashCode"><a href="#2-hashCode" class="headerlink" title="2. hashCode()"></a>2. <code>hashCode()</code></h3><p>配合 <code>equals()</code> 使用，常用于 <code>HashMap</code>, <code>HashSet</code> 等结构。</p>
+<blockquote>
+<p><strong>规则：</strong> 如果两个对象 <code>equals()</code> 相等，则它们的 <code>hashCode()</code> 也必须相等。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">java复制编辑@Override</span><br><span class="line">public int hashCode() &#123;</span><br><span class="line">    return Objects.hash(id, name);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-toString"><a href="#3-toString" class="headerlink" title="3. toString()"></a>3. <code>toString()</code></h3><p>默认返回的是类名 + 哈希码（如 <code>MyClass@1a2b3c</code>），通常会被重写用于打印信息：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">java复制编辑@Override</span><br><span class="line">public String toString() &#123;</span><br><span class="line">    return &quot;User&#123;id=&quot; + id + &quot;, name=&#x27;&quot; + name + &quot;&#x27;&#125;&quot;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-getClass"><a href="#4-getClass" class="headerlink" title="4. getClass()"></a>4. <code>getClass()</code></h3><p>返回当前对象的 <code>Class</code> 类型：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">java复制编辑Object obj = new String(&quot;hello&quot;);</span><br><span class="line">System.out.println(obj.getClass()); // class java.lang.String</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧪-四、Object-示例代码"><a href="#🧪-四、Object-示例代码" class="headerlink" title="🧪 四、Object 示例代码"></a>🧪 四、Object 示例代码</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">java复制编辑public class User &#123;</span><br><span class="line">    int id;</span><br><span class="line">    String name;</span><br><span class="line"></span><br><span class="line">    public User(int id, String name) &#123;</span><br><span class="line">        this.id = id;</span><br><span class="line">        this.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public boolean equals(Object obj) &#123;</span><br><span class="line">        if (this == obj) return true;</span><br><span class="line">        if (!(obj instanceof User)) return false;</span><br><span class="line">        User other = (User) obj;</span><br><span class="line">        return this.id == other.id &amp;&amp; this.name.equals(other.name);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public int hashCode() &#123;</span><br><span class="line">        return id + name.hashCode();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public String toString() &#123;</span><br><span class="line">        return &quot;User&#123;id=&quot; + id + &quot;, name=&#x27;&quot; + name + &quot;&#x27;&#125;&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🏗-五、Object-的使用场景"><a href="#🏗-五、Object-的使用场景" class="headerlink" title="🏗 五、Object 的使用场景"></a>🏗 五、<code>Object</code> 的使用场景</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>泛型容器中存储任意对象</td>
+<td>如 <code>List&lt;Object&gt;</code>、<code>Map&lt;Object, Object&gt;</code></td>
+</tr>
+<tr>
+<td>类型转换</td>
+<td>使用 <code>instanceof</code> + 强制类型转换</td>
+</tr>
+<tr>
+<td>反射</td>
+<td>使用 <code>getClass()</code>、<code>Class.forName()</code></td>
+</tr>
+<tr>
+<td>多态</td>
+<td>方法参数为 <code>Object</code> 时可接受任意类型</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="❗-六、注意事项"><a href="#❗-六、注意事项" class="headerlink" title="❗ 六、注意事项"></a>❗ 六、注意事项</h2><ol>
+<li>如果你要使用 <code>HashMap</code> 存储自定义类的键，一定要重写 <code>equals()</code> 和 <code>hashCode()</code></li>
+<li>如果你要打印对象信息，一定要重写 <code>toString()</code></li>
+<li><code>clone()</code> 是浅拷贝，通常不推荐直接用；建议使用拷贝构造函数或自定义 <code>clone()</code> 方法</li>
+<li><code>finalize()</code> 方法已被废弃，不推荐使用</li>
+</ol>
+<hr>
+<h2 id="🔚-总结一句话："><a href="#🔚-总结一句话：" class="headerlink" title="🔚 总结一句话："></a>🔚 总结一句话：</h2><blockquote>
+<p><strong><code>Object</code> 是 Java 世界的祖先，掌握它的常用方法，是写好类和集合的基础。</strong></p>
+</blockquote>
+</blockquote>
+<h2 id="🚪-1-Servlet（服务端程序入口）"><a href="#🚪-1-Servlet（服务端程序入口）" class="headerlink" title="🚪 1. Servlet（服务端程序入口）"></a>🚪 1. Servlet（服务端程序入口）</h2><h3 id="✅-概念："><a href="#✅-概念：" class="headerlink" title="✅ 概念："></a>✅ 概念：</h3><p><code>Servlet</code> 是 <strong>Java Web 的核心组件</strong>，是运行在服务器端的 Java 类，用于接收和响应浏览器请求。</p>
+<h3 id="📦-作用："><a href="#📦-作用：" class="headerlink" title="📦 作用："></a>📦 作用：</h3><ul>
+<li>接收请求（HTTP 请求）</li>
+<li>处理业务逻辑</li>
+<li>生成响应（HTML、JSON 等）</li>
+</ul>
+<h3 id="🧱-生命周期："><a href="#🧱-生命周期：" class="headerlink" title="🧱 生命周期："></a>🧱 生命周期：</h3><p>由容器（如 Tomcat）管理：</p>
+<ol>
+<li><strong>初始化</strong>：<code>init()</code></li>
+<li><strong>处理请求</strong>：<code>service()</code> 或 <code>doGet()</code> &#x2F; <code>doPost()</code></li>
+<li><strong>销毁</strong>：<code>destroy()</code></li>
+</ol>
+<h3 id="✍-示例代码："><a href="#✍-示例代码：" class="headerlink" title="✍ 示例代码："></a>✍ 示例代码：</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">java复制编辑@WebServlet(&quot;/hello&quot;)</span><br><span class="line">public class HelloServlet extends HttpServlet &#123;</span><br><span class="line">    @Override</span><br><span class="line">    protected void doGet(HttpServletRequest req, HttpServletResponse resp)</span><br><span class="line">        throws ServletException, IOException &#123;</span><br><span class="line">        resp.getWriter().write(&quot;Hello, Servlet!&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="👂-2-Listener（监听器）"><a href="#👂-2-Listener（监听器）" class="headerlink" title="👂 2. Listener（监听器）"></a>👂 2. Listener（监听器）</h2><h3 id="✅-概念：-1"><a href="#✅-概念：-1" class="headerlink" title="✅ 概念："></a>✅ 概念：</h3><p><code>Listener</code> 是用来<strong>监听 Web 应用中某些事件的发生</strong>，如应用启动、Session 创建、属性变化等。</p>
+<h3 id="📦-常见监听器类型："><a href="#📦-常见监听器类型：" class="headerlink" title="📦 常见监听器类型："></a>📦 常见监听器类型：</h3><table>
+<thead>
+<tr>
+<th>监听类型</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ServletContextListener</code></td>
+<td>监听 Web 应用启动和销毁</td>
+</tr>
+<tr>
+<td><code>HttpSessionListener</code></td>
+<td>监听 Session 创建与销毁</td>
+</tr>
+<tr>
+<td><code>ServletRequestListener</code></td>
+<td>监听请求创建与销毁</td>
+</tr>
+<tr>
+<td><code>xxxAttributeListener</code></td>
+<td>监听属性变化（添加、删除、修改）</td>
+</tr>
+</tbody></table>
+<h3 id="✍-示例代码（应用启动监听器）："><a href="#✍-示例代码（应用启动监听器）：" class="headerlink" title="✍ 示例代码（应用启动监听器）："></a>✍ 示例代码（应用启动监听器）：</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">java复制编辑@WebListener</span><br><span class="line">public class AppListener implements ServletContextListener &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void contextInitialized(ServletContextEvent sce) &#123;</span><br><span class="line">        System.out.println(&quot;应用启动！&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void contextDestroyed(ServletContextEvent sce) &#123;</span><br><span class="line">        System.out.println(&quot;应用关闭！&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🚧-3-Filter（过滤器）"><a href="#🚧-3-Filter（过滤器）" class="headerlink" title="🚧 3. Filter（过滤器）"></a>🚧 3. Filter（过滤器）</h2><h3 id="✅-概念：-2"><a href="#✅-概念：-2" class="headerlink" title="✅ 概念："></a>✅ 概念：</h3><p><code>Filter</code> 是一种用于 <strong>拦截请求&#x2F;响应</strong> 的组件，在请求到达 Servlet 前或响应返回浏览器前做处理。</p>
+<h3 id="📦-用途："><a href="#📦-用途：" class="headerlink" title="📦 用途："></a>📦 用途：</h3><ul>
+<li>登录验证</li>
+<li>编码设置（如 UTF-8）</li>
+<li>请求日志</li>
+<li>防止 SQL 注入&#x2F;XSS</li>
+</ul>
+<h3 id="✍-示例代码：-1"><a href="#✍-示例代码：-1" class="headerlink" title="✍ 示例代码："></a>✍ 示例代码：</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">java复制编辑@WebFilter(&quot;/*&quot;)  // 拦截所有请求</span><br><span class="line">public class MyFilter implements Filter &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void doFilter(ServletRequest request, ServletResponse response,</span><br><span class="line">                         FilterChain chain) throws IOException, ServletException &#123;</span><br><span class="line">        System.out.println(&quot;请求被过滤&quot;);</span><br><span class="line">        chain.doFilter(request, response); // 放行</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧲-4-Interceptor（拦截器，Spring-MVC-提供）"><a href="#🧲-4-Interceptor（拦截器，Spring-MVC-提供）" class="headerlink" title="🧲 4. Interceptor（拦截器，Spring MVC 提供）"></a>🧲 4. Interceptor（拦截器，Spring MVC 提供）</h2><h3 id="✅-概念：-3"><a href="#✅-概念：-3" class="headerlink" title="✅ 概念："></a>✅ 概念：</h3><p><code>Interceptor</code> 是 Spring MVC 提供的组件，作用类似 Filter，但它是基于 <strong>Spring MVC 调度机制</strong>，能拦截 Controller 方法执行前后。</p>
+<h3 id="📦-用途：-1"><a href="#📦-用途：-1" class="headerlink" title="📦 用途："></a>📦 用途：</h3><ul>
+<li>权限验证（如用户是否登录）</li>
+<li>日志记录（记录 Controller 层访问）</li>
+<li>请求统计、限流</li>
+<li>数据封装（如统一响应结构）</li>
+</ul>
+<h3 id="🧱-生命周期方法："><a href="#🧱-生命周期方法：" class="headerlink" title="🧱 生命周期方法："></a>🧱 生命周期方法：</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>preHandle()</code></td>
+<td>控制器方法调用前执行，<strong>可中断请求</strong></td>
+</tr>
+<tr>
+<td><code>postHandle()</code></td>
+<td>控制器执行后，视图渲染前</td>
+</tr>
+<tr>
+<td><code>afterCompletion()</code></td>
+<td>整个请求完成后（包括视图渲染）</td>
+</tr>
+</tbody></table>
+<h3 id="✍-示例代码：-2"><a href="#✍-示例代码：-2" class="headerlink" title="✍ 示例代码："></a>✍ 示例代码：</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">java复制编辑public class MyInterceptor implements HandlerInterceptor &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public boolean preHandle(HttpServletRequest request,</span><br><span class="line">                             HttpServletResponse response,</span><br><span class="line">                             Object handler) throws Exception &#123;</span><br><span class="line">        System.out.println(&quot;前置拦截器逻辑&quot;);</span><br><span class="line">        return true; // 返回 false 阻止请求继续</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注册方式（Spring Boot）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">java复制编辑@Configuration</span><br><span class="line">public class WebConfig implements WebMvcConfigurer &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void addInterceptors(InterceptorRegistry registry) &#123;</span><br><span class="line">        registry.addInterceptor(new MyInterceptor())</span><br><span class="line">                .addPathPatterns(&quot;/**&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🔍-对比总结"><a href="#🔍-对比总结" class="headerlink" title="🔍 对比总结"></a>🔍 对比总结</h2><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>Servlet</th>
+<th>Listener</th>
+<th>Filter</th>
+<th>Interceptor</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>属于</td>
+<td>Java EE 原生</td>
+<td>Java EE 原生</td>
+<td>Java EE 原生</td>
+<td>Spring MVC</td>
+</tr>
+<tr>
+<td>拦截对象</td>
+<td>直接处理请求</td>
+<td>监听事件</td>
+<td>请求和响应</td>
+<td>控制器调用</td>
+</tr>
+<tr>
+<td>能否中断流程</td>
+<td>否</td>
+<td>否</td>
+<td>可以</td>
+<td>可以</td>
+</tr>
+<tr>
+<td>顺序位置</td>
+<td>最后</td>
+<td>全程</td>
+<td>在 Servlet 之前</td>
+<td>在 Controller 之前</td>
+</tr>
+<tr>
+<td>用途</td>
+<td>请求处理核心</td>
+<td>生命周期管理</td>
+<td>编码、安全、日志</td>
+<td>权限、日志、预处理</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="✅-使用建议"><a href="#✅-使用建议" class="headerlink" title="✅ 使用建议"></a>✅ 使用建议</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>使用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>想要拦截所有请求或响应并统一处理（编码、安全）</td>
+<td><strong>Filter</strong></td>
+</tr>
+<tr>
+<td>想要在 Controller 方法调用前后进行控制</td>
+<td><strong>Interceptor</strong></td>
+</tr>
+<tr>
+<td>需要对应用、Session 生命周期进行监听</td>
+<td><strong>Listener</strong></td>
+</tr>
+<tr>
+<td>自己处理请求和响应逻辑</td>
+<td><strong>Servlet</strong></td>
+</tr>
+</tbody></table>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="子非鱼 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="子非鱼 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/08/07/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/java%E5%9F%BA%E7%A1%80/" rel="prev" title="java基础">
+                  <i class="fa fa-angle-left"></i> java基础
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/JSP%E5%9F%BA%E7%A1%80/" rel="next" title="JSP基础">
+                  JSP基础 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

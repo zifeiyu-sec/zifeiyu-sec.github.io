@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="JSP（JavaServer Pages） 是一种 动态网页技术，用于在 HTML 页面中嵌入 Java 代码，从而在服务器端生成动态内容。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JSP基础">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/JSP%E5%9F%BA%E7%A1%80/index.html">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:description" content="JSP（JavaServer Pages） 是一种 动态网页技术，用于在 HTML 页面中嵌入 Java 代码，从而在服务器端生成动态内容。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-08-08T17:58:09.000Z">
+<meta property="article:modified_time" content="2025-08-08T18:05:55.994Z">
+<meta property="article:author" content="子非鱼">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/JSP%E5%9F%BA%E7%A1%80/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/JSP%E5%9F%BA%E7%A1%80/","path":"2025/08/09/安全开发/Java/JSP基础/","title":"JSP基础"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>JSP基础 | 子非鱼的博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">子非鱼的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%A7%A9-%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF-JSP%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">🧩 一、什么是 JSP？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E2%9A%99%EF%B8%8F-%E4%BA%8C%E3%80%81JSP-%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%EF%BC%88JSP-Servlet%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">⚙️ 二、JSP 的工作原理（JSP &#x3D; Servlet）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%93%A6-%E4%B8%89%E3%80%81JSP-%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95%E7%BB%93%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text">📦 三、JSP 基本语法结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-HTML-Java"><span class="nav-number">3.1.</span> <span class="nav-text">1. HTML + Java</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-JSP-%E8%84%9A%E6%9C%AC%E5%85%83%E7%B4%A0"><span class="nav-number">3.2.</span> <span class="nav-text">2. JSP 脚本元素</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E6%8C%87%E4%BB%A4%EF%BC%88Directive%EF%BC%89"><span class="nav-number">3.3.</span> <span class="nav-text">3. 指令（Directive）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E5%8A%A8%E6%80%81%E5%8C%85%E5%90%AB%EF%BC%88%E5%8A%A8%E4%BD%9C%E5%85%83%E7%B4%A0%EF%BC%89"><span class="nav-number">3.4.</span> <span class="nav-text">4. 动态包含（动作元素）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%92%A1-%E5%9B%9B%E3%80%81JSP-%E5%86%85%E7%BD%AE%E5%AF%B9%E8%B1%A1%EF%BC%889-%E4%B8%AA%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">💡 四、JSP 内置对象（9 个）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%A7%B1-%E4%BA%94%E3%80%81JSP-%E4%B8%89%E7%A7%8D%E5%8C%85%E5%90%AB%E6%96%B9%E5%BC%8F"><span class="nav-number">5.</span> <span class="nav-text">🧱 五、JSP 三种包含方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%9A%A7-%E5%85%AD%E3%80%81JSP-%E7%9A%84%E7%BC%BA%E7%82%B9%EF%BC%88%E9%80%90%E6%B8%90%E8%A2%AB%E6%B7%98%E6%B1%B0%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">🚧 六、JSP 的缺点（逐渐被淘汰）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E2%9C%85-%E4%B8%83%E3%80%81%E7%8E%B0%E4%BB%A3%E6%9B%BF%E4%BB%A3%E6%96%B9%E6%A1%88"><span class="nav-number">7.</span> <span class="nav-text">✅ 七、现代替代方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%93%9A-%E5%85%AB%E3%80%81%E4%BD%BF%E7%94%A8-JSP-%E7%9A%84%E5%85%B8%E5%9E%8B%E5%9C%BA%E6%99%AF%EF%BC%88%E7%8E%B0%E5%9C%A8%E5%B7%B2%E8%BE%83%E5%B0%91%E7%94%A8%EF%BC%89"><span class="nav-number">8.</span> <span class="nav-text">📚 八、使用 JSP 的典型场景（现在已较少用）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%94%9A-%E6%80%BB%E7%BB%93%E4%B8%80%E5%8F%A5%E8%AF%9D%EF%BC%9A"><span class="nav-number">9.</span> <span class="nav-text">🔚 总结一句话：</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
+  <div class="site-description" itemprop="description">学习过程的记录</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com" rel="noopener" target="_blank">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/JSP%E5%9F%BA%E7%A1%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="JSP基础 | 子非鱼的博客">
+      <meta itemprop="description" content="JSP（JavaServer Pages） 是一种 动态网页技术，用于在 HTML 页面中嵌入 Java 代码，从而在服务器端生成动态内容。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JSP基础
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-09 01:58:09 / 修改时间：02:05:55" itemprop="dateCreated datePublished" datetime="2025-08-09T01:58:09+08:00">2025-08-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">安全开发</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">JSP（JavaServer Pages） 是一种 动态网页技术，用于在 HTML 页面中嵌入 Java 代码，从而在服务器端生成动态内容。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="🧩-一、什么是-JSP？"><a href="#🧩-一、什么是-JSP？" class="headerlink" title="🧩 一、什么是 JSP？"></a>🧩 一、什么是 JSP？</h2><p><strong>JSP（JavaServer Pages）</strong> 是一种 <strong>动态网页技术</strong>，用于在 HTML 页面中嵌入 Java 代码，从而在服务器端生成动态内容。</p>
+<p>你可以把 JSP 理解为：</p>
+<blockquote>
+<p>“<strong>HTML + Java 的混合体</strong>，运行在服务器端，由 Servlet 驱动。”</p>
+</blockquote>
+<p>JSP 最初由 Sun Microsystems 推出，是早期 Java Web 开发的主力技术。</p>
+<hr>
+<h2 id="⚙️-二、JSP-的工作原理（JSP-Servlet）"><a href="#⚙️-二、JSP-的工作原理（JSP-Servlet）" class="headerlink" title="⚙️ 二、JSP 的工作原理（JSP &#x3D; Servlet）"></a>⚙️ 二、JSP 的工作原理（JSP &#x3D; Servlet）</h2><p>当浏览器请求 <code>.jsp</code> 文件时，<strong>JSP 页面会被 Web 容器（如 Tomcat）自动翻译成 Servlet 并编译执行</strong>。</p>
+<p>流程如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">浏览器请求 -&gt; JSP -&gt; 转换为 Servlet -&gt; 编译为类 -&gt; 执行 -&gt; 生成 HTML -&gt; 返回客户端</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="📦-三、JSP-基本语法结构"><a href="#📦-三、JSP-基本语法结构" class="headerlink" title="📦 三、JSP 基本语法结构"></a>📦 三、JSP 基本语法结构</h2><h3 id="1-HTML-Java"><a href="#1-HTML-Java" class="headerlink" title="1. HTML + Java"></a>1. HTML + Java</h3><figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;html&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">&lt;%</span><br><span class="line">    <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> <span class="string">&quot;JSP&quot;</span>;</span><br><span class="line">    out.println(<span class="string">&quot;Hello, &quot;</span> + name);</span><br><span class="line">%&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-JSP-脚本元素"><a href="#2-JSP-脚本元素" class="headerlink" title="2. JSP 脚本元素"></a>2. JSP 脚本元素</h3><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>语法</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>声明</td>
+<td><code>&lt;%! int count = 0; %&gt;</code></td>
+<td>定义类级变量或方法</td>
+</tr>
+<tr>
+<td>脚本</td>
+<td><code>&lt;% count++; %&gt;</code></td>
+<td>编写 Java 代码</td>
+</tr>
+<tr>
+<td>表达式</td>
+<td><code>&lt;%= count %&gt;</code></td>
+<td>输出表达式结果</td>
+</tr>
+</tbody></table>
+<h3 id="3-指令（Directive）"><a href="#3-指令（Directive）" class="headerlink" title="3. 指令（Directive）"></a>3. 指令（Directive）</h3><table>
+<thead>
+<tr>
+<th>指令</th>
+<th>例子</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>page</td>
+<td><code>&lt;%@ page language=&quot;java&quot; contentType=&quot;text/html;charset=UTF-8&quot; %&gt;</code></td>
+<td>设置页面属性</td>
+</tr>
+<tr>
+<td>include</td>
+<td><code>&lt;%@ include file=&quot;header.jsp&quot; %&gt;</code></td>
+<td>静态包含其他 JSP</td>
+</tr>
+<tr>
+<td>taglib</td>
+<td><code>&lt;%@ taglib prefix=&quot;c&quot; uri=&quot;http://java.sun.com/jsp/jstl/core&quot; %&gt;</code></td>
+<td>引入 JSTL 标签库</td>
+</tr>
+</tbody></table>
+<h3 id="4-动态包含（动作元素）"><a href="#4-动态包含（动作元素）" class="headerlink" title="4. 动态包含（动作元素）"></a>4. 动态包含（动作元素）</h3><figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;jsp:include page=<span class="string">&quot;footer.jsp&quot;</span> /&gt;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="💡-四、JSP-内置对象（9-个）"><a href="#💡-四、JSP-内置对象（9-个）" class="headerlink" title="💡 四、JSP 内置对象（9 个）"></a>💡 四、JSP 内置对象（9 个）</h2><table>
+<thead>
+<tr>
+<th>对象名</th>
+<th>类型</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>request</code></td>
+<td><code>HttpServletRequest</code></td>
+<td>客户端请求对象</td>
+</tr>
+<tr>
+<td><code>response</code></td>
+<td><code>HttpServletResponse</code></td>
+<td>响应对象</td>
+</tr>
+<tr>
+<td><code>session</code></td>
+<td><code>HttpSession</code></td>
+<td>用户会话对象</td>
+</tr>
+<tr>
+<td><code>application</code></td>
+<td><code>ServletContext</code></td>
+<td>全局上下文</td>
+</tr>
+<tr>
+<td><code>out</code></td>
+<td><code>JspWriter</code></td>
+<td>输出流，写入响应</td>
+</tr>
+<tr>
+<td><code>page</code></td>
+<td><code>Object</code></td>
+<td>当前 JSP 对象</td>
+</tr>
+<tr>
+<td><code>pageContext</code></td>
+<td><code>PageContext</code></td>
+<td>管理 JSP 范围对象</td>
+</tr>
+<tr>
+<td><code>config</code></td>
+<td><code>ServletConfig</code></td>
+<td>配置对象</td>
+</tr>
+<tr>
+<td><code>exception</code></td>
+<td><code>Throwable</code></td>
+<td>异常对象（错误页才有）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧱-五、JSP-三种包含方式"><a href="#🧱-五、JSP-三种包含方式" class="headerlink" title="🧱 五、JSP 三种包含方式"></a>🧱 五、JSP 三种包含方式</h2><ol>
+<li><strong>静态包含（编译前）</strong>：</li>
+</ol>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;%@ include file=<span class="string">&quot;header.jsp&quot;</span> %&gt;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><strong>动态包含（运行时）</strong>：</li>
+</ol>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;jsp:include page=<span class="string">&quot;footer.jsp&quot;</span> /&gt;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><strong>Tag 文件（可复用）</strong>：<br> 可将 JSP 模块封装为自定义标签（<code>.tag</code>）</li>
+</ol>
+<hr>
+<h2 id="🚧-六、JSP-的缺点（逐渐被淘汰）"><a href="#🚧-六、JSP-的缺点（逐渐被淘汰）" class="headerlink" title="🚧 六、JSP 的缺点（逐渐被淘汰）"></a>🚧 六、JSP 的缺点（逐渐被淘汰）</h2><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>表现层混杂逻辑层</td>
+<td>Java 代码写在 HTML 中，不易维护</td>
+</tr>
+<tr>
+<td>安全性差</td>
+<td>若暴露源码可能泄露业务逻辑</td>
+</tr>
+<tr>
+<td>调试困难</td>
+<td>JSP 编译错误不容易定位</td>
+</tr>
+<tr>
+<td>不支持组件化开发</td>
+<td>不适合大型系统的开发模式</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="✅-七、现代替代方案"><a href="#✅-七、现代替代方案" class="headerlink" title="✅ 七、现代替代方案"></a>✅ 七、现代替代方案</h2><table>
+<thead>
+<tr>
+<th>传统 JSP 技术</th>
+<th>替代技术</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>JSP + JSTL</td>
+<td><strong>Thymeleaf</strong>、<strong>Freemarker</strong></td>
+<td>模板引擎，更清晰、更安全</td>
+</tr>
+<tr>
+<td>后端渲染</td>
+<td>前后端分离（Vue、React）</td>
+<td>更现代的 UI 交互模式</td>
+</tr>
+<tr>
+<td>Java Web（JSP+Servlet）</td>
+<td>Spring Boot + Controller + REST</td>
+<td>更清晰、维护性更强</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="📚-八、使用-JSP-的典型场景（现在已较少用）"><a href="#📚-八、使用-JSP-的典型场景（现在已较少用）" class="headerlink" title="📚 八、使用 JSP 的典型场景（现在已较少用）"></a>📚 八、使用 JSP 的典型场景（现在已较少用）</h2><ul>
+<li>教学 &#x2F; 课程实验项目</li>
+<li>内网系统、公司后台管理系统</li>
+<li>快速搭建原型</li>
+<li>和旧系统兼容的页面展示</li>
+</ul>
+<hr>
+<h2 id="🔚-总结一句话："><a href="#🔚-总结一句话：" class="headerlink" title="🔚 总结一句话："></a>🔚 总结一句话：</h2><blockquote>
+<p><strong>JSP 是早期 Java Web 的动态页面技术，但由于代码混杂、维护成本高，现代开发更倾向于使用模板引擎或前后端分离。</strong></p>
+</blockquote>
+<hr>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="子非鱼 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="子非鱼 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/HashMap%E4%BB%8B%E7%BB%8D/" rel="prev" title="HashMap介绍">
+                  <i class="fa fa-angle-left"></i> HashMap介绍
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/Spring-SpringMVC/" rel="next" title="Spring&amp;SpringMVC">
+                  Spring&SpringMVC <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
