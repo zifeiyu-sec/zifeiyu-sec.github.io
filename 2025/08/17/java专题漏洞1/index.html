@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="表达式注入漏洞、Swagger 接口泄露、Spring Boot Actuator 泄露以及一些相关的工具">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java专题漏洞1">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/08/17/java%E4%B8%93%E9%A2%98%E6%BC%8F%E6%B4%9E1/index.html">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:description" content="表达式注入漏洞、Swagger 接口泄露、Spring Boot Actuator 泄露以及一些相关的工具">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250812223049091.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250812223107375.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250812223223550.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250812223725905.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250812230441053.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250812231023422.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250809105218812.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250809105244821.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250814231325334.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250814231419142.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250814231522927.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250814231550701.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250814231605527.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250814231645114.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250814231650485.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250815003435590.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250814231750852.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250815003515874.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250816190914938.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250816232320086.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250816232457483.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250816233127220.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250816233342173.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250816233709695.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250816234653249.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250816234820986.png">
+<meta property="article:published_time" content="2025-08-16T17:01:17.000Z">
+<meta property="article:modified_time" content="2025-08-16T17:45:23.569Z">
+<meta property="article:author" content="子非鱼">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="web漏洞">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://zifeiyu-sec.github.io/images/image-20250812223049091.png">
+
+
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/08/17/java%E4%B8%93%E9%A2%98%E6%BC%8F%E6%B4%9E1/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/08/17/java%E4%B8%93%E9%A2%98%E6%BC%8F%E6%B4%9E1/","path":"2025/08/17/java专题漏洞1/","title":"java专题漏洞1"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>java专题漏洞1 | 子非鱼的博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">子非鱼的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E"><span class="nav-number">1.</span> <span class="nav-text">表达式注入漏洞</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%EF%BC%9F"><span class="nav-number">1.0.1.</span> <span class="nav-text">表达式注入？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SPEL%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5"><span class="nav-number">1.1.</span> <span class="nav-text">SPEL表达式注入</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#IDEA%E6%96%B0%E5%BB%BA%E9%A1%B9%E7%9B%AE"><span class="nav-number">1.1.1.</span> <span class="nav-text">IDEA新建项目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%9D%E8%AF%95%E5%91%BD%E4%BB%A4%E6%B3%A8%E5%85%A5"><span class="nav-number">1.1.2.</span> <span class="nav-text">尝试命令注入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E7%90%86"><span class="nav-number">1.1.3.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SpEL-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E8%AF%AD%E6%B3%95%E8%A7%A3%E9%87%8A"><span class="nav-number">1.1.4.</span> <span class="nav-text">SpEL 表达式语法解释</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%B6%E5%9C%BA%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">1.2.</span> <span class="nav-text">靶场代码分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%BB%91%E7%99%BD%E7%9B%92%E5%88%86%E6%9E%90"><span class="nav-number">1.3.</span> <span class="nav-text">黑白盒分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%8E%AF-%E7%9B%AE%E6%A0%87"><span class="nav-number">1.4.</span> <span class="nav-text">🎯 目标</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E6%BC%8F%E6%B4%9E%E5%AD%98%E5%9C%A8%E7%9A%84%E6%A0%B9%E6%9C%AC%E5%89%8D%E6%8F%90"><span class="nav-number">2.</span> <span class="nav-text">一、漏洞存在的根本前提</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E9%BB%91%E7%9B%92%E8%A7%86%E8%A7%92%EF%BC%9A%E5%A6%82%E4%BD%95%E5%8F%91%E7%8E%B0%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%EF%BC%9F"><span class="nav-number">2.1.</span> <span class="nav-text">二、黑盒视角：如何发现表达式注入漏洞？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%85-%E5%AD%98%E5%9C%A8%E6%BC%8F%E6%B4%9E%E7%9A%84%E5%85%B8%E5%9E%8B%E8%BF%B9%E8%B1%A1"><span class="nav-number">2.1.1.</span> <span class="nav-text">✅ 存在漏洞的典型迹象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%F0%9F%94%8D-%E9%BB%91%E7%9B%92%E6%B5%8B%E8%AF%95%E5%B8%B8%E7%94%A8-Payload%EF%BC%88%E6%8E%A2%E6%B5%8B%E7%94%A8%EF%BC%89"><span class="nav-number">2.1.2.</span> <span class="nav-text">🔍 黑盒测试常用 Payload（探测用）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%85-%E9%BB%91%E7%9B%92%E4%B8%8B%E6%BC%8F%E6%B4%9E%E5%AD%98%E5%9C%A8%E7%9A%84%E5%85%B8%E5%9E%8B%E5%9C%BA%E6%99%AF"><span class="nav-number">2.1.3.</span> <span class="nav-text">✅ 黑盒下漏洞存在的典型场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E7%99%BD%E7%9B%92%E8%A7%86%E8%A7%92%EF%BC%9A%E5%A6%82%E4%BD%95%E4%BB%8E%E4%BB%A3%E7%A0%81%E5%88%A4%E6%96%AD%E6%BC%8F%E6%B4%9E%E5%AD%98%E5%9C%A8%EF%BC%9F"><span class="nav-number">2.2.</span> <span class="nav-text">三、白盒视角：如何从代码判断漏洞存在？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%85-%E6%BC%8F%E6%B4%9E%E5%AD%98%E5%9C%A8%E7%9A%84%E4%BB%A3%E7%A0%81%E7%89%B9%E5%BE%81%EF%BC%88%E5%8D%B1%E9%99%A9%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="nav-number">2.2.1.</span> <span class="nav-text">✅ 漏洞存在的代码特征（危险模式）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%F0%9F%94%8D-%E5%85%B8%E5%9E%8B%E6%BC%8F%E6%B4%9E%E4%BB%A3%E7%A0%81%E6%A8%A1%E5%BC%8F%EF%BC%88%E7%99%BD%E7%9B%92%E5%AE%A1%E8%AE%A1%E5%85%B3%E9%94%AE%E8%AF%8D%EF%BC%89"><span class="nav-number">2.2.2.</span> <span class="nav-text">🔍 典型漏洞代码模式（白盒审计关键词）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9C%85-%E7%99%BD%E7%9B%92%E4%B8%8B%E6%BC%8F%E6%B4%9E%E5%AD%98%E5%9C%A8%E7%9A%84%E5%85%B8%E5%9E%8B%E5%9C%BA%E6%99%AF"><span class="nav-number">2.2.3.</span> <span class="nav-text">✅ 白盒下漏洞存在的典型场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E6%BC%8F%E6%B4%9E%E5%AD%98%E5%9C%A8%E7%9A%84%E7%8E%AF%E5%A2%83%E4%BE%9D%E8%B5%96%EF%BC%88%E5%A2%9E%E5%BC%BA%E5%88%A4%E6%96%AD%EF%BC%89"><span class="nav-number">2.3.</span> <span class="nav-text">四、漏洞存在的环境依赖（增强判断）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E9%98%B2%E5%BE%A1%E6%8E%AA%E6%96%BD%E5%AF%B9%E6%AF%94%EF%BC%88%E9%BB%91%E7%99%BD%E7%9B%92%E8%A7%86%E8%A7%92%EF%BC%89"><span class="nav-number">2.4.</span> <span class="nav-text">五、防御措施对比（黑白盒视角）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E6%80%BB%E7%BB%93%EF%BC%9A%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E5%AD%98%E5%9C%A8%E7%9A%84%E6%9D%A1%E4%BB%B6"><span class="nav-number">2.5.</span> <span class="nav-text">六、总结：表达式注入漏洞存在的条件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E2%9C%85-%E5%AE%89%E5%85%A8%E5%BB%BA%E8%AE%AE"><span class="nav-number">2.6.</span> <span class="nav-text">✅ 安全建议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E5%BC%80%E5%8F%91%E8%80%85%EF%BC%9A"><span class="nav-number">2.6.1.</span> <span class="nav-text">对开发者：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E5%AE%89%E5%85%A8%E6%B5%8B%E8%AF%95%E8%80%85%EF%BC%9A"><span class="nav-number">2.6.2.</span> <span class="nav-text">对安全测试者：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SWagger%E6%8E%A5%E5%8F%A3%E6%B3%84%E9%9C%B2"><span class="nav-number">3.</span> <span class="nav-text">SWagger接口泄露</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#wagger-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">3.0.1.</span> <span class="nav-text">wagger 是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Swagger%E6%8E%A5%E5%8F%A3%E6%B3%84%E9%9C%B2%E6%BC%8F%E6%B4%9E"><span class="nav-number">3.0.2.</span> <span class="nav-text">Swagger接口泄露漏洞</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84-Swagger-%E6%8E%A5%E5%8F%A3%E6%BC%8F%E6%B4%9E%E5%8F%8A%E5%85%B6%E5%AE%89%E5%85%A8%E9%A3%8E%E9%99%A9"><span class="nav-number">3.0.2.1.</span> <span class="nav-text">常见的 Swagger 接口漏洞及其安全风险</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E6%9C%AA%E6%8E%88%E6%9D%83%E8%AE%BF%E9%97%AE-API-%E6%96%87%E6%A1%A3"><span class="nav-number">3.0.2.2.</span> <span class="nav-text">1. 未授权访问 API 文档</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E6%95%8F%E6%84%9F%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2"><span class="nav-number">3.0.2.3.</span> <span class="nav-text">2. 敏感信息泄露</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E8%A1%8D%E7%94%9F%E6%94%BB%E5%87%BB"><span class="nav-number">3.0.2.4.</span> <span class="nav-text">3. 衍生攻击</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E6%9F%A5%E6%89%BE%EF%BC%8C%E5%8F%AF%E4%BB%A5%E7%9B%B4%E6%8E%A5fofa%E6%90%9C%E7%B4%A2%EF%BC%8C%E4%B8%80%E6%90%9C%E4%B8%80%E5%A4%A7%E5%A0%86"><span class="nav-number">3.0.3.</span> <span class="nav-text">漏洞查找，可以直接fofa搜索，一搜一大堆</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E6%B5%8B"><span class="nav-number">3.1.</span> <span class="nav-text">如何测</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%A9%E7%94%A8%E6%AD%A5%E9%AA%A4"><span class="nav-number">3.1.0.1.</span> <span class="nav-text">利用步骤</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E5%8F%91%E7%8E%B0"><span class="nav-number">3.1.1.</span> <span class="nav-text">漏洞发现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E6%8F%92%E4%BB%B6spring-scan"><span class="nav-number">3.2.</span> <span class="nav-text">一、插件spring-scan</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Actuator%E6%B3%84%E9%9C%B2"><span class="nav-number">4.</span> <span class="nav-text">Actuator泄露</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E6%88%90%E5%9B%A0%E6%B7%B1%E5%BA%A6%E5%88%86%E6%9E%90"><span class="nav-number">4.1.</span> <span class="nav-text">漏洞成因深度分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%91%E7%8E%B0%E4%B8%8E%E5%88%A9%E7%94%A8"><span class="nav-number">4.1.1.</span> <span class="nav-text">发现与利用</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Spring-Boot-Actuator%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2%E6%BC%8F%E6%B4%9E%E6%B7%B1%E5%BA%A6%E5%88%86%E6%9E%90%E4%B8%8E%E5%88%A9%E7%94%A8"><span class="nav-number">5.</span> <span class="nav-text">Spring Boot Actuator信息泄露漏洞深度分析与利用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Actuator%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2%E6%BC%8F%E6%B4%9E%E7%B1%BB%E5%9E%8B"><span class="nav-number">5.1.</span> <span class="nav-text">Actuator信息泄露漏洞类型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Heapdump%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2"><span class="nav-number">5.1.1.</span> <span class="nav-text">1. Heapdump内存泄露</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Jolokia%E7%AB%AF%E7%82%B9%E5%88%A9%E7%94%A8"><span class="nav-number">5.1.2.</span> <span class="nav-text">2. Jolokia端点利用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Env%E7%AB%AF%E7%82%B9%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2"><span class="nav-number">5.1.3.</span> <span class="nav-text">3. Env端点信息泄露</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E5%85%B6%E4%BB%96%E6%95%8F%E6%84%9F%E7%AB%AF%E7%82%B9"><span class="nav-number">5.1.4.</span> <span class="nav-text">4. 其他敏感端点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E5%8C%96%E5%88%A9%E7%94%A8%E5%B7%A5%E5%85%B7%E4%B8%8E%E6%8A%80%E6%9C%AF"><span class="nav-number">5.2.</span> <span class="nav-text">自动化利用工具与技术</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E6%89%AB%E6%8F%8F%E5%99%A8%E6%A3%80%E6%B5%8B"><span class="nav-number">5.2.1.</span> <span class="nav-text">1. 扫描器检测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E8%87%AA%E5%8A%A8%E5%8C%96%E5%88%A9%E7%94%A8%E5%B7%A5%E5%85%B7"><span class="nav-number">5.2.2.</span> <span class="nav-text">2. 自动化利用工具</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E9%98%B2%E6%8A%A4%E6%8E%AA%E6%96%BD"><span class="nav-number">5.3.</span> <span class="nav-text">漏洞防护措施</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%AE%89%E5%85%A8%E9%85%8D%E7%BD%AE"><span class="nav-number">5.3.1.</span> <span class="nav-text">1. 安全配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6"><span class="nav-number">5.3.2.</span> <span class="nav-text">2. 访问控制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E7%BD%91%E7%BB%9C%E5%B1%82%E9%98%B2%E6%8A%A4"><span class="nav-number">5.3.3.</span> <span class="nav-text">3. 网络层防护</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E8%BF%90%E8%A1%8C%E6%97%B6%E9%98%B2%E6%8A%A4"><span class="nav-number">5.3.4.</span> <span class="nav-text">4. 运行时防护</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.4.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B7%A5%E5%85%B7"><span class="nav-number">6.</span> <span class="nav-text">工具</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1%E3%80%81SBSCAN"><span class="nav-number">6.1.</span> <span class="nav-text">1、SBSCAN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81heapdump%E5%88%A9%E7%94%A8%E5%B7%A5%E5%85%B7"><span class="nav-number">6.2.</span> <span class="nav-text">二、heapdump利用工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#JDumpSpider"><span class="nav-number">6.2.1.</span> <span class="nav-text">JDumpSpider</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JDumpSpiderGUI-%E2%80%93%E5%9B%BE%E5%BD%A2%E5%8C%96%E7%95%8C%E9%9D%A2"><span class="nav-number">6.3.</span> <span class="nav-text">JDumpSpiderGUI  –图形化界面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81YYBaby-Spring-Scan%E5%B7%A5%E5%85%B7"><span class="nav-number">6.4.</span> <span class="nav-text">三、YYBaby-Spring_Scan工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81SpringBootVul-GUI"><span class="nav-number">6.5.</span> <span class="nav-text">四、SpringBootVul-GUI</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
+  <div class="site-description" itemprop="description">学习过程的记录</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com" rel="noopener" target="_blank">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/08/17/java%E4%B8%93%E9%A2%98%E6%BC%8F%E6%B4%9E1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="java专题漏洞1 | 子非鱼的博客">
+      <meta itemprop="description" content="表达式注入漏洞、Swagger 接口泄露、Spring Boot Actuator 泄露以及一些相关的工具">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          java专题漏洞1
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-17 01:01:17 / 修改时间：01:45:23" itemprop="dateCreated datePublished" datetime="2025-08-17T01:01:17+08:00">2025-08-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java%E6%94%BB%E9%98%B2/" itemprop="url" rel="index"><span itemprop="name">Java攻防</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">表达式注入漏洞、Swagger 接口泄露、Spring Boot Actuator 泄露以及一些相关的工具</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="表达式注入漏洞"><a href="#表达式注入漏洞" class="headerlink" title="表达式注入漏洞"></a>表达式注入漏洞</h1><p>靶场：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/j3ers3/Hello-Java-Sec">https://github.com/j3ers3/Hello-Java-Sec</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/whgojp/JavaSecLab">https://github.com/whgojp/JavaSecLab</a></p>
+<p>下载源码后按照要求配置数据库。然后启动</p>
+<p>如果报错，检查maven的源，尝试切换到国内源，然后重新重新加载几次。差不多就可以启动访问了。</p>
+<h3 id="表达式注入？"><a href="#表达式注入？" class="headerlink" title="表达式注入？"></a>表达式注入？</h3><p>表达式注入是指攻击者通过控制输入，向程序中注入恶意表达式，这些表达式在服务端被动态求值（evaluate），从而执行任意代码、读取敏感数据、修改系统状态，甚至获得服务器控制权。</p>
+<p>在Java中，常见的表达式语言包括：</p>
+<ul>
+<li><strong>SpEL（Spring Expression Language）</strong>：Spring框架中使用</li>
+<li><strong>OGNL（Object-Graph Navigation Language）</strong>：Struts2中使用</li>
+<li><strong>MVEL（MVFLEX Expression Language）</strong>：JBoss Drools等使用</li>
+<li><strong>JSP EL（JavaServer Pages Expression Language）</strong></li>
+</ul>
+<h2 id="SPEL表达式注入"><a href="#SPEL表达式注入" class="headerlink" title="SPEL表达式注入"></a>SPEL表达式注入</h2><h3 id="IDEA新建项目"><a href="#IDEA新建项目" class="headerlink" title="IDEA新建项目"></a>IDEA新建项目</h3><p><img src="/./images/image-20250812223049091.png" alt="image-20250812223049091"></p>
+<p><img src="/./images/image-20250812223107375.png" alt="image-20250812223107375"></p>
+<p><img src="/./images/image-20250812223223550.png" alt="image-20250812223223550"></p>
+<p>代码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.demo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.expression.Expression;</span><br><span class="line"><span class="keyword">import</span> org.springframework.expression.ExpressionParser;</span><br><span class="line"><span class="keyword">import</span> org.springframework.expression.spel.standard.SpelExpressionParser;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.GetMapping;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.RequestParam;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.RestController;</span><br><span class="line"></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/greet&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">greet</span><span class="params">(<span class="meta">@RequestParam</span> String name)</span> &#123;</span><br><span class="line">        <span class="type">ExpressionParser</span> <span class="variable">parser</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SpelExpressionParser</span>();</span><br><span class="line">        <span class="type">Expression</span> <span class="variable">exp</span> <span class="operator">=</span> parser.parseExpression(name); <span class="comment">// ⚠️ 漏洞点</span></span><br><span class="line">        <span class="type">Object</span> <span class="variable">value</span> <span class="operator">=</span> exp.getValue();</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;Result: &quot;</span> + value;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后重载一下maven，运行Demo文件，就可以访问了</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://localhost:8080/greet?name=%22Hello%20World%22">http://localhost:8080/greet?name=%22Hello%20World%22</a></p>
+</blockquote>
+<p>返回：Result: Hello World</p>
+<h3 id="尝试命令注入"><a href="#尝试命令注入" class="headerlink" title="尝试命令注入"></a>尝试命令注入</h3><blockquote>
+<p><a target="_blank" rel="noopener" href="http://localhost:8080/greet?name=T(java.lang.Runtime).getRuntime().exec(%27calc%27)">http://localhost:8080/greet?name=T(java.lang.Runtime).getRuntime().exec(&#39;calc&#39;)</a></p>
+</blockquote>
+<p><img src="/./images/image-20250812223725905.png" alt="image-20250812223725905"></p>
+<p>成功弹出计算机</p>
+<h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><p>传入的参数 <code>T(java.lang.Runtime).getRuntime().exec(&#39;calc&#39;)</code></p>
+<p>这个参数传入到代码中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Expression</span> <span class="variable">exp</span> <span class="operator">=</span> parser.parseExpression(name); <span class="comment">// name 是用户输入</span></span><br><span class="line">exp.getValue(); <span class="comment">// 执行表达式</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="SpEL-表达式语法解释"><a href="#SpEL-表达式语法解释" class="headerlink" title="SpEL 表达式语法解释"></a>SpEL 表达式语法解释</h3><p>SpEL（Spring Expression Language）支持调用 Java 类和方法，其中：</p>
+<table>
+<thead>
+<tr>
+<th>语法</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>T(Class)</code></td>
+<td>获取指定类的<code>Class</code>对象</td>
+</tr>
+<tr>
+<td><code>T(java.lang.Runtime)</code></td>
+<td>相当于 Java 中的<code>java.lang.Runtime.class</code></td>
+</tr>
+<tr>
+<td><code>.getRuntime()</code></td>
+<td>调用<code>Runtime.getRuntime()</code>获取运行时实例</td>
+</tr>
+<tr>
+<td><code>.exec(&#39;calc&#39;)</code></td>
+<td>执行系统命令<code>calc</code>（Windows 计算器）</td>
+</tr>
+</tbody></table>
+<p>所以整个表达式等价于 Java 代码：</p>
+<p><code>Runtime.getRuntime().exec(&quot;calc&quot;);</code></p>
+<p>这行代码的作用就是：<strong>在操作系统上执行 <code>calc.exe</code> 程序，弹出计算器。</strong></p>
+<p>这是因为 Spring 的 <code>SpelExpressionParser</code> 支持反射调用 Java 类和方法，所以就弹出了计算器</p>
+<h2 id="靶场代码分析"><a href="#靶场代码分析" class="headerlink" title="靶场代码分析"></a>靶场代码分析</h2><p>查看运行的靶场中的表达式注入的部分，运行有漏洞的代码</p>
+<p>访问了：<a target="_blank" rel="noopener" href="http://127.0.0.1:8888/vulnapi/SPEL/vul?ex=100-1">http://127.0.0.1:8888/vulnapi/SPEL/vul?ex=100-1</a></p>
+<p>页面返回<code>99</code>，说明发生了计算，尝试更改参数</p>
+<p><strong>T(java.lang.Runtime).getRunTime().exec(‘calc’)</strong></p>
+<p><img src="/./images/image-20250812230441053.png" alt="image-20250812230441053"></p>
+<p>分析代码</p>
+<p><img src="/./images/image-20250812231023422.png" alt="image-20250812231023422"></p>
+<p>在漏洞代码中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ExpressionParser</span> <span class="variable">parser</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SpelExpressionParser</span>();</span><br><span class="line"><span class="type">Expression</span> <span class="variable">exp</span> <span class="operator">=</span> parser.parseExpression(ex);</span><br></pre></td></tr></table></figure>
+
+<p>直接解析用户输入，导致触发表达式注入漏洞</p>
+<p>而在安全代码</p>
+<p><code>    EvaluationContext simpleContext = SimpleEvaluationContext.forReadOnlyDataBinding().build();</code></p>
+<ol>
+<li>使用 <code>SimpleEvaluationContext.forReadOnlyDataBinding()</code></li>
+</ol>
+<ul>
+<li>这是一个<strong>受限上下文</strong>，专为数据绑定设计（如 Spring MVC 参数绑定、Thymeleaf 模板）</li>
+<li>默认禁用：<ul>
+<li><code>T()</code> 获取类</li>
+<li><code>new</code> 创建对象</li>
+<li>方法调用（如 <code>.exec()</code>）</li>
+<li>Bean 引用（如 <code>@service@method()</code>）</li>
+</ul>
+</li>
+</ul>
+<ol start="2">
+<li><code>.build()</code> 构建不可变上下文</li>
+</ol>
+<ul>
+<li>防止后续修改配置</li>
+</ul>
+<p>所以安全代码限制了攻击的payload</p>
+<h2 id="黑白盒分析"><a href="#黑白盒分析" class="headerlink" title="黑白盒分析"></a>黑白盒分析</h2><blockquote>
+<h2 id="🎯-目标"><a href="#🎯-目标" class="headerlink" title="🎯 目标"></a>🎯 目标</h2><p>分析表达式注入漏洞的 <strong>存在条件</strong>，分别从：</p>
+<ul>
+<li><strong>黑盒视角（Black Box）</strong>：仅通过接口行为判断是否存在漏洞</li>
+<li><strong>白盒视角（White Box）</strong>：通过源码或字节码分析漏洞成因</li>
+</ul>
+<hr>
+<h1 id="一、漏洞存在的根本前提"><a href="#一、漏洞存在的根本前提" class="headerlink" title="一、漏洞存在的根本前提"></a>一、漏洞存在的根本前提</h1><p>表达式注入漏洞存在的<strong>核心条件</strong>是：</p>
+<blockquote>
+<p>✅ <strong>用户输入被当作表达式语言（如 SpEL、OGNL）直接求值（evaluate）</strong></p>
+</blockquote>
+<p>只要满足这个条件，就可能触发远程代码执行（RCE）、信息泄露等高危风险。</p>
+<hr>
+<h2 id="二、黑盒视角：如何发现表达式注入漏洞？"><a href="#二、黑盒视角：如何发现表达式注入漏洞？" class="headerlink" title="二、黑盒视角：如何发现表达式注入漏洞？"></a>二、黑盒视角：如何发现表达式注入漏洞？</h2><p>黑盒测试中，你<strong>没有源码</strong>，只能通过请求&#x2F;响应来判断是否存在漏洞。</p>
+<h3 id="✅-存在漏洞的典型迹象"><a href="#✅-存在漏洞的典型迹象" class="headerlink" title="✅ 存在漏洞的典型迹象"></a>✅ 存在漏洞的典型迹象</h3><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1. 输入被“计算”或“解析”</td>
+<td>输入 <code>1+1</code> 返回 <code>2</code>，说明后端可能在执行表达式</td>
+</tr>
+<tr>
+<td>2. 支持特殊语法</td>
+<td>输入 <code>$&#123;1+1&#125;</code>、<code>%&#123;1+1&#125;</code>、<code>#&#123;1+1&#125;</code> 返回 <code>2</code>，可能是 EL&#x2F;OGNL&#x2F;SpEL</td>
+</tr>
+<tr>
+<td>3. 返回 Java 对象信息</td>
+<td>输入 <code>@java.lang.System@getProperty(&#39;os.name&#39;)</code> 返回操作系统名</td>
+</tr>
+<tr>
+<td>4. 延迟响应</td>
+<td>输入 <code>T(java.lang.Thread).sleep(5000)</code> 导致响应延迟 5 秒</td>
+</tr>
+<tr>
+<td>5. 外带行为</td>
+<td>输入 <code>T(java.net.URL).new(&#39;http://your-server.com&#39;)</code> 触发 DNS 或 HTTP 请求</td>
+</tr>
+</tbody></table>
+<h3 id="🔍-黑盒测试常用-Payload（探测用）"><a href="#🔍-黑盒测试常用-Payload（探测用）" class="headerlink" title="🔍 黑盒测试常用 Payload（探测用）"></a>🔍 黑盒测试常用 Payload（探测用）</h3><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>示例 Payload</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>基础表达式</strong></td>
+<td><code>$&#123;1+1&#125;</code>、<code>#&#123;2*3&#125;</code>、<code>%&#123;3-1&#125;</code></td>
+</tr>
+<tr>
+<td><strong>Java 类调用</strong></td>
+<td><code>@java.lang.System@currentTimeMillis()</code></td>
+</tr>
+<tr>
+<td><strong>静态方法调用</strong></td>
+<td><code>T(java.lang.Math).random()</code></td>
+</tr>
+<tr>
+<td><strong>命令执行（Windows）</strong></td>
+<td><code>T(java.lang.Runtime).getRuntime().exec(&#39;calc&#39;)</code></td>
+</tr>
+<tr>
+<td><strong>命令执行（Linux）</strong></td>
+<td><code>T(java.lang.Runtime).getRuntime().exec(&#39;touch /tmp/pwned&#39;)</code></td>
+</tr>
+<tr>
+<td><strong>延迟测试</strong></td>
+<td><code>T(java.lang.Thread).sleep(5000)</code></td>
+</tr>
+<tr>
+<td><strong>外带测试</strong></td>
+<td><code>T(java.net.InetAddress).getByName(&#39;test.xxxx.dnslog.cn&#39;)</code></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>📌 使用 <a target="_blank" rel="noopener" href="https://dnslog.cn/">DNSLog</a> 或 <a target="_blank" rel="noopener" href="https://portswigger.net/burp">Burp Collaborator</a> 检测外带行为，确认盲注入。</p>
+</blockquote>
+<hr>
+<h3 id="✅-黑盒下漏洞存在的典型场景"><a href="#✅-黑盒下漏洞存在的典型场景" class="headerlink" title="✅ 黑盒下漏洞存在的典型场景"></a>✅ 黑盒下漏洞存在的典型场景</h3><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1. 参数用于模板渲染</td>
+<td>如：<code>/welcome?name=$&#123;user&#125;</code>，后端使用 SpEL 渲染</td>
+</tr>
+<tr>
+<td>2. 动态规则引擎接口</td>
+<td>如：<code>/rule/evaluate?expr=...</code>，用于计算风控规则</td>
+</tr>
+<tr>
+<td>3. 表单校验表达式</td>
+<td>某些框架允许用表达式定义校验逻辑</td>
+</tr>
+<tr>
+<td>4. 文件名&#x2F;路径拼接使用表达式</td>
+<td>如：<code>download?file=#&#123;user.home&#125;/doc.txt</code></td>
+</tr>
+<tr>
+<td>5. 使用了 Struts2、Spring Data REST、Spring Cloud Function 等组件</td>
+<td>历史上有多个表达式注入 CVE</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、白盒视角：如何从代码判断漏洞存在？"><a href="#三、白盒视角：如何从代码判断漏洞存在？" class="headerlink" title="三、白盒视角：如何从代码判断漏洞存在？"></a>三、白盒视角：如何从代码判断漏洞存在？</h2><p>白盒测试中，你有源码或字节码，可以直接分析是否存在风险代码。</p>
+<h3 id="✅-漏洞存在的代码特征（危险模式）"><a href="#✅-漏洞存在的代码特征（危险模式）" class="headerlink" title="✅ 漏洞存在的代码特征（危险模式）"></a>✅ 漏洞存在的代码特征（危险模式）</h3><table>
+<thead>
+<tr>
+<th>风险点</th>
+<th>示例代码</th>
+<th>风险等级</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1. 直接解析用户输入</td>
+<td><code>parser.parseExpression(request.getParameter(&quot;expr&quot;))</code></td>
+<td>⚠️ 高危</td>
+</tr>
+<tr>
+<td>2. 使用 SpEL 且无过滤</td>
+<td><code>new SpelExpressionParser().parseExpression(input).getValue()</code></td>
+<td>⚠️ 高危</td>
+</tr>
+<tr>
+<td>3. 使用 OGNL 且信任输入</td>
+<td><code>Ognl.getValue(input, context, root)</code></td>
+<td>⚠️ 高危</td>
+</tr>
+<tr>
+<td>4. 使用 MVEL、Aviator 等表达式引擎</td>
+<td><code>MVEL.eval(input)</code></td>
+<td>⚠️ 高危</td>
+</tr>
+<tr>
+<td>5. Spring Data REST 自动暴露</td>
+<td><code>@Query(&quot;select ... where name = #&#123;#username&#125;&quot;)</code></td>
+<td>⚠️ 中高（若 username 可控）</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="🔍-典型漏洞代码模式（白盒审计关键词）"><a href="#🔍-典型漏洞代码模式（白盒审计关键词）" class="headerlink" title="🔍 典型漏洞代码模式（白盒审计关键词）"></a>🔍 典型漏洞代码模式（白盒审计关键词）</h3><p>在代码中搜索以下关键词：</p>
+<table>
+<thead>
+<tr>
+<th>关键词</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SpelExpressionParser</code></td>
+<td>SpEL 解析器</td>
+</tr>
+<tr>
+<td><code>parseExpression(</code></td>
+<td>解析表达式入口</td>
+</tr>
+<tr>
+<td><code>getValue(</code></td>
+<td>执行表达式</td>
+</tr>
+<tr>
+<td><code>Ognl.getValue(</code></td>
+<td>OGNL 执行</td>
+</tr>
+<tr>
+<td><code>MVEL.eval(</code></td>
+<td>MVEL 表达式执行</td>
+</tr>
+<tr>
+<td><code>T(</code></td>
+<td>SpEL 中调用类的标志</td>
+</tr>
+<tr>
+<td><code>new </code></td>
+<td>SpEL 中创建对象</td>
+</tr>
+<tr>
+<td><code>@xxx@</code></td>
+<td>SpEL 中调用静态方法</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="✅-白盒下漏洞存在的典型场景"><a href="#✅-白盒下漏洞存在的典型场景" class="headerlink" title="✅ 白盒下漏洞存在的典型场景"></a>✅ 白盒下漏洞存在的典型场景</h3><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>代码示例</th>
+<th>风险分析</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1. 用户输入直接传给 SpEL</td>
+<td><code>parseExpression(name)</code></td>
+<td>❌ 高危</td>
+</tr>
+<tr>
+<td>2. 参数化表达式但变量可控</td>
+<td><code>#&#123;#user.input&#125;</code> 且 <code>user.input</code> 来自请求</td>
+<td>❌ 中高</td>
+</tr>
+<tr>
+<td>3. 使用 SpEL 做动态查询</td>
+<td><code>@Query(&quot;...#&#123;#filter&#125;&quot;)</code></td>
+<td>若 filter 可控则危险</td>
+</tr>
+<tr>
+<td>4. 自定义表达式求值接口</td>
+<td>提供 <code>/eval?code=...</code> 接口</td>
+<td>❌ 极高危</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="四、漏洞存在的环境依赖（增强判断）"><a href="#四、漏洞存在的环境依赖（增强判断）" class="headerlink" title="四、漏洞存在的环境依赖（增强判断）"></a>四、漏洞存在的环境依赖（增强判断）</h2><p>即使代码有风险，也<strong>不一定能成功利用</strong>，还需满足环境条件。</p>
+<table>
+<thead>
+<tr>
+<th>条件</th>
+<th>是否必需</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>JDK 版本 ≤ 8</td>
+<td>否</td>
+<td>Java 9+ 模块化限制反射</td>
+</tr>
+<tr>
+<td>Spring 版本 &lt; 5.3</td>
+<td>是</td>
+<td>新版本默认禁用高危操作</td>
+</tr>
+<tr>
+<td>未启用 SecurityManager</td>
+<td>是</td>
+<td>有安全管理器可能阻止 exec</td>
+</tr>
+<tr>
+<td>运行在 Windows</td>
+<td>否</td>
+<td><code>calc</code> 只在 Windows 有效</td>
+</tr>
+<tr>
+<td>应用以高权限运行</td>
+<td>是</td>
+<td>决定 RCE 后的破坏力</td>
+</tr>
+<tr>
+<td>未使用 WAF&#x2F;RASP</td>
+<td>是</td>
+<td>可能被拦截</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="五、防御措施对比（黑白盒视角）"><a href="#五、防御措施对比（黑白盒视角）" class="headerlink" title="五、防御措施对比（黑白盒视角）"></a>五、防御措施对比（黑白盒视角）</h2><table>
+<thead>
+<tr>
+<th>防御措施</th>
+<th>黑盒可见</th>
+<th>白盒可见</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>输入不被解析</td>
+<td>✅</td>
+<td>✅</td>
+<td>黑盒测试无回显</td>
+</tr>
+<tr>
+<td>使用参数化表达式</td>
+<td>❌</td>
+<td>✅</td>
+<td>白盒可见安全模式</td>
+</tr>
+<tr>
+<td>禁用 <code>T()</code>、<code>new</code></td>
+<td>❌</td>
+<td>✅</td>
+<td>白盒配置或自定义 parser</td>
+</tr>
+<tr>
+<td>升级到 Spring 5.3+</td>
+<td>❌</td>
+<td>✅</td>
+<td>白盒依赖版本</td>
+</tr>
+<tr>
+<td>WAF 拦截 <code>$&#123;&#125;</code></td>
+<td>✅</td>
+<td>❌</td>
+<td>黑盒返回 403</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="六、总结：表达式注入漏洞存在的条件"><a href="#六、总结：表达式注入漏洞存在的条件" class="headerlink" title="六、总结：表达式注入漏洞存在的条件"></a>六、总结：表达式注入漏洞存在的条件</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>存在条件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>根本原因</strong></td>
+<td>用户输入被当作表达式执行</td>
+</tr>
+<tr>
+<td><strong>黑盒视角</strong></td>
+<td>输入能触发计算、延迟、外带、命令执行等行为</td>
+</tr>
+<tr>
+<td><strong>白盒视角</strong></td>
+<td>代码中存在 <code>parseExpression(userInput)</code> 类调用</td>
+</tr>
+<tr>
+<td><strong>框架依赖</strong></td>
+<td>使用 Spring、Struts2、MVEL 等支持表达式引擎的框架</td>
+</tr>
+<tr>
+<td><strong>版本影响</strong></td>
+<td>老版本（如 Spring &lt; 5.3）更易受攻击</td>
+</tr>
+<tr>
+<td><strong>利用条件</strong></td>
+<td>需要目标系统允许执行系统命令（如 Runtime.exec）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="✅-安全建议"><a href="#✅-安全建议" class="headerlink" title="✅ 安全建议"></a>✅ 安全建议</h2><h3 id="对开发者："><a href="#对开发者：" class="headerlink" title="对开发者："></a>对开发者：</h3><ul>
+<li>❌ 禁止直接解析用户输入的表达式</li>
+<li>✅ 使用参数化表达式（<code>&#39;Hello &#39; + name</code>）</li>
+<li>✅ 输入过滤或白名单校验</li>
+<li>✅ 升级框架到最新版本</li>
+</ul>
+<h3 id="对安全测试者："><a href="#对安全测试者：" class="headerlink" title="对安全测试者："></a>对安全测试者：</h3><ul>
+<li>🔍 黑盒：用 <code>$&#123;1+1&#125;</code>、<code>@java.lang...</code> 探测</li>
+<li>📄 白盒：搜索 <code>SpelExpressionParser</code>、<code>parseExpression</code> 等关键词</li>
+<li>🛡️ 使用自动化工具（如 Semgrep、Checkmarx、Fortify）扫描</li>
+</ul>
+</blockquote>
+<h1 id="SWagger接口泄露"><a href="#SWagger接口泄露" class="headerlink" title="SWagger接口泄露"></a>SWagger接口泄露</h1><h3 id="wagger-是什么"><a href="#wagger-是什么" class="headerlink" title="wagger 是什么"></a>wagger 是什么</h3><p><strong>Swagger</strong>（现称 <strong>OpenAPI</strong>）是一个用于 <strong>自动生成 API 文档</strong> 的工具。开发者通过在代码中添加注解，Swagger 就能自动创建交互式文档页面，方便测试和查看接口</p>
+<p><strong>泄露风险的本质</strong>：</p>
+<p>当开发者未对 Swagger 文档页面设置访问权限时，攻击者可直接通过浏览器访问这些页面，获取所有 API 的详细描述（如接口功能、参数格式、认证方式等），相当于拿到了系统的“使用说明书”</p>
+<h3 id="Swagger接口泄露漏洞"><a href="#Swagger接口泄露漏洞" class="headerlink" title="Swagger接口泄露漏洞"></a>Swagger接口泄露漏洞</h3><p><strong>Swagger 接口漏洞</strong> 是指由于不当配置或缺乏安全保护导致 API 文档（Swagger UI）暴露在互联网，进而可能被恶意攻击者利用，从而对系统造成安全威胁的漏洞。Swagger 通过自动生成 API 文档和提供交互式的 API 调用界面，使开发者能够快速调试和测试 API，但是如果接口文档没有得到妥善保护，就会导致敏感信息的泄露、未经授权的接口访问、恶意操作等安全风险。</p>
+<h4 id="常见的-Swagger-接口漏洞及其安全风险"><a href="#常见的-Swagger-接口漏洞及其安全风险" class="headerlink" title="常见的 Swagger 接口漏洞及其安全风险"></a><strong>常见的 Swagger 接口漏洞及其安全风险</strong></h4><ol>
+<li><h4 id="1-未授权访问-API-文档"><a href="#1-未授权访问-API-文档" class="headerlink" title="1. 未授权访问 API 文档"></a>1. <strong>未授权访问 API 文档</strong></h4><ul>
+<li><strong>典型路径</strong>：<code>/swagger-ui.html</code>、<code>/v3/api-docs</code>等（共 ）。</li>
+<li><strong>后果</strong>：攻击者直接查看所有接口信息，无需登录或权限验证</li>
+</ul>
+<h4 id="2-敏感信息泄露"><a href="#2-敏感信息泄露" class="headerlink" title="2. 敏感信息泄露"></a>2. <strong>敏感信息泄露</strong></h4><ul>
+<li><strong>接口细节</strong>：包括数据库操作、用户管理、支付等核心接口的参数格式</li>
+<li><strong>认证信息</strong>：文档中可能暴露 API Key、OAuth2 配置、甚至硬编码的账号密码（如 <code>&quot;password&quot;: &quot;P@ssw0rd&quot;</code>）</li>
+<li><strong>测试接口</strong>：开发用的调试接口（如 <code>/debug/clear-cache</code>）被公开，可能含高危漏洞</li>
+</ul>
+<h4 id="3-衍生攻击"><a href="#3-衍生攻击" class="headerlink" title="3. 衍生攻击"></a>3. <strong>衍生攻击</strong></h4><ul>
+<li><strong>直接调用接口</strong>：通过 Swagger 页面的 <code>Try it out</code>功能，攻击者可模拟请求删除数据或创建管理员账号</li>
+<li><strong>XSS 攻击</strong>：若接口参数未过滤，输入 <code>&lt;script&gt;恶意代码&lt;/script&gt;</code>可能触发跨站脚本攻击</li>
+<li><strong>辅助其他漏洞</strong>：暴露的接口结构帮助攻击者快速发现 SQL 注入、SSRF 等漏洞</li>
+</ul>
+</li>
+</ol>
+<h3 id="漏洞查找，可以直接fofa搜索，一搜一大堆"><a href="#漏洞查找，可以直接fofa搜索，一搜一大堆" class="headerlink" title="漏洞查找，可以直接fofa搜索，一搜一大堆"></a>漏洞查找，可以直接fofa搜索，一搜一大堆</h3><p><img src="/./images/image-20250809105218812.png" alt="image-20250809105218812"></p>
+<p><img src="/./images/image-20250809105244821.png" alt="image-20250809105244821"></p>
+<h2 id="如何测"><a href="#如何测" class="headerlink" title="如何测"></a>如何测</h2><ul>
+<li>1、发现扫描器</li>
+<li>2、如何利用swagger页面中的漏洞<ul>
+<li>手工（量少）</li>
+<li>工具</li>
+</ul>
+</li>
+</ul>
+<h4 id="利用步骤"><a href="#利用步骤" class="headerlink" title="利用步骤"></a>利用步骤</h4><p>安装&#x3D;&#x3D;Apifox&#x3D;&#x3D;工具，官网：<a target="_blank" rel="noopener" href="https://www.apifox.cn/">https://www.apifox.cn</a></p>
+<p>安装之后打开，新建一个项目<img src="/./images/image-20250814231325334.png" alt="image-20250814231325334"></p>
+<p><img src="/./images/image-20250814231419142.png" alt="image-20250814231419142"></p>
+<p><img src="/./images/image-20250814231522927.png" alt="image-20250814231522927"></p>
+<p><img src="/./images/image-20250814231550701.png" alt="image-20250814231550701"></p>
+<p><img src="/./images/image-20250814231605527.png" alt="image-20250814231605527"></p>
+<p>新建目录然后导入</p>
+<p><img src="/./images/image-20250814231645114.png" alt="image-20250814231645114"></p>
+<p><img src="/./images/image-20250814231650485.png" alt="image-20250814231650485"></p>
+<p>选择一个接口进行测试</p>
+<p><img src="/./images/image-20250815003435590.png" alt="image-20250815003435590"></p>
+<p>配置环境</p>
+<p><img src="/./images/image-20250814231750852.png" alt="image-20250814231750852"></p>
+<p>填入cookie</p>
+<p>测试payload：1%27%20and%20updatexml(1,concat(0x7e,(SELECT%20user()),0x7e),1)–%20+</p>
+<p><img src="/./images/image-20250815003515874.png" alt="image-20250815003515874"></p>
+<p>可以看到成功返回结果</p>
+<h3 id="漏洞发现"><a href="#漏洞发现" class="headerlink" title="漏洞发现"></a>漏洞发现</h3><h2 id="一、插件spring-scan"><a href="#一、插件spring-scan" class="headerlink" title="一、插件spring-scan"></a>一、插件spring-scan</h2><p>因为swagger搭建在spring上，可以使用spring的扫描工具来扫</p>
+<p>谷歌浏览器插件：<a target="_blank" rel="noopener" href="https://gitee.com/team-man/spring-scan">https://gitee.com/team-man/spring-scan</a></p>
+<p>安装后就可以扫描，字典有自带的，也可以自己网上下载</p>
+<p>运行扫描结果</p>
+<p><img src="/./images/image-20250816190914938.png" alt="image-20250816190914938"></p>
+<h1 id="Actuator泄露"><a href="#Actuator泄露" class="headerlink" title="Actuator泄露"></a>Actuator泄露</h1><p>Spring Boot Actuator是Spring框架提供的监控管理模块，通过HTTP端点或JMX接口暴露应用运行状态信息，包括健康检查、环境属性、性能指标等。这些功能在方便开发运维的同时，也带来了显著的安全风险</p>
+<h2 id="漏洞成因深度分析"><a href="#漏洞成因深度分析" class="headerlink" title="漏洞成因深度分析"></a>漏洞成因深度分析</h2><p>Actuator漏洞的产生既有框架设计因素，也有配置管理问题，主要包括以下核心原因：</p>
+<p><strong>框架版本差异与默认配置</strong>：</p>
+<ul>
+<li>Spring Boot 1.x版本默认开放所有Actuator端点且无需认证，包括高危的&#x2F;env、&#x2F;heapdump等。2.x版本虽优化了默认配置（仅开放&#x2F;health和&#x2F;info），但开发者可能通过<code>management.endpoints.web.exposure.include=*</code>配置错误地暴露所有端点</li>
+<li>端点路径标准化（如1.x为<code>/dump</code>，2.x为<code>/actuator/threaddump</code>）降低了攻击者的探测难度</li>
+</ul>
+<p><strong>常见危险配置模式</strong>：</p>
+<ul>
+<li>在application.properties中设置<code>management.endpoints.web.exposure.include=*</code>暴露所有端点</li>
+<li>启用高危端点如<code>management.endpoint.heapdump.enabled=true</code>且未设访问控制</li>
+<li>添加<code>eureka-client</code>依赖但未升级到安全版本，结合&#x2F;env和&#x2F;refresh端点可实现RCE</li>
+<li>集成Jolokia组件但未限制JMX操作，允许加载恶意XML文件</li>
+</ul>
+<p><strong>开发运维中的典型疏忽</strong>：</p>
+<ul>
+<li><p>生产环境沿用了开发阶段的宽松配置</p>
+</li>
+<li><p>未对Actuator端点实施与业务接口同等级别的安全防护</p>
+</li>
+<li><p>未定期审计和更新依赖组件，存在已知漏洞版本</p>
+</li>
+</ul>
+<h3 id="发现与利用"><a href="#发现与利用" class="headerlink" title="发现与利用"></a>发现与利用</h3><blockquote>
+<h1 id="Spring-Boot-Actuator信息泄露漏洞深度分析与利用"><a href="#Spring-Boot-Actuator信息泄露漏洞深度分析与利用" class="headerlink" title="Spring Boot Actuator信息泄露漏洞深度分析与利用"></a>Spring Boot Actuator信息泄露漏洞深度分析与利用</h1><p>Spring Boot Actuator作为Spring框架提供的监控管理模块，在方便开发运维的同时，也带来了严重的安全隐患。本文将全面分析Actuator信息泄露漏洞的类型、利用方式及防护措施。</p>
+<h2 id="Actuator信息泄露漏洞类型"><a href="#Actuator信息泄露漏洞类型" class="headerlink" title="Actuator信息泄露漏洞类型"></a>Actuator信息泄露漏洞类型</h2><h3 id="1-Heapdump内存泄露"><a href="#1-Heapdump内存泄露" class="headerlink" title="1. Heapdump内存泄露"></a>1. Heapdump内存泄露</h3><p>Heapdump是Actuator提供的最危险端点之一，它会生成JVM堆转储文件，包含应用程序运行时的内存快照。通过分析这些文件，攻击者可以获取敏感信息：</p>
+<ul>
+<li><strong>数据库连接信息</strong>：包括用户名、密码、连接字符串等</li>
+<li><strong>加密密钥</strong>：如JWT签名密钥、加密密钥等</li>
+<li><strong>会话信息</strong>：用户会话令牌、Cookie等</li>
+<li><strong>配置信息</strong>：各类敏感配置项</li>
+</ul>
+<p>利用方式：</p>
+<ol>
+<li>访问<code>/actuator/heapdump</code>或<code>/heapdump</code>端点下载堆转储文件</li>
+<li>使用工具如<code>heapdump_tool</code>、<code>JDumpSpider</code>或<code>Eclipse Memory Analyzer</code>分析文件</li>
+<li>通过关键字搜索(如”password”、”secret”等)提取敏感信息</li>
+</ol>
+<h3 id="2-Jolokia端点利用"><a href="#2-Jolokia端点利用" class="headerlink" title="2. Jolokia端点利用"></a>2. Jolokia端点利用</h3><p>Jolokia是一个JMX-HTTP桥接器，当应用程序添加了<code>jolokia-core</code>依赖时，会暴露<code>/actuator/jolokia</code>端点。该端点可导致：</p>
+<ul>
+<li><strong>敏感信息泄露</strong>：通过调用特定MBean获取被星号(*)遮掩的配置信息</li>
+<li><strong>远程代码执行(RCE)</strong>：利用<code>reloadByURL</code>等方法加载恶意XML实现XXE攻击或JNDI注入</li>
+</ul>
+<p>典型利用步骤：</p>
+<ol>
+<li>访问<code>/actuator/jolokia/list</code>查看可用MBean</li>
+<li>通过POST请求调用特定MBean方法获取敏感信息：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;mbean&quot;: &quot;org.springframework.boot:name=SpringApplication,type=Admin&quot;,</span><br><span class="line">  &quot;operation&quot;: &quot;getProperty&quot;,</span><br><span class="line">  &quot;type&quot;: &quot;EXEC&quot;,</span><br><span class="line">  &quot;arguments&quot;: [&quot;security.user.password&quot;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-Env端点信息泄露"><a href="#3-Env端点信息泄露" class="headerlink" title="3. Env端点信息泄露"></a>3. Env端点信息泄露</h3><p><code>/actuator/env</code>端点会暴露应用程序的所有环境变量和配置属性，可能导致：</p>
+<ul>
+<li><strong>数据库配置泄露</strong>：包括连接字符串、用户名和密码(可能被星号遮掩)</li>
+<li><strong>内部API信息</strong>：服务发现配置、微服务通信地址等</li>
+<li><strong>加密密钥</strong>：各类加密算法使用的密钥</li>
+</ul>
+<p>特殊利用技巧：</p>
+<ul>
+<li>当密码字段命名不规范(如使用”pwd”而非”password”)时，可能直接显示明文</li>
+<li>结合<code>/refresh</code>端点可修改配置，进一步利用</li>
+</ul>
+<h3 id="4-其他敏感端点"><a href="#4-其他敏感端点" class="headerlink" title="4. 其他敏感端点"></a>4. 其他敏感端点</h3><ul>
+<li><strong>&#x2F;trace或&#x2F;httptrace</strong>：记录最近的HTTP请求，可能包含用户Cookie、JWT令牌等认证信息</li>
+<li><strong>&#x2F;mappings</strong>：暴露所有路由信息，帮助攻击者发现隐藏接口</li>
+<li><strong>&#x2F;configprops</strong>：显示所有<code>@ConfigurationProperties</code>bean的配置信息</li>
+<li><strong>&#x2F;threaddump</strong>：线程转储信息，可能暴露内部处理逻辑</li>
+</ul>
+<h2 id="自动化利用工具与技术"><a href="#自动化利用工具与技术" class="headerlink" title="自动化利用工具与技术"></a>自动化利用工具与技术</h2><h3 id="1-扫描器检测"><a href="#1-扫描器检测" class="headerlink" title="1. 扫描器检测"></a>1. 扫描器检测</h3><p><strong>黑盒检测方法</strong>：</p>
+<ul>
+<li>使用Burp Suite插件如APIKit扫描Actuator端点</li>
+<li>Fofa等网络空间测绘引擎搜索<code>body&quot;Whitelabel Error Page&quot; &amp;&amp; icon_hash&quot;116323821&quot;</code></li>
+<li>目录扫描工具如Dirsearch添加Actuator常见路径进行扫描</li>
+</ul>
+<p><strong>白盒检测方法</strong>：</p>
+<ul>
+<li>检查<code>pom.xml</code>是否包含<code>spring-boot-starter-actuator</code>依赖</li>
+<li>检查<code>application.properties</code>中是否有<code>management.endpoints.web.exposure.include=*</code>配置</li>
+</ul>
+<h3 id="2-自动化利用工具"><a href="#2-自动化利用工具" class="headerlink" title="2. 自动化利用工具"></a>2. 自动化利用工具</h3><ul>
+<li><strong>heapdump_tool</strong>：快速从heapdump文件中提取密码、密钥等敏感信息</li>
+<li><strong>JDumpSpider</strong>：全面分析heapdump文件，支持多种数据源配置信息提取</li>
+<li><strong>SpringBootExploit</strong>：集成多种Actuator漏洞检测与利用功能，支持JNDI注入等高级利用</li>
+<li><strong>JNDIExploit</strong>：配合Jolokia利用实现RCE</li>
+</ul>
+<h2 id="漏洞防护措施"><a href="#漏洞防护措施" class="headerlink" title="漏洞防护措施"></a>漏洞防护措施</h2><h3 id="1-安全配置"><a href="#1-安全配置" class="headerlink" title="1. 安全配置"></a>1. 安全配置</h3><ul>
+<li><strong>禁用不必要端点</strong>：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">management.endpoint.heapdump.enabled=false</span><br><span class="line">management.endpoint.env.enabled=false</span><br><span class="line">management.endpoint.jolokia.enabled=false</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>限制端点暴露范围</strong>：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">management.endpoints.web.exposure.include=health,info</span><br><span class="line">management.endpoints.web.exposure.exclude=env,heapdump,jolokia</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-访问控制"><a href="#2-访问控制" class="headerlink" title="2. 访问控制"></a>2. 访问控制</h3><ul>
+<li><strong>引入Spring Security</strong>：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-boot-starter-security&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>配置基于角色的访问控制</strong>：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">http.authorizeRequests()</span><br><span class="line">    .antMatchers(&quot;/actuator/health&quot;).permitAll()</span><br><span class="line">    .antMatchers(&quot;/actuator/**&quot;).hasRole(&quot;ACTUATOR_ADMIN&quot;)</span><br><span class="line">    .and()</span><br><span class="line">    .httpBasic();</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-网络层防护"><a href="#3-网络层防护" class="headerlink" title="3. 网络层防护"></a>3. 网络层防护</h3><ul>
+<li><strong>使用独立管理端口</strong>：<code>management.server.port=8099</code></li>
+<li><strong>配置网络ACL</strong>：限制管理端口的访问源IP</li>
+<li><strong>启用HTTPS</strong>：防止敏感信息在传输过程中被窃取</li>
+</ul>
+<h3 id="4-运行时防护"><a href="#4-运行时防护" class="headerlink" title="4. 运行时防护"></a>4. 运行时防护</h3><ul>
+<li><strong>部署WAF</strong>：拦截针对Actuator端点的恶意请求</li>
+<li><strong>实施RASP</strong>：监控可疑的Actuator访问行为</li>
+<li><strong>日志审计</strong>：定期检查Actuator端点的访问日志</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Spring Boot Actuator信息泄露漏洞危害严重，攻击者可通过heapdump、jolokia、env等端点获取敏感信息，甚至实现远程代码执行。开发运维人员应充分认识其风险，采取最小化暴露、强制认证、网络隔离等多层防护措施，确保应用程序安全。</p>
+</blockquote>
+<h1 id="工具"><a href="#工具" class="headerlink" title="工具"></a>工具</h1><p>首先是上面介绍的浏览器插件，然后</p>
+<h2 id="1、SBSCAN"><a href="#1、SBSCAN" class="headerlink" title="1、SBSCAN"></a>1、SBSCAN</h2><p><a target="_blank" rel="noopener" href="https://github.com/sule01u/SBSCAN">https://github.com/sule01u/SBSCAN</a></p>
+<p><strong>SBSCAN是一款专注于spring框架的渗透测试工具，可以对指定站点进行springboot未授权扫描&#x2F;敏感信息扫描以及进行spring相关漏洞的扫描与验证。</strong></p>
+<p><strong>使用</strong></p>
+<blockquote>
+<p>python sbscan.py -u <a target="_blank" rel="noopener" href="http://127.0.0.1:8888/">http://127.0.0.1:8888</a></p>
+</blockquote>
+<p><img src="/./images/image-20250816232320086.png" alt="image-20250816232320086"></p>
+<p>对于javaseclab靶场，直接扫描没有结果，需要登录，所以可以设置参数Cookie，就会有结果了</p>
+<blockquote>
+<p>python sbscan.py -u <a target="_blank" rel="noopener" href="http://127.0.0.1:8001/">http://127.0.0.1:8001</a> -H “Cookie: JSESSIONID&#x3D;3CA81888B2D6F4C19B0806EE257E717A”</p>
+</blockquote>
+<p><img src="/./images/image-20250816232457483.png" alt="image-20250816232457483"></p>
+<h2 id="二、heapdump利用工具"><a href="#二、heapdump利用工具" class="headerlink" title="二、heapdump利用工具"></a>二、heapdump利用工具</h2><p>JDumpSpider提取器：<a target="_blank" rel="noopener" href="https://github.com/whwlsfb/JDumpSpider">https://github.com/whwlsfb/JDumpSpider</a></p>
+<p>heapdump_tool提取器：<a target="_blank" rel="noopener" href="https://github.com/wyzxxz/heapdump_tool">https://github.com/wyzxxz/heapdump_tool</a></p>
+<p>JDumpSpiderGUI提取器：<a target="_blank" rel="noopener" href="https://github.com/DeEpinGh0st/JDumpSpiderGUI">https://github.com/DeEpinGh0st/JDumpSpiderGUI</a></p>
+<p>分析提取出敏感信息（配置帐号密码，接口信息 数据库 短信 云应用等配置）</p>
+<h3 id="JDumpSpider"><a href="#JDumpSpider" class="headerlink" title="JDumpSpider"></a>JDumpSpider</h3><p>使用上面提到的浏览器插件探测到的heapdump</p>
+<p><img src="/./images/image-20250816233127220.png" alt="image-20250816233127220"></p>
+<p>点击就会下载heapdump文件</p>
+<p>保存到存放工具的统计目录，运行命令</p>
+<blockquote>
+<p>java -jar JDumpSpider-1.1-SNAPSHOT-full.jar heapdump</p>
+</blockquote>
+<p><img src="/./images/image-20250816233342173.png" alt="image-20250816233342173"></p>
+<p>就会自动分析文件，得到的内容就是</p>
+<ul>
+<li><strong>数据库连接信息</strong>：包括用户名、密码、连接字符串等</li>
+<li><strong>加密密钥</strong>：如JWT签名密钥、加密密钥等</li>
+<li><strong>会话信息</strong>：用户会话令牌、Cookie等</li>
+<li><strong>配置信息</strong>：各类敏感配置项</li>
+</ul>
+<h2 id="JDumpSpiderGUI-–图形化界面"><a href="#JDumpSpiderGUI-–图形化界面" class="headerlink" title="JDumpSpiderGUI  –图形化界面"></a>JDumpSpiderGUI  –图形化界面</h2><p>运行 <code>java -jar JDumpSpiderGUI-1.0-SNAPSHOT-full.jar --gui</code></p>
+<p>就会打开图形化界面，然后选择heapdump就会自动分析文件</p>
+<p><img src="/./images/image-20250816233709695.png" alt="image-20250816233709695"></p>
+<h2 id="三、YYBaby-Spring-Scan工具"><a href="#三、YYBaby-Spring-Scan工具" class="headerlink" title="三、YYBaby-Spring_Scan工具"></a>三、YYBaby-Spring_Scan工具</h2><p><a target="_blank" rel="noopener" href="https://github.com/CllmsyK/YYBaby-Spring_Scan">https://github.com/CllmsyK/YYBaby-Spring_Scan</a></p>
+<p>一款针对Spring框架的漏洞扫描及漏洞利用图形化工具</p>
+<p><img src="/./images/image-20250816234653249.png" alt="image-20250816234653249"></p>
+<p>对于需要登录的网站，直接扫描不可以，需要使用Cookie</p>
+<p><img src="/./images/image-20250816234820986.png" alt="image-20250816234820986"></p>
+<h2 id="四、SpringBootVul-GUI"><a href="#四、SpringBootVul-GUI" class="headerlink" title="四、SpringBootVul-GUI"></a>四、SpringBootVul-GUI</h2><p><a target="_blank" rel="noopener" href="https://github.com/wh1t3zer/SpringBootVul-GUI">https://github.com/wh1t3zer/SpringBootVul-GUI</a></p>
+<p>一个半自动化springboot打点工具，内置目前springboot所有漏洞</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="子非鱼 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="子非鱼 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/java/" rel="tag"># java</a>
+              <a href="/tags/web%E6%BC%8F%E6%B4%9E/" rel="tag"># web漏洞</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/08/09/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/Spring-Boot-Spring-Cloud/" rel="prev" title="Spring_Boot&amp;Spring_Cloud">
+                  <i class="fa fa-angle-left"></i> Spring_Boot&Spring_Cloud
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
