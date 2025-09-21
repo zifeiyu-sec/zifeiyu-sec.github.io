@@ -22,7 +22,7 @@
     <meta name="description" content="Java安全漏洞深度解析：从原理到防御 Java作为企业级应用开发的主流语言，其安全性一直备受关注。本文将系统性地介绍Java应用程序中常见的八大安全漏洞类型，分析其产生原理，并通过真实案例展示攻击场景，最后提供针对性的防御方案。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Java安全常规漏洞">
-<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/08/06/Java%E6%94%BB%E9%98%B2/%E5%B8%B8%E8%A7%84%E6%BC%8F%E6%B4%9E/index.html">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/08/06/Java%E6%94%BB%E9%98%B2/%E5%B8%B8%E8%A7%84%E6%BC%8F%E6%B4%9E1/index.html">
 <meta property="og:site_name" content="子非鱼的博客">
 <meta property="og:description" content="Java安全漏洞深度解析：从原理到防御 Java作为企业级应用开发的主流语言，其安全性一直备受关注。本文将系统性地介绍Java应用程序中常见的八大安全漏洞类型，分析其产生原理，并通过真实案例展示攻击场景，最后提供针对性的防御方案。">
 <meta property="og:locale" content="zh_CN">
@@ -37,10 +37,10 @@
 <meta name="twitter:image" content="http://zifeiyu-sec.github.io/images/%E5%B8%B8%E8%A7%84%E6%BC%8F%E6%B4%9E/image-20250806160437250.png">
 
 
-<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/08/06/Java%E6%94%BB%E9%98%B2/%E5%B8%B8%E8%A7%84%E6%BC%8F%E6%B4%9E/">
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/08/06/Java%E6%94%BB%E9%98%B2/%E5%B8%B8%E8%A7%84%E6%BC%8F%E6%B4%9E1/">
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/08/06/Java%E6%94%BB%E9%98%B2/%E5%B8%B8%E8%A7%84%E6%BC%8F%E6%B4%9E/","path":"2025/08/06/Java攻防/常规漏洞/","title":"Java安全常规漏洞"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/08/06/Java%E6%94%BB%E9%98%B2/%E5%B8%B8%E8%A7%84%E6%BC%8F%E6%B4%9E1/","path":"2025/08/06/Java攻防/常规漏洞1/","title":"Java安全常规漏洞"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
 <title>Java安全常规漏洞 | 子非鱼的博客</title>
@@ -148,7 +148,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-count">25</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -159,7 +159,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-count">18</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -206,7 +206,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/08/06/Java%E6%94%BB%E9%98%B2/%E5%B8%B8%E8%A7%84%E6%BC%8F%E6%B4%9E/">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/08/06/Java%E6%94%BB%E9%98%B2/%E5%B8%B8%E8%A7%84%E6%BC%8F%E6%B4%9E1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/1.png">

