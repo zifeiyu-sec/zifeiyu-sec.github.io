@@ -140,7 +140,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-count">27</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -197,7 +197,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/09/21/Java%E6%94%BB%E9%98%B2/FastJson%E6%BC%8F%E6%B4%9E%E8%AF%A6%E8%A7%A3/">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/09/26/Java%E6%94%BB%E9%98%B2/Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%B8%8D%E5%87%BA%E7%BD%91%E5%88%A9%E7%94%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/1.png">
@@ -215,7 +215,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/09/21/Java%E6%94%BB%E9%98%B2/FastJson%E6%BC%8F%E6%B4%9E%E8%AF%A6%E8%A7%A3/" class="post-title-link" itemprop="url">FastJson漏洞详解</a>
+          <a href="/2025/09/26/Java%E6%94%BB%E9%98%B2/Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%B8%8D%E5%87%BA%E7%BD%91%E5%88%A9%E7%94%A8/" class="post-title-link" itemprop="url">Fastjson反序列化不出网利用</a>
         </h2>
 
         <div class="post-meta-container">
@@ -227,7 +227,7 @@
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2025-09-21 19:45:51 / 修改时间：19:48:35" itemprop="dateCreated datePublished" datetime="2025-09-21T19:45:51+08:00">2025-09-21</time>
+      <time title="创建时间：2025-09-26 23:37:38 / 修改时间：23:42:31" itemprop="dateCreated datePublished" datetime="2025-09-26T23:37:38+08:00">2025-09-26</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -249,7 +249,187 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          
+          <p>当发现一个使用Fastjson反序列化漏洞的点，但目标服务器**无法访问公网（不出网）** 时，传统的“反弹Shell”或“下载执行”的利用方式会立即失效。核心思路要从“直接获取反向连接”转变为“在目标服务器内部执行操作”，并利用内部资源来达成目标。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/09/26/Java%E6%94%BB%E9%98%B2/Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%B8%8D%E5%87%BA%E7%BD%91%E5%88%A9%E7%94%A8/">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/09/26/Java%E6%94%BB%E9%98%B2/Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%9F%BA%E7%A1%80%E8%AE%A4%E8%AF%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | 子非鱼的博客">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/09/26/Java%E6%94%BB%E9%98%B2/Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%9F%BA%E7%A1%80%E8%AE%A4%E8%AF%86/" class="post-title-link" itemprop="url">Fastjson反序列化基础认识</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-09-26 23:37:24 / 修改时间：23:45:08" itemprop="dateCreated datePublished" datetime="2025-09-26T23:37:24+08:00">2025-09-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java%E6%94%BB%E9%98%B2/" itemprop="url" rel="index"><span itemprop="name">Java攻防</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>fastjson 是阿里巴巴开发的一款高性能 JSON 处理器，主要用于 Java 语言中实现 JSON 数据与 Java 对象之间的序列化（Java 对象转 JSON）和反序列化（JSON 转 Java 对象），广泛应用于 Java 开发中的数据交换场景（如接口通信、数据存储等）。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/09/26/Java%E6%94%BB%E9%98%B2/Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%9F%BA%E7%A1%80%E8%AE%A4%E8%AF%86/">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/09/26/Java%E6%94%BB%E9%98%B2/Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%90%84%E7%89%88%E6%9C%ACPOC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | 子非鱼的博客">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/09/26/Java%E6%94%BB%E9%98%B2/Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%90%84%E7%89%88%E6%9C%ACPOC/" class="post-title-link" itemprop="url">Fastjson反序列化各版本POC</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-09-26 23:37:24 / 修改时间：23:42:32" itemprop="dateCreated datePublished" datetime="2025-09-26T23:37:24+08:00">2025-09-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java%E6%94%BB%E9%98%B2/" itemprop="url" rel="index"><span itemprop="name">Java攻防</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>fastjson漏洞poc汇总以及文章推荐</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/09/26/Java%E6%94%BB%E9%98%B2/Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%90%84%E7%89%88%E6%9C%ACPOC/">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -852,186 +1032,6 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2025/09/19/%E9%9D%A2%E8%AF%95%E9%A2%98/%E9%9D%A2%E8%AF%95%E9%A2%98%E9%97%AE%E9%A2%98%E4%B8%80/">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/09/13/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8F%8A%E5%88%A9%E7%94%A8%E9%93%BE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/1.png">
-      <meta itemprop="name" content="子非鱼">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="子非鱼的博客">
-      <meta itemprop="description" content="学习过程的记录">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | 子非鱼的博客">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/09/13/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8F%8A%E5%88%A9%E7%94%A8%E9%93%BE/" class="post-title-link" itemprop="url">反序列化及利用链</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2025-09-13 00:20:44 / 修改时间：00:40:29" itemprop="dateCreated datePublished" datetime="2025-09-13T00:20:44+08:00">2025-09-13</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">安全开发</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>文章介绍Java反序列化原理及安全风险，分析了HashMap+URL的DNSLog利用链，简单了解Fastjson反序列化机制与典型漏洞利用流程，包括远程命令执行的攻击方式和防御建议。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2025/09/13/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8F%8A%E5%88%A9%E7%94%A8%E9%93%BE/">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/09/01/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/Java%E7%B4%AF%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/1.png">
-      <meta itemprop="name" content="子非鱼">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="子非鱼的博客">
-      <meta itemprop="description" content="学习过程的记录">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | 子非鱼的博客">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/09/01/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/Java%E7%B4%AF%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/" class="post-title-link" itemprop="url">Java累类加载机制</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2025-09-01 14:20:07 / 修改时间：14:22:36" itemprop="dateCreated datePublished" datetime="2025-09-01T14:20:07+08:00">2025-09-01</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">安全开发</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>Java的类加载机制就是JVM按需将.class文件加载到内存，并转换成可执行代码的过程，遵循"双亲委派"原则确保安全。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2025/09/01/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/Java/Java%E7%B4%AF%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/">
                 阅读全文 &raquo;
               </a>
             </div>
