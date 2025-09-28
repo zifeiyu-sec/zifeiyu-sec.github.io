@@ -33,7 +33,7 @@
 <meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250804142649825.png">
 <meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250804144943606.png">
 <meta property="article:published_time" content="2025-09-21T11:44:57.000Z">
-<meta property="article:modified_time" content="2025-09-21T12:12:32.830Z">
+<meta property="article:modified_time" content="2025-09-27T04:45:35.662Z">
 <meta property="article:author" content="子非鱼">
 <meta property="article:tag" content="Java">
 <meta property="article:tag" content="安全">
@@ -63,6 +63,8 @@
 
   
 
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"cdn":"https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.7.0/mermaid.min.js","integrity":"sha256-4+IKDqhZ/sXjc8Wtl2/MsxI4e0s1KpEVdbEP7V/Lz8U="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
 
 
 
@@ -137,7 +139,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B8%B8%E8%A7%84%E6%BC%8F%E6%B4%9E"><span class="nav-number">1.</span> <span class="nav-text">常规漏洞</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%B6%E5%9C%BA"><span class="nav-number">1.1.</span> <span class="nav-text">靶场</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Sql%E6%B3%A8%E5%85%A5"><span class="nav-number">1.2.</span> <span class="nav-text">Sql注入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#XXE%E6%B3%A8%E5%85%A5"><span class="nav-number">1.3.</span> <span class="nav-text">XXE注入</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Java-XXE-%E6%B3%A8%E5%85%A5%E5%85%A8%E9%9D%A2%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%98%B2%E5%BE%A1%E6%8C%87%E5%8D%97"><span class="nav-number">2.</span> <span class="nav-text">Java XXE 注入全面解析与防御指南</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81XXE-%E6%B3%A8%E5%85%A5%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86"><span class="nav-number">2.1.</span> <span class="nav-text">一、XXE 注入核心原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81Java-%E4%B8%AD%E6%98%93%E5%8F%97%E6%94%BB%E5%87%BB%E7%9A%84-XML-%E8%A7%A3%E6%9E%90%E7%B1%BB"><span class="nav-number">2.2.</span> <span class="nav-text">二、Java 中易受攻击的 XML 解析类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-XMLReader"><span class="nav-number">2.2.1.</span> <span class="nav-text">1. XMLReader</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-SAXParser"><span class="nav-number">2.2.2.</span> <span class="nav-text">2. SAXParser</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-DocumentBuilder"><span class="nav-number">2.2.3.</span> <span class="nav-text">3. DocumentBuilder</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-XMLStreamReader"><span class="nav-number">2.2.4.</span> <span class="nav-text">4. XMLStreamReader</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-SAXReader-DOM4J"><span class="nav-number">2.2.5.</span> <span class="nav-text">5. SAXReader (DOM4J)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-SAXBuilder-JDOM"><span class="nav-number">2.2.6.</span> <span class="nav-text">6. SAXBuilder (JDOM)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-SAXSource"><span class="nav-number">2.2.7.</span> <span class="nav-text">7. SAXSource</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-TransformerFactory"><span class="nav-number">2.2.8.</span> <span class="nav-text">8. TransformerFactory</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-SAXTransformerFactory"><span class="nav-number">2.2.9.</span> <span class="nav-text">9. SAXTransformerFactory</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-SchemaFactory"><span class="nav-number">2.2.10.</span> <span class="nav-text">10. SchemaFactory</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-Unmarshaller-JAXB"><span class="nav-number">2.2.11.</span> <span class="nav-text">11. Unmarshaller (JAXB)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-XPathExpression"><span class="nav-number">2.2.12.</span> <span class="nav-text">12. XPathExpression</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4%E6%8E%AA%E6%96%BD"><span class="nav-number">2.3.</span> <span class="nav-text">三、安全防护措施</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E7%94%A8%E9%98%B2%E6%8A%A4%E6%96%B9%E6%A1%88"><span class="nav-number">2.3.1.</span> <span class="nav-text">通用防护方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%84%E8%A7%A3%E6%9E%90%E5%99%A8%E5%85%B7%E4%BD%93%E9%85%8D%E7%BD%AE"><span class="nav-number">2.3.2.</span> <span class="nav-text">各解析器具体配置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-DocumentBuilderFactory"><span class="nav-number">2.3.2.1.</span> <span class="nav-text">1. DocumentBuilderFactory</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-SAXParserFactory"><span class="nav-number">2.3.2.2.</span> <span class="nav-text">2. SAXParserFactory</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-XMLInputFactory-StAX"><span class="nav-number">2.3.2.3.</span> <span class="nav-text">3. XMLInputFactory (StAX)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-DOM4J-SAXReader"><span class="nav-number">2.3.2.4.</span> <span class="nav-text">4. DOM4J (SAXReader)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-JDOM-SAXBuilder"><span class="nav-number">2.3.2.5.</span> <span class="nav-text">5. JDOM (SAXBuilder)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-TransformerFactory"><span class="nav-number">2.3.2.6.</span> <span class="nav-text">6. TransformerFactory</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-JAXB-Unmarshaller"><span class="nav-number">2.3.2.7.</span> <span class="nav-text">7. JAXB (Unmarshaller)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E8%A6%81%E7%82%B9"><span class="nav-number">2.4.</span> <span class="nav-text">四、代码审计要点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E9%98%B2%E5%BE%A1%E6%B7%B1%E5%BA%A6%E7%AD%96%E7%95%A5"><span class="nav-number">2.5.</span> <span class="nav-text">五、防御深度策略</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E6%80%BB%E7%BB%93"><span class="nav-number">2.6.</span> <span class="nav-text">六、总结</span></a></li></ol></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">常规漏洞</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%B6%E5%9C%BA"><span class="nav-number">1.1.</span> <span class="nav-text">靶场</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Sql%E6%B3%A8%E5%85%A5"><span class="nav-number">1.2.</span> <span class="nav-text">Sql注入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#XXE%E6%B3%A8%E5%85%A5"><span class="nav-number">1.3.</span> <span class="nav-text">XXE注入</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">2.</span> <span class="nav-text">Java XXE 注入全面解析与防御指南</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81XXE-%E6%B3%A8%E5%85%A5%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86"><span class="nav-number">2.1.</span> <span class="nav-text">一、XXE 注入核心原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81Java-%E4%B8%AD%E6%98%93%E5%8F%97%E6%94%BB%E5%87%BB%E7%9A%84-XML-%E8%A7%A3%E6%9E%90%E7%B1%BB"><span class="nav-number">2.2.</span> <span class="nav-text">二、Java 中易受攻击的 XML 解析类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-XMLReader"><span class="nav-number">2.2.1.</span> <span class="nav-text">1. XMLReader</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-SAXParser"><span class="nav-number">2.2.2.</span> <span class="nav-text">2. SAXParser</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-DocumentBuilder"><span class="nav-number">2.2.3.</span> <span class="nav-text">3. DocumentBuilder</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-XMLStreamReader"><span class="nav-number">2.2.4.</span> <span class="nav-text">4. XMLStreamReader</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-SAXReader-DOM4J"><span class="nav-number">2.2.5.</span> <span class="nav-text">5. SAXReader (DOM4J)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-SAXBuilder-JDOM"><span class="nav-number">2.2.6.</span> <span class="nav-text">6. SAXBuilder (JDOM)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-SAXSource"><span class="nav-number">2.2.7.</span> <span class="nav-text">7. SAXSource</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-TransformerFactory"><span class="nav-number">2.2.8.</span> <span class="nav-text">8. TransformerFactory</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-SAXTransformerFactory"><span class="nav-number">2.2.9.</span> <span class="nav-text">9. SAXTransformerFactory</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-SchemaFactory"><span class="nav-number">2.2.10.</span> <span class="nav-text">10. SchemaFactory</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-Unmarshaller-JAXB"><span class="nav-number">2.2.11.</span> <span class="nav-text">11. Unmarshaller (JAXB)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-XPathExpression"><span class="nav-number">2.2.12.</span> <span class="nav-text">12. XPathExpression</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4%E6%8E%AA%E6%96%BD"><span class="nav-number">2.3.</span> <span class="nav-text">三、安全防护措施</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E7%94%A8%E9%98%B2%E6%8A%A4%E6%96%B9%E6%A1%88"><span class="nav-number">2.3.1.</span> <span class="nav-text">通用防护方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%84%E8%A7%A3%E6%9E%90%E5%99%A8%E5%85%B7%E4%BD%93%E9%85%8D%E7%BD%AE"><span class="nav-number">2.3.2.</span> <span class="nav-text">各解析器具体配置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-DocumentBuilderFactory"><span class="nav-number">2.3.2.1.</span> <span class="nav-text">1. DocumentBuilderFactory</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-SAXParserFactory"><span class="nav-number">2.3.2.2.</span> <span class="nav-text">2. SAXParserFactory</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-XMLInputFactory-StAX"><span class="nav-number">2.3.2.3.</span> <span class="nav-text">3. XMLInputFactory (StAX)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-DOM4J-SAXReader"><span class="nav-number">2.3.2.4.</span> <span class="nav-text">4. DOM4J (SAXReader)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-JDOM-SAXBuilder"><span class="nav-number">2.3.2.5.</span> <span class="nav-text">5. JDOM (SAXBuilder)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-TransformerFactory"><span class="nav-number">2.3.2.6.</span> <span class="nav-text">6. TransformerFactory</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-JAXB-Unmarshaller"><span class="nav-number">2.3.2.7.</span> <span class="nav-text">7. JAXB (Unmarshaller)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E8%A6%81%E7%82%B9"><span class="nav-number">2.4.</span> <span class="nav-text">四、代码审计要点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E9%98%B2%E5%BE%A1%E6%B7%B1%E5%BA%A6%E7%AD%96%E7%95%A5"><span class="nav-number">2.5.</span> <span class="nav-text">五、防御深度策略</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E6%80%BB%E7%BB%93"><span class="nav-number">2.6.</span> <span class="nav-text">六、总结</span></a></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -152,7 +154,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">28</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -238,9 +240,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2025-09-21 19:44:57 / 修改时间：20:12:32" itemprop="dateCreated datePublished" datetime="2025-09-21T19:44:57+08:00">2025-09-21</time>
+      <time title="创建时间：2025-09-21 19:44:57" itemprop="dateCreated datePublished" datetime="2025-09-21T19:44:57+08:00">2025-09-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-09-27 12:45:35" itemprop="dateModified" datetime="2025-09-27T12:45:35+08:00">2025-09-27</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -262,32 +270,46 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><h1 id="常规漏洞"><a href="#常规漏洞" class="headerlink" title="常规漏洞"></a>常规漏洞</h1><h2 id="靶场"><a href="#靶场" class="headerlink" title="靶场"></a>靶场</h2><p>相关靶场：</p>
+    <div class="post-body" itemprop="articleBody"><h1>常规漏洞</h1>
+<h2 id="靶场">靶场</h2>
+<p>相关靶场：</p>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://github.com/bewhale/JavaSec">https://github.com/bewhale/JavaSec</a></p>
 <p><a target="_blank" rel="noopener" href="https://github.com/whgojp/JavaSecLab">https://github.com/whgojp/JavaSecLab</a></p>
 <p><a target="_blank" rel="noopener" href="https://github.com/j3ers3/Hello-Java-Sec">https://github.com/j3ers3/Hello-Java-Sec</a></p>
 </blockquote>
 <p>选择第二个</p>
-<p>搭建数据库（使用docker）：docker pull vitamojo&#x2F;mysql8</p>
+<p>搭建数据库（使用docker）：docker pull vitamojo/mysql8</p>
 <blockquote>
-<p>docker run -d  `<br>  –name vitamojomysql8 `<br>  -p 3306:3306 `<br>  -v C:\Soft\docker\container\vitamojomysql8\conf:&#x2F;etc&#x2F;mysql&#x2F;conf.d `<br>  -v C:\Soft\docker\container\vitamojomysql8\data:&#x2F;var&#x2F;lib&#x2F;mysql `<br>  -v C:\Soft\docker\container\vitamojomysql8\logs:&#x2F;var&#x2F;log&#x2F;mysql `<br>  -e MYSQL_ROOT_PASSWORD&#x3D;zifeiyu `<br>  -e MYSQL_DATABASE&#x3D;myapp_db `<br>  -e MYSQL_USER&#x3D;zifeiyu `<br>  -e MYSQL_PASSWORD&#x3D;zifeiyu `<br>  vitamojo&#x2F;mysql8</p>
+<p>docker run -d  `<br>
+–name vitamojomysql8 `<br>
+-p 3306:3306 `<br>
+-v C:\Soft\docker\container\vitamojomysql8\conf:/etc/mysql/conf.d `<br>
+-v C:\Soft\docker\container\vitamojomysql8\data:/var/lib/mysql `<br>
+-v C:\Soft\docker\container\vitamojomysql8\logs:/var/log/mysql `<br>
+-e MYSQL_ROOT_PASSWORD=zifeiyu `<br>
+-e MYSQL_DATABASE=myapp_db `<br>
+-e MYSQL_USER=zifeiyu `<br>
+-e MYSQL_PASSWORD=zifeiyu `<br>
+vitamojo/mysql8</p>
 </blockquote>
 <blockquote>
-<p><em># 停止容器</em> docker stop vitamojomysql8 </p>
+<p><em># 停止容器</em> docker stop vitamojomysql8</p>
 <p><em># 启动容器</em> docker start vitamojomysql8</p>
 <p><em># 查看日志</em> docker logs vitamojomysql8</p>
 <p><em>#</em> 查看挂载的日志文件：Get-Content C:\Soft\docker\container\vitamojomysql8\logs\error.log -Wait</p>
 <p>连接：docker exec -it vitamojomysql8 mysql -uroot -p</p>
 </blockquote>
 <p>通过idea连接</p>
-<p><img src="/./images/image-20250804003813225.png" alt="image-20250804003813225"></p>
+<p><img src="/images/image-20250804003813225.png" alt="image-20250804003813225"></p>
 <p>下载<a target="_blank" rel="noopener" href="https://github.com/whgojp/JavaSecLab%E9%9D%B6%E5%9C%BA%E7%9A%84%E6%BA%90%E7%A0%81%EF%BC%8C%E6%8C%89%E7%85%A7%E9%87%8C%E9%9D%A2%E6%8F%90%E5%88%B0%E7%9A%84%E8%BF%9B%E8%A1%8C%E9%85%8D%E7%BD%AE%EF%BC%8C%E6%B3%A8%E6%84%8F%E7%AB%AF%E5%8F%A3%E7%9A%84%E6%98%A0%E5%B0%84%E3%80%82">https://github.com/whgojp/JavaSecLab靶场的源码，按照里面提到的进行配置，注意端口的映射。</a></p>
-<p>部署后直接启用，admin&#x2F;admin登录</p>
-<h2 id="Sql注入"><a href="#Sql注入" class="headerlink" title="Sql注入"></a>Sql注入</h2><p><strong>核心概念：SQL 注入</strong></p>
+<p>部署后直接启用，admin/admin登录</p>
+<h2 id="Sql注入">Sql注入</h2>
+<p><strong>核心概念：SQL 注入</strong></p>
 <ul>
 <li><strong>定义：</strong> SQL 注入是一种攻击技术，攻击者通过在应用程序的输入字段（如表单、URL 参数）中插入恶意的 SQL 代码片段，欺骗后端数据库执行非预期的、有害的 SQL 命令。</li>
-<li><strong>危害：</strong><ul>
+<li><strong>危害：</strong>
+<ul>
 <li>窃取、篡改或删除敏感数据（用户信息、密码、财务数据）。</li>
 <li>绕过认证和授权。</li>
 <li>执行数据库管理操作（如删除表、关闭数据库）。</li>
@@ -298,29 +320,35 @@
 </ul>
 <hr>
 <ol>
-<li><p><strong>JDBC (Java Database Connectivity)</strong></p>
+<li>
+<p><strong>JDBC (Java Database Connectivity)</strong></p>
 <ul>
 <li><strong>角色：</strong> Java 访问数据库的标准 API，是其他 ORM 框架（如 MyBatis, Hibernate）的底层基础。</li>
-<li><strong>如何引发 SQL 注入：</strong><ul>
+<li><strong>如何引发 SQL 注入：</strong>
+<ul>
 <li><strong>字符串拼接构造 SQL：</strong> 这是 JDBC 中最直接、最高危的引发方式。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">username</span> <span class="operator">=</span> request.getParameter(<span class="string">&quot;username&quot;</span>); <span class="comment">// 用户输入，如 &#x27; OR &#x27;1&#x27;=&#x27;1</span></span><br><span class="line"><span class="type">String</span> <span class="variable">password</span> <span class="operator">=</span> request.getParameter(<span class="string">&quot;password&quot;</span>); <span class="comment">// 用户输入</span></span><br><span class="line"><span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> <span class="string">&quot;SELECT * FROM users WHERE username = &#x27;&quot;</span> + username + <span class="string">&quot;&#x27; AND password = &#x27;&quot;</span> + password + <span class="string">&quot;&#x27;&quot;</span>;</span><br><span class="line"><span class="type">Statement</span> <span class="variable">stmt</span> <span class="operator">=</span> connection.createStatement();</span><br><span class="line"><span class="type">ResultSet</span> <span class="variable">rs</span> <span class="operator">=</span> stmt.executeQuery(sql); <span class="comment">// 危险！</span></span><br></pre></td></tr></table></figure>
-如果用户输入 <code>username</code> 为 <code>&#39; OR &#39;1&#39;=&#39;1</code> 且 <code>password</code> 任意，最终的 SQL 会变成：<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> users <span class="keyword">WHERE</span> username <span class="operator">=</span> <span class="string">&#x27;&#x27;</span> <span class="keyword">OR</span> <span class="string">&#x27;1&#x27;</span><span class="operator">=</span><span class="string">&#x27;1&#x27;</span> <span class="keyword">AND</span> password <span class="operator">=</span> <span class="string">&#x27;anything&#x27;</span></span><br></pre></td></tr></table></figure>
-由于 <code>&#39;1&#39;=&#39;1&#39;</code> 恒为真，此查询会返回所有用户记录，攻击者可能借此绕过登录验证。</li>
+如果用户输入 <code>username</code> 为 <code>' OR '1'='1</code> 且 <code>password</code> 任意，最终的 SQL 会变成：<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> users <span class="keyword">WHERE</span> username <span class="operator">=</span> <span class="string">&#x27;&#x27;</span> <span class="keyword">OR</span> <span class="string">&#x27;1&#x27;</span><span class="operator">=</span><span class="string">&#x27;1&#x27;</span> <span class="keyword">AND</span> password <span class="operator">=</span> <span class="string">&#x27;anything&#x27;</span></span><br></pre></td></tr></table></figure>
+由于 <code>'1'='1'</code> 恒为真，此查询会返回所有用户记录，攻击者可能借此绕过登录验证。</li>
 </ul>
 </li>
-<li><strong>防范措施：</strong><ul>
+<li><strong>防范措施：</strong>
+<ul>
 <li><strong>使用 <code>PreparedStatement</code> (参数化查询)：</strong> <strong>这是 JDBC 防 SQL 注入的黄金标准。</strong><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> <span class="string">&quot;SELECT * FROM users WHERE username = ? AND password = ?&quot;</span>;</span><br><span class="line"><span class="type">PreparedStatement</span> <span class="variable">pstmt</span> <span class="operator">=</span> connection.prepareStatement(sql);</span><br><span class="line">pstmt.setString(<span class="number">1</span>, username); <span class="comment">// 安全！数据库会将参数值视为纯数据，而非代码</span></span><br><span class="line">pstmt.setString(<span class="number">2</span>, password);</span><br><span class="line"><span class="type">ResultSet</span> <span class="variable">rs</span> <span class="operator">=</span> pstmt.executeQuery();</span><br></pre></td></tr></table></figure>
 <code>PreparedStatement</code> 预编译 SQL 语句模板（<code>?</code> 是占位符），数据库引擎会预先理解语句结构。调用 <code>setXxx()</code> 方法传入参数值时，数据库会将这些值<strong>严格地作为数据</strong>绑定到对应的占位符上，不会将它们解释为 SQL 语法的一部分。即使参数值中包含 SQL 关键字或特殊字符（如单引号），它们也会被安全地转义或处理。</li>
 <li><strong>避免使用 <code>Statement</code>：</strong> 除非有非常特殊且安全的理由，否则绝对不要用字符串拼接构造 SQL 语句并通过 <code>Statement</code> 执行。</li>
-<li><strong>输入验证与过滤：</strong> 在业务层面，对输入进行严格的类型、格式、长度、范围检查（例如，用户名只能是字母数字）。虽然不能替代参数化查询，但作为纵深防御的一部分很有价值。<strong>注意：</strong> 仅依赖黑名单过滤（如移除 <code>&#39;</code>, <code>;</code>, <code>DROP</code> 等）是非常脆弱且不推荐的，容易被绕过。</li>
+<li><strong>输入验证与过滤：</strong> 在业务层面，对输入进行严格的类型、格式、长度、范围检查（例如，用户名只能是字母数字）。虽然不能替代参数化查询，但作为纵深防御的一部分很有价值。<strong>注意：</strong> 仅依赖黑名单过滤（如移除 <code>'</code>, <code>;</code>, <code>DROP</code> 等）是非常脆弱且不推荐的，容易被绕过。</li>
 </ul>
 </li>
 </ul>
 </li>
-<li><p><strong>MyBatis</strong></p>
+<li>
+<p><strong>MyBatis</strong></p>
 <ul>
 <li><strong>角色：</strong> 一个半自动化的持久层框架，开发者需要编写 SQL，但 MyBatis 简化了参数设置和结果映射。</li>
-<li><strong>如何引发 SQL 注入：</strong><ul>
-<li><strong>在 XML Mapper 或注解中使用 <code>$&#123;&#125;</code> 进行字符串替换：</strong> MyBatis 提供了两种参数占位符：<ul>
+<li><strong>如何引发 SQL 注入：</strong>
+<ul>
+<li><strong>在 XML Mapper 或注解中使用 <code>$&#123;&#125;</code> 进行字符串替换：</strong> MyBatis 提供了两种参数占位符：
+<ul>
 <li><code>#&#123;&#125;</code> (安全)： 类似于 JDBC 的 <code>PreparedStatement</code> 参数化查询，是<strong>首选</strong>。</li>
 <li><code>$&#123;&#125;</code> (危险)： 直接在 SQL 语句中进行<strong>字符串替换</strong>（相当于拼接）。</li>
 </ul>
@@ -331,45 +359,56 @@
 <li><strong>动态 SQL (<code>&lt;if&gt;</code>, <code>&lt;choose&gt;</code>, <code>&lt;foreach&gt;</code>) 中的 <code>$&#123;&#125;</code>：</strong> 在动态 SQL 标签内部错误地使用 <code>$&#123;&#125;</code> 拼接用户输入也会引入风险。</li>
 </ul>
 </li>
-<li><strong>防范措施：</strong><ul>
+<li><strong>防范措施：</strong>
+<ul>
 <li><strong>优先使用 <code>#&#123;&#125;</code>：</strong> 对于所有<strong>用户输入</strong>或<strong>不可信来源的数据</strong>，必须使用 <code>#&#123;&#125;</code> 占位符。</li>
-<li><strong>谨慎使用 <code>$&#123;&#125;</code>：</strong> 仅在<strong>绝对必要且参数值完全可控</strong>的情况下使用 <code>$&#123;&#125;</code>。典型的安全场景是动态指定<strong>列名</strong>或<strong>表名</strong>，但这些值<strong>不应直接来自用户输入</strong>，而应该：<ul>
-<li>在代码层面对传入的列名&#x2F;表名进行<strong>白名单校验</strong>（检查是否在预定义的合法值集合中）。</li>
+<li><strong>谨慎使用 <code>$&#123;&#125;</code>：</strong> 仅在<strong>绝对必要且参数值完全可控</strong>的情况下使用 <code>$&#123;&#125;</code>。典型的安全场景是动态指定<strong>列名</strong>或<strong>表名</strong>，但这些值<strong>不应直接来自用户输入</strong>，而应该：
+<ul>
+<li>在代码层面对传入的列名/表名进行<strong>白名单校验</strong>（检查是否在预定义的合法值集合中）。</li>
 <li>或者，在映射器方法内部进行校验。</li>
 </ul>
 </li>
 <li><strong>避免在 <code>ORDER BY</code> 等子句中直接使用用户输入：</strong> 如果必须支持动态排序，考虑在应用层将用户输入的排序字段映射到安全的列名枚举或常量。<strong>绝对不要</strong>将未经校验的用户输入直接放入 <code>$&#123;&#125;</code> 用于 <code>ORDER BY</code> 或 <code>GROUP BY</code>。</li>
 <li><strong>注意 <code>like</code> 查询：</strong> 使用 <code>#&#123;&#125;</code> 时，通配符 <code>%</code> 和 <code>_</code> 需要作为参数值的一部分传入：<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">select</span> <span class="attr">id</span>=<span class="string">&quot;searchUsers&quot;</span>&gt;</span></span><br><span class="line">    SELECT * FROM users WHERE username LIKE CONCAT(&#x27;%&#x27;, #&#123;keyword&#125;, &#x27;%&#x27;) <span class="comment">&lt;!-- 安全 --&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 或者 --&gt;</span></span><br><span class="line">    SELECT * FROM users WHERE username LIKE &quot;%&quot;#&#123;keyword&#125;&quot;%&quot; <span class="comment">&lt;!-- 安全 (MyBatis 特性) --&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br></pre></td></tr></table></figure>
-避免 <code>LIKE &#39;%$&#123;keyword&#125;%&#39;</code> (危险！)。</li>
+避免 <code>LIKE '%$&#123;keyword&#125;%'</code> (危险！)。</li>
 </ul>
 </li>
 </ul>
 </li>
-<li><p><strong>Hibernate &amp; JPA (Java Persistence API)</strong></p>
+<li>
+<p><strong>Hibernate &amp; JPA (Java Persistence API)</strong></p>
 <ul>
-<li><strong>角色：</strong><ul>
+<li><strong>角色：</strong>
+<ul>
 <li><strong>Hibernate：</strong> 一个功能强大的全自动 ORM (对象关系映射) 框架实现。</li>
-<li><strong>JPA：</strong> Java EE&#x2F;Jakarta EE 的 ORM 标准规范。Hibernate 是 JPA 最流行的实现之一。其他实现还有 EclipseLink, OpenJPA 等。JPA 定义了标准 API，而 Hibernate 提供了这些 API 的实现以及额外的特性。</li>
+<li><strong>JPA：</strong> Java EE/Jakarta EE 的 ORM 标准规范。Hibernate 是 JPA 最流行的实现之一。其他实现还有 EclipseLink, OpenJPA 等。JPA 定义了标准 API，而 Hibernate 提供了这些 API 的实现以及额外的特性。</li>
 </ul>
 </li>
-<li><strong>如何引发 SQL 注入：</strong><ul>
-<li><strong>HQL (Hibernate Query Language) &#x2F; JPQL (Java Persistence Query Language) 中的字符串拼接：</strong> 虽然 HQL&#x2F;JPQL 操作的是对象和属性，但它们最终会被翻译成 SQL。如果使用字符串拼接构造 HQL&#x2F;JPQL，风险等同于 SQL 拼接。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">username</span> <span class="operator">=</span> request.getParameter(<span class="string">&quot;username&quot;</span>);</span><br><span class="line"><span class="comment">// 危险！字符串拼接 HQL</span></span><br><span class="line"><span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;FROM User WHERE username = &#x27;&quot;</span> + username + <span class="string">&quot;&#x27;&quot;</span>;</span><br><span class="line">Query&lt;User&gt; query = session.createQuery(hql, User.class);</span><br><span class="line">List&lt;User&gt; users = query.getResultList();</span><br></pre></td></tr></table></figure>
-同样，恶意输入 <code>&#39; OR &#39;1&#39;=&#39;1</code> 会导致查询所有用户。</li>
-<li><strong>原生 SQL 查询 (<code>createNativeQuery</code> &#x2F; <code>@NamedNativeQuery</code>) 中的字符串拼接：</strong> 当直接使用原生 SQL 时，如果拼接用户输入，风险与直接使用 JDBC <code>Statement</code> 完全一样。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> <span class="string">&quot;SELECT * FROM users WHERE username = &#x27;&quot;</span> + username + <span class="string">&quot;&#x27;&quot;</span>; <span class="comment">// 极度危险！</span></span><br><span class="line"><span class="type">Query</span> <span class="variable">query</span> <span class="operator">=</span> session.createNativeQuery(sql);</span><br></pre></td></tr></table></figure></li>
+<li><strong>如何引发 SQL 注入：</strong>
+<ul>
+<li><strong>HQL (Hibernate Query Language) / JPQL (Java Persistence Query Language) 中的字符串拼接：</strong> 虽然 HQL/JPQL 操作的是对象和属性，但它们最终会被翻译成 SQL。如果使用字符串拼接构造 HQL/JPQL，风险等同于 SQL 拼接。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">username</span> <span class="operator">=</span> request.getParameter(<span class="string">&quot;username&quot;</span>);</span><br><span class="line"><span class="comment">// 危险！字符串拼接 HQL</span></span><br><span class="line"><span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;FROM User WHERE username = &#x27;&quot;</span> + username + <span class="string">&quot;&#x27;&quot;</span>;</span><br><span class="line">Query&lt;User&gt; query = session.createQuery(hql, User.class);</span><br><span class="line">List&lt;User&gt; users = query.getResultList();</span><br></pre></td></tr></table></figure>
+同样，恶意输入 <code>' OR '1'='1</code> 会导致查询所有用户。</li>
+<li><strong>原生 SQL 查询 (<code>createNativeQuery</code> / <code>@NamedNativeQuery</code>) 中的字符串拼接：</strong> 当直接使用原生 SQL 时，如果拼接用户输入，风险与直接使用 JDBC <code>Statement</code> 完全一样。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> <span class="string">&quot;SELECT * FROM users WHERE username = &#x27;&quot;</span> + username + <span class="string">&quot;&#x27;&quot;</span>; <span class="comment">// 极度危险！</span></span><br><span class="line"><span class="type">Query</span> <span class="variable">query</span> <span class="operator">=</span> session.createNativeQuery(sql);</span><br></pre></td></tr></table></figure>
+</li>
 <li><strong><code>javax.persistence.criteria.CriteriaQuery</code> 中的不安全构造：</strong> 虽然 Criteria API 是类型安全的，但如果不小心（通常比较难），在构建 <code>Predicate</code> 时直接拼接字符串也可能引入风险（罕见但理论存在）。</li>
 </ul>
 </li>
-<li><strong>防范措施：</strong><ul>
-<li><strong>使用参数化查询 (命名参数或位置参数)：</strong> <strong>这是 Hibernate&#x2F;JPA 防 SQL 注入的核心方法。</strong><ul>
-<li><strong>HQL&#x2F;JPQL 参数化：</strong><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;FROM User WHERE username = :uname&quot;</span>; <span class="comment">// 命名参数</span></span><br><span class="line">Query&lt;User&gt; query = session.createQuery(hql, User.class);</span><br><span class="line">query.setParameter(<span class="string">&quot;uname&quot;</span>, username); <span class="comment">// 安全</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">jpql</span> <span class="operator">=</span> <span class="string">&quot;SELECT u FROM User u WHERE u.username = ?1&quot;</span>; <span class="comment">// 位置参数</span></span><br><span class="line">TypedQuery&lt;User&gt; query = entityManager.createQuery(jpql, User.class);</span><br><span class="line">query.setParameter(<span class="number">1</span>, username); <span class="comment">// 安全</span></span><br></pre></td></tr></table></figure></li>
+<li><strong>防范措施：</strong>
+<ul>
+<li><strong>使用参数化查询 (命名参数或位置参数)：</strong> <strong>这是 Hibernate/JPA 防 SQL 注入的核心方法。</strong>
+<ul>
+<li><strong>HQL/JPQL 参数化：</strong><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">hql</span> <span class="operator">=</span> <span class="string">&quot;FROM User WHERE username = :uname&quot;</span>; <span class="comment">// 命名参数</span></span><br><span class="line">Query&lt;User&gt; query = session.createQuery(hql, User.class);</span><br><span class="line">query.setParameter(<span class="string">&quot;uname&quot;</span>, username); <span class="comment">// 安全</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">jpql</span> <span class="operator">=</span> <span class="string">&quot;SELECT u FROM User u WHERE u.username = ?1&quot;</span>; <span class="comment">// 位置参数</span></span><br><span class="line">TypedQuery&lt;User&gt; query = entityManager.createQuery(jpql, User.class);</span><br><span class="line">query.setParameter(<span class="number">1</span>, username); <span class="comment">// 安全</span></span><br></pre></td></tr></table></figure>
+</li>
 <li><strong>原生 SQL 查询参数化：</strong> <strong>必须</strong>对原生 SQL 查询也使用参数化！<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> <span class="string">&quot;SELECT * FROM users WHERE username = :uname&quot;</span>;</span><br><span class="line"><span class="type">NativeQuery</span> <span class="variable">query</span> <span class="operator">=</span> session.createNativeQuery(sql);</span><br><span class="line">query.setParameter(<span class="string">&quot;uname&quot;</span>, username); <span class="comment">// 安全</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> <span class="string">&quot;SELECT * FROM users WHERE username = ?&quot;</span>;</span><br><span class="line"><span class="type">Query</span> <span class="variable">query</span> <span class="operator">=</span> entityManager.createNativeQuery(sql);</span><br><span class="line">query.setParameter(<span class="number">1</span>, username); <span class="comment">// 安全</span></span><br></pre></td></tr></table></figure></li>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> <span class="string">&quot;SELECT * FROM users WHERE username = ?&quot;</span>;</span><br><span class="line"><span class="type">Query</span> <span class="variable">query</span> <span class="operator">=</span> entityManager.createNativeQuery(sql);</span><br><span class="line">query.setParameter(<span class="number">1</span>, username); <span class="comment">// 安全</span></span><br></pre></td></tr></table></figure>
+</li>
 </ul>
 </li>
-<li><strong>避免在 HQL&#x2F;JPQL 或原生 SQL 中拼接字符串：</strong> 绝对禁止。</li>
-<li><strong>优先使用 Criteria API 或 QueryDSL：</strong> 这些类型安全的查询构建器通过编程接口构造查询，几乎完全消除了 SQL 注入的风险，因为它们在构造过程中会进行类型检查，并且底层使用参数化绑定。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// JPA Criteria API 示例 (安全)</span></span><br><span class="line"><span class="type">CriteriaBuilder</span> <span class="variable">cb</span> <span class="operator">=</span> entityManager.getCriteriaBuilder();</span><br><span class="line">CriteriaQuery&lt;User&gt; cq = cb.createQuery(User.class);</span><br><span class="line">Root&lt;User&gt; root = cq.from(User.class);</span><br><span class="line">cq.select(root).where(cb.equal(root.get(<span class="string">&quot;username&quot;</span>), username));</span><br><span class="line">TypedQuery&lt;User&gt; query = entityManager.createQuery(cq);</span><br><span class="line">List&lt;User&gt; users = query.getResultList();</span><br></pre></td></tr></table></figure></li>
-<li><strong>谨慎使用原生 SQL (<code>createNativeQuery</code>)：</strong> 仅在绝对需要时使用（如复杂报表、数据库特定功能），并且<strong>必须使用参数化</strong>。优先考虑 HQL&#x2F;JPQL 或 Criteria API。</li>
+<li><strong>避免在 HQL/JPQL 或原生 SQL 中拼接字符串：</strong> 绝对禁止。</li>
+<li><strong>优先使用 Criteria API 或 QueryDSL：</strong> 这些类型安全的查询构建器通过编程接口构造查询，几乎完全消除了 SQL 注入的风险，因为它们在构造过程中会进行类型检查，并且底层使用参数化绑定。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// JPA Criteria API 示例 (安全)</span></span><br><span class="line"><span class="type">CriteriaBuilder</span> <span class="variable">cb</span> <span class="operator">=</span> entityManager.getCriteriaBuilder();</span><br><span class="line">CriteriaQuery&lt;User&gt; cq = cb.createQuery(User.class);</span><br><span class="line">Root&lt;User&gt; root = cq.from(User.class);</span><br><span class="line">cq.select(root).where(cb.equal(root.get(<span class="string">&quot;username&quot;</span>), username));</span><br><span class="line">TypedQuery&lt;User&gt; query = entityManager.createQuery(cq);</span><br><span class="line">List&lt;User&gt; users = query.getResultList();</span><br></pre></td></tr></table></figure>
+</li>
+<li><strong>谨慎使用原生 SQL (<code>createNativeQuery</code>)：</strong> 仅在绝对需要时使用（如复杂报表、数据库特定功能），并且<strong>必须使用参数化</strong>。优先考虑 HQL/JPQL 或 Criteria API。</li>
 <li><strong>输入验证：</strong> 同样是纵深防御的一部分。</li>
 </ul>
 </li>
@@ -379,15 +418,17 @@
 <hr>
 <p><strong>总结与关键防护原则</strong></p>
 <ol>
-<li><strong>首要原则：参数化查询 (Parameterized Queries &#x2F; Prepared Statements)：</strong> 无论使用 JDBC、MyBatis、Hibernate 还是 JPA，<strong>将用户输入作为查询参数绑定（使用 <code>?</code> &#x2F; <code>:name</code> &#x2F; <code>#&#123;&#125;</code>），而不是直接拼接到 SQL&#x2F;HQL&#x2F;JPQL 语句中</strong>，是防御 SQL 注入最根本、最有效的手段。数据库引擎会区分代码和数据。</li>
-<li><strong>理解占位符语义：</strong><ul>
+<li><strong>首要原则：参数化查询 (Parameterized Queries / Prepared Statements)：</strong> 无论使用 JDBC、MyBatis、Hibernate 还是 JPA，<strong>将用户输入作为查询参数绑定（使用 <code>?</code> / <code>:name</code> / <code>#&#123;&#125;</code>），而不是直接拼接到 SQL/HQL/JPQL 语句中</strong>，是防御 SQL 注入最根本、最有效的手段。数据库引擎会区分代码和数据。</li>
+<li><strong>理解占位符语义：</strong>
+<ul>
 <li><strong>安全 (<code>?</code>, <code>:name</code>, <code>#&#123;&#125;</code>, <code>setParameter()</code>):</strong> 表示参数绑定。</li>
 <li><strong>危险 (字符串拼接, <code>$&#123;&#125;</code>):</strong> 表示直接文本替换。</li>
 </ul>
 </li>
-<li><strong>ORM 不是免死金牌：</strong> Hibernate&#x2F;JPA 等 ORM 框架本身不自动防止 SQL 注入。开发者<strong>错误地拼接查询字符串</strong>或<strong>不安全地使用原生 SQL</strong> 时，风险依然存在。必须正确使用其参数化机制。</li>
+<li><strong>ORM 不是免死金牌：</strong> Hibernate/JPA 等 ORM 框架本身不自动防止 SQL 注入。开发者<strong>错误地拼接查询字符串</strong>或<strong>不安全地使用原生 SQL</strong> 时，风险依然存在。必须正确使用其参数化机制。</li>
 <li><strong>最小权限原则：</strong> 应用程序连接数据库的用户应只拥有完成其功能所必需的<strong>最小权限</strong>。避免使用具有 DBA 权限的账号。这样即使发生注入，损害也能被限制。</li>
-<li><strong>纵深防御：</strong><ul>
+<li><strong>纵深防御：</strong>
+<ul>
 <li><strong>输入验证与过滤：</strong> 在数据进入持久层之前，进行严格的格式、类型、长度、范围校验。使用白名单优于黑名单。</li>
 <li><strong>输出编码：</strong> 在 Web 层，对从数据库取出并显示给用户的数据进行适当的输出编码，防止 XSS 等二次攻击（虽然不直接防 SQL 注入，但提升整体安全）。</li>
 <li><strong>使用安全框架：</strong> 考虑集成 Spring Security 等框架，它们提供额外的安全层和工具。</li>
@@ -398,14 +439,14 @@
 </li>
 </ol>
 <p><strong>结论：</strong></p>
-<p>图片中指出的 JDBC、MyBatis、Hibernate、JPA 这四点，代表了 Java 中进行数据库交互的不同层次和技术。<strong>它们都存在 SQL 注入的风险，风险根源都在于开发者不安全地将用户输入拼接到了查询语句中。</strong> 防范的关键在于<strong>始终如一地、正确地使用参数化查询机制</strong>（<code>PreparedStatement</code>, MyBatis <code>#&#123;&#125;</code>, Hibernate&#x2F;JPA <code>setParameter()</code>），并辅以输入验证、最小权限等纵深防御措施。理解每种技术中参数占位符的正确用法和安全边界至关重要。安全编码意识和实践是防御 SQL 注入的核心。</p>
+<p>图片中指出的 JDBC、MyBatis、Hibernate、JPA 这四点，代表了 Java 中进行数据库交互的不同层次和技术。<strong>它们都存在 SQL 注入的风险，风险根源都在于开发者不安全地将用户输入拼接到了查询语句中。</strong> 防范的关键在于<strong>始终如一地、正确地使用参数化查询机制</strong>（<code>PreparedStatement</code>, MyBatis <code>#&#123;&#125;</code>, Hibernate/JPA <code>setParameter()</code>），并辅以输入验证、最小权限等纵深防御措施。理解每种技术中参数占位符的正确用法和安全边界至关重要。安全编码意识和实践是防御 SQL 注入的核心。</p>
 <p>靶场定位后端源码</p>
-<p><img src="/./images/image-20250804142259508.png" alt="image-20250804142259508"></p>
+<p><img src="/images/image-20250804142259508.png" alt="image-20250804142259508"></p>
 <p>打开浏览器开发者模式抓取Run的数据包，</p>
-<p><img src="/./images/image-20250804142347590.png" alt="image-20250804142347590"></p>
-<p><a target="_blank" rel="noopener" href="http://127.0.0.1:8001/sqli/jdbc/vul1?username=test&password=1%27%20and%20updatexml(1,concat(0x7e,(SELECT%20user()),0x7e),1)%20AND%20%271%27=%271&type=add&_=1754288530545">http://127.0.0.1:8001/sqli/jdbc/vul1?username=test&amp;password=1%27%20and%20updatexml(1%2Cconcat(0x7e%2C(SELECT%20user())%2C0x7e)%2C1)%20AND%20%271%27%3D%271&amp;type=add&amp;_=1754288530545</a></p>
-<p><img src="/./images/image-20250804142559882.png" alt="image-20250804142559882"></p>
-<p><img src="/./images/image-20250804142649825.png" alt="image-20250804142649825"></p>
+<p><img src="/images/image-20250804142347590.png" alt="image-20250804142347590"></p>
+<p><a target="_blank" rel="noopener" href="http://127.0.0.1:8001/sqli/jdbc/vul1?username=test&amp;password=1%27%20and%20updatexml(1%2Cconcat(0x7e%2C(SELECT%20user()">http://127.0.0.1:8001/sqli/jdbc/vul1?username=test&amp;password=1' and updatexml(1%2Cconcat(0x7e%2C(SELECT user()</a>)%2C0x7e)%2C1)%20AND%20%271%27%3D%271&amp;type=add&amp;_=1754288530545</p>
+<p><img src="/images/image-20250804142559882.png" alt="image-20250804142559882"></p>
+<p><img src="/images/image-20250804142649825.png" alt="image-20250804142649825"></p>
 <blockquote>
 <p>-JDBC</p>
 <p>1、采用Statement方法拼接SQL语句</p>
@@ -416,13 +457,13 @@
 <p>-MyBatis</p>
 <p>MyBatis支持两种参数符号，一种是#，另一种是$，#使用预编译，$使用拼接SQL。</p>
 <p>1、order by注入：由于使用#{}会将对象转成字符串，形成order by “user” desc造成错误，因此很多研发会采用${}来解决，从而造成注入.</p>
-<p>2、like 注入：模糊搜索时，直接使用’%#{q}%’ 会报错，部分研发图方便直接改成’%${q}%’从而造成注入.</p>
+<p>2、like 注入：模糊搜索时，直接使用’%#{q}%’ 会报错，部分研发图方便直接改成’%${q}%'从而造成注入.</p>
 <p>3、in注入：in之后多个id查询时使用#同样会报错，从而造成注入.</p>
 <p>-Hibernate</p>
 <p>1、setParameter：预编译</p>
-<p>2、username&#x3D;:username 预编译</p>
+<p>2、username=:username 预编译</p>
 <p>-JPA</p>
-<p>1、username&#x3D;:username 预编译</p>
+<p>1、username=:username 预编译</p>
 <p>总结</p>
 <p>黑盒：正常发现和利用即可</p>
 <p>白盒：</p>
@@ -430,78 +471,92 @@
 <p>2、确定类型后找调用写法</p>
 <p>3、确定写法是否安全（预编译）</p>
 </blockquote>
-<h2 id="XXE注入"><a href="#XXE注入" class="headerlink" title="XXE注入"></a>XXE注入</h2><blockquote>
-<h1 id="Java-XXE-注入全面解析与防御指南"><a href="#Java-XXE-注入全面解析与防御指南" class="headerlink" title="Java XXE 注入全面解析与防御指南"></a>Java XXE 注入全面解析与防御指南</h1><h2 id="一、XXE-注入核心原理"><a href="#一、XXE-注入核心原理" class="headerlink" title="一、XXE 注入核心原理"></a>一、XXE 注入核心原理</h2><p>XXE (XML External Entity) 注入是一种利用 XML 解析器处理外部实体时产生的安全漏洞。攻击者通过在 XML 文档中构造恶意的外部实体引用，可以导致：</p>
+<h2 id="XXE注入">XXE注入</h2>
+<blockquote>
+<h1>Java XXE 注入全面解析与防御指南</h1>
+<h2 id="一、XXE-注入核心原理">一、XXE 注入核心原理</h2>
+<p>XXE (XML External Entity) 注入是一种利用 XML 解析器处理外部实体时产生的安全漏洞。攻击者通过在 XML 文档中构造恶意的外部实体引用，可以导致：</p>
 <ol>
 <li>读取服务器本地文件（如 <code>/etc/passwd</code>）</li>
 <li>发起 SSRF 攻击（服务器端请求伪造）</li>
 <li>造成拒绝服务（DoS）</li>
 <li>端口扫描内网服务</li>
 </ol>
-<h2 id="二、Java-中易受攻击的-XML-解析类"><a href="#二、Java-中易受攻击的-XML-解析类" class="headerlink" title="二、Java 中易受攻击的 XML 解析类"></a>二、Java 中易受攻击的 XML 解析类</h2><p>以下是 Java 中 12 种常见的 XML 处理类及其风险点：</p>
-<h3 id="1-XMLReader"><a href="#1-XMLReader" class="headerlink" title="1. XMLReader"></a>1. XMLReader</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">XMLReader</span> <span class="variable">reader</span> <span class="operator">=</span> XMLReaderFactory.createXMLReader();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line">reader.parse(<span class="keyword">new</span> <span class="title class_">InputSource</span>(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml)));</span><br></pre></td></tr></table></figure>
-
-<h3 id="2-SAXParser"><a href="#2-SAXParser" class="headerlink" title="2. SAXParser"></a>2. SAXParser</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SAXParserFactory</span> <span class="variable">factory</span> <span class="operator">=</span> SAXParserFactory.newInstance();</span><br><span class="line"><span class="type">SAXParser</span> <span class="variable">parser</span> <span class="operator">=</span> factory.newSAXParser();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line">parser.parse(<span class="keyword">new</span> <span class="title class_">InputSource</span>(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml)), handler);</span><br></pre></td></tr></table></figure>
-
-<h3 id="3-DocumentBuilder"><a href="#3-DocumentBuilder" class="headerlink" title="3. DocumentBuilder"></a>3. DocumentBuilder</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">DocumentBuilderFactory</span> <span class="variable">dbf</span> <span class="operator">=</span> DocumentBuilderFactory.newInstance();</span><br><span class="line"><span class="type">DocumentBuilder</span> <span class="variable">db</span> <span class="operator">=</span> dbf.newDocumentBuilder();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line"><span class="type">Document</span> <span class="variable">doc</span> <span class="operator">=</span> db.parse(<span class="keyword">new</span> <span class="title class_">InputSource</span>(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml)));</span><br></pre></td></tr></table></figure>
-
-<h3 id="4-XMLStreamReader"><a href="#4-XMLStreamReader" class="headerlink" title="4. XMLStreamReader"></a>4. XMLStreamReader</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">XMLInputFactory</span> <span class="variable">factory</span> <span class="operator">=</span> XMLInputFactory.newInstance();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line"><span class="type">XMLStreamReader</span> <span class="variable">reader</span> <span class="operator">=</span> factory.createXMLStreamReader(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml));</span><br></pre></td></tr></table></figure>
-
-<h3 id="5-SAXReader-DOM4J"><a href="#5-SAXReader-DOM4J" class="headerlink" title="5. SAXReader (DOM4J)"></a>5. SAXReader (DOM4J)</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SAXReader</span> <span class="variable">reader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SAXReader</span>();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line"><span class="type">Document</span> <span class="variable">document</span> <span class="operator">=</span> reader.read(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml));</span><br></pre></td></tr></table></figure>
-
-<h3 id="6-SAXBuilder-JDOM"><a href="#6-SAXBuilder-JDOM" class="headerlink" title="6. SAXBuilder (JDOM)"></a>6. SAXBuilder (JDOM)</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SAXBuilder</span> <span class="variable">builder</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SAXBuilder</span>();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line"><span class="type">Document</span> <span class="variable">doc</span> <span class="operator">=</span> builder.build(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml));</span><br></pre></td></tr></table></figure>
-
-<h3 id="7-SAXSource"><a href="#7-SAXSource" class="headerlink" title="7. SAXSource"></a>7. SAXSource</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SAXSource</span> <span class="variable">source</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SAXSource</span>(<span class="keyword">new</span> <span class="title class_">InputSource</span>(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml)));</span><br><span class="line"><span class="comment">// 需要确保底层解析器已禁用外部实体</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="8-TransformerFactory"><a href="#8-TransformerFactory" class="headerlink" title="8. TransformerFactory"></a>8. TransformerFactory</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">TransformerFactory</span> <span class="variable">tf</span> <span class="operator">=</span> TransformerFactory.newInstance();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line"><span class="type">Transformer</span> <span class="variable">transformer</span> <span class="operator">=</span> tf.newTransformer();</span><br><span class="line">transformer.transform(<span class="keyword">new</span> <span class="title class_">StreamSource</span>(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml)), <span class="keyword">new</span> <span class="title class_">StreamResult</span>(output));</span><br></pre></td></tr></table></figure>
-
-<h3 id="9-SAXTransformerFactory"><a href="#9-SAXTransformerFactory" class="headerlink" title="9. SAXTransformerFactory"></a>9. SAXTransformerFactory</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SAXTransformerFactory</span> <span class="variable">stf</span> <span class="operator">=</span> (SAXTransformerFactory)TransformerFactory.newInstance();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="10-SchemaFactory"><a href="#10-SchemaFactory" class="headerlink" title="10. SchemaFactory"></a>10. SchemaFactory</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SchemaFactory</span> <span class="variable">factory</span> <span class="operator">=</span> SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line"><span class="type">Schema</span> <span class="variable">schema</span> <span class="operator">=</span> factory.newSchema(<span class="keyword">new</span> <span class="title class_">StreamSource</span>(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xsd)));</span><br></pre></td></tr></table></figure>
-
-<h3 id="11-Unmarshaller-JAXB"><a href="#11-Unmarshaller-JAXB" class="headerlink" title="11. Unmarshaller (JAXB)"></a>11. Unmarshaller (JAXB)</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">JAXBContext</span> <span class="variable">context</span> <span class="operator">=</span> JAXBContext.newInstance(SomeClass.class);</span><br><span class="line"><span class="type">Unmarshaller</span> <span class="variable">unmarshaller</span> <span class="operator">=</span> context.createUnmarshaller();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line"><span class="type">SomeClass</span> <span class="variable">obj</span> <span class="operator">=</span> (SomeClass) unmarshaller.unmarshal(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml));</span><br></pre></td></tr></table></figure>
-
-<h3 id="12-XPathExpression"><a href="#12-XPathExpression" class="headerlink" title="12. XPathExpression"></a>12. XPathExpression</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">XPathFactory</span> <span class="variable">xpathFactory</span> <span class="operator">=</span> XPathFactory.newInstance();</span><br><span class="line"><span class="type">XPath</span> <span class="variable">xpath</span> <span class="operator">=</span> xpathFactory.newXPath();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line"><span class="type">XPathExpression</span> <span class="variable">expr</span> <span class="operator">=</span> xpath.compile(<span class="string">&quot;//someElement/text()&quot;</span>);</span><br><span class="line"><span class="type">String</span> <span class="variable">result</span> <span class="operator">=</span> expr.evaluate(<span class="keyword">new</span> <span class="title class_">InputSource</span>(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml)));</span><br></pre></td></tr></table></figure>
-
-<h2 id="三、安全防护措施"><a href="#三、安全防护措施" class="headerlink" title="三、安全防护措施"></a>三、安全防护措施</h2><h3 id="通用防护方案"><a href="#通用防护方案" class="headerlink" title="通用防护方案"></a>通用防护方案</h3><p>对于所有 XML 解析器，都应采取以下防护措施：</p>
+<h2 id="二、Java-中易受攻击的-XML-解析类">二、Java 中易受攻击的 XML 解析类</h2>
+<p>以下是 Java 中 12 种常见的 XML 处理类及其风险点：</p>
+<h3 id="1-XMLReader">1. XMLReader</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">XMLReader</span> <span class="variable">reader</span> <span class="operator">=</span> XMLReaderFactory.createXMLReader();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line">reader.parse(<span class="keyword">new</span> <span class="title class_">InputSource</span>(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml)));</span><br></pre></td></tr></table></figure>
+<h3 id="2-SAXParser">2. SAXParser</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SAXParserFactory</span> <span class="variable">factory</span> <span class="operator">=</span> SAXParserFactory.newInstance();</span><br><span class="line"><span class="type">SAXParser</span> <span class="variable">parser</span> <span class="operator">=</span> factory.newSAXParser();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line">parser.parse(<span class="keyword">new</span> <span class="title class_">InputSource</span>(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml)), handler);</span><br></pre></td></tr></table></figure>
+<h3 id="3-DocumentBuilder">3. DocumentBuilder</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">DocumentBuilderFactory</span> <span class="variable">dbf</span> <span class="operator">=</span> DocumentBuilderFactory.newInstance();</span><br><span class="line"><span class="type">DocumentBuilder</span> <span class="variable">db</span> <span class="operator">=</span> dbf.newDocumentBuilder();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line"><span class="type">Document</span> <span class="variable">doc</span> <span class="operator">=</span> db.parse(<span class="keyword">new</span> <span class="title class_">InputSource</span>(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml)));</span><br></pre></td></tr></table></figure>
+<h3 id="4-XMLStreamReader">4. XMLStreamReader</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">XMLInputFactory</span> <span class="variable">factory</span> <span class="operator">=</span> XMLInputFactory.newInstance();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line"><span class="type">XMLStreamReader</span> <span class="variable">reader</span> <span class="operator">=</span> factory.createXMLStreamReader(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml));</span><br></pre></td></tr></table></figure>
+<h3 id="5-SAXReader-DOM4J">5. SAXReader (DOM4J)</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SAXReader</span> <span class="variable">reader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SAXReader</span>();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line"><span class="type">Document</span> <span class="variable">document</span> <span class="operator">=</span> reader.read(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml));</span><br></pre></td></tr></table></figure>
+<h3 id="6-SAXBuilder-JDOM">6. SAXBuilder (JDOM)</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SAXBuilder</span> <span class="variable">builder</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SAXBuilder</span>();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line"><span class="type">Document</span> <span class="variable">doc</span> <span class="operator">=</span> builder.build(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml));</span><br></pre></td></tr></table></figure>
+<h3 id="7-SAXSource">7. SAXSource</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SAXSource</span> <span class="variable">source</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SAXSource</span>(<span class="keyword">new</span> <span class="title class_">InputSource</span>(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml)));</span><br><span class="line"><span class="comment">// 需要确保底层解析器已禁用外部实体</span></span><br></pre></td></tr></table></figure>
+<h3 id="8-TransformerFactory">8. TransformerFactory</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">TransformerFactory</span> <span class="variable">tf</span> <span class="operator">=</span> TransformerFactory.newInstance();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line"><span class="type">Transformer</span> <span class="variable">transformer</span> <span class="operator">=</span> tf.newTransformer();</span><br><span class="line">transformer.transform(<span class="keyword">new</span> <span class="title class_">StreamSource</span>(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml)), <span class="keyword">new</span> <span class="title class_">StreamResult</span>(output));</span><br></pre></td></tr></table></figure>
+<h3 id="9-SAXTransformerFactory">9. SAXTransformerFactory</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SAXTransformerFactory</span> <span class="variable">stf</span> <span class="operator">=</span> (SAXTransformerFactory)TransformerFactory.newInstance();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br></pre></td></tr></table></figure>
+<h3 id="10-SchemaFactory">10. SchemaFactory</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SchemaFactory</span> <span class="variable">factory</span> <span class="operator">=</span> SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line"><span class="type">Schema</span> <span class="variable">schema</span> <span class="operator">=</span> factory.newSchema(<span class="keyword">new</span> <span class="title class_">StreamSource</span>(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xsd)));</span><br></pre></td></tr></table></figure>
+<h3 id="11-Unmarshaller-JAXB">11. Unmarshaller (JAXB)</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">JAXBContext</span> <span class="variable">context</span> <span class="operator">=</span> JAXBContext.newInstance(SomeClass.class);</span><br><span class="line"><span class="type">Unmarshaller</span> <span class="variable">unmarshaller</span> <span class="operator">=</span> context.createUnmarshaller();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line"><span class="type">SomeClass</span> <span class="variable">obj</span> <span class="operator">=</span> (SomeClass) unmarshaller.unmarshal(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml));</span><br></pre></td></tr></table></figure>
+<h3 id="12-XPathExpression">12. XPathExpression</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">XPathFactory</span> <span class="variable">xpathFactory</span> <span class="operator">=</span> XPathFactory.newInstance();</span><br><span class="line"><span class="type">XPath</span> <span class="variable">xpath</span> <span class="operator">=</span> xpathFactory.newXPath();</span><br><span class="line"><span class="comment">// 危险：未禁用外部实体</span></span><br><span class="line"><span class="type">XPathExpression</span> <span class="variable">expr</span> <span class="operator">=</span> xpath.compile(<span class="string">&quot;//someElement/text()&quot;</span>);</span><br><span class="line"><span class="type">String</span> <span class="variable">result</span> <span class="operator">=</span> expr.evaluate(<span class="keyword">new</span> <span class="title class_">InputSource</span>(<span class="keyword">new</span> <span class="title class_">StringReader</span>(xml)));</span><br></pre></td></tr></table></figure>
+<h2 id="三、安全防护措施">三、安全防护措施</h2>
+<h3 id="通用防护方案">通用防护方案</h3>
+<p>对于所有 XML 解析器，都应采取以下防护措施：</p>
 <ol>
-<li><p><strong>禁用 DTD 完全</strong>（最彻底方案）：</p>
+<li>
+<p><strong>禁用 DTD 完全</strong>（最彻底方案）：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">factory.setFeature(<span class="string">&quot;http://apache.org/xml/features/disallow-doctype-decl&quot;</span>, <span class="literal">true</span>);</span><br></pre></td></tr></table></figure>
 </li>
-<li><p><strong>禁用外部实体</strong>（如果必须允许 DTD）：</p>
+<li>
+<p><strong>禁用外部实体</strong>（如果必须允许 DTD）：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">factory.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-general-entities&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">factory.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-parameter-entities&quot;</span>, <span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
 </li>
-<li><p><strong>启用安全处理模式</strong>：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, <span class="literal">true</span>);</span><br></pre></td></tr></table></figure></li>
+<li>
+<p><strong>启用安全处理模式</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, <span class="literal">true</span>);</span><br></pre></td></tr></table></figure>
+</li>
 </ol>
-<h3 id="各解析器具体配置"><a href="#各解析器具体配置" class="headerlink" title="各解析器具体配置"></a>各解析器具体配置</h3><h4 id="1-DocumentBuilderFactory"><a href="#1-DocumentBuilderFactory" class="headerlink" title="1. DocumentBuilderFactory"></a>1. DocumentBuilderFactory</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">DocumentBuilderFactory</span> <span class="variable">dbf</span> <span class="operator">=</span> DocumentBuilderFactory.newInstance();</span><br><span class="line">dbf.setFeature(<span class="string">&quot;http://apache.org/xml/features/disallow-doctype-decl&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">dbf.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-general-entities&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">dbf.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-parameter-entities&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">dbf.setXIncludeAware(<span class="literal">false</span>);</span><br><span class="line">dbf.setExpandEntityReferences(<span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
-
-<h4 id="2-SAXParserFactory"><a href="#2-SAXParserFactory" class="headerlink" title="2. SAXParserFactory"></a>2. SAXParserFactory</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SAXParserFactory</span> <span class="variable">spf</span> <span class="operator">=</span> SAXParserFactory.newInstance();</span><br><span class="line">spf.setFeature(<span class="string">&quot;http://apache.org/xml/features/disallow-doctype-decl&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">spf.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-general-entities&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">spf.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-parameter-entities&quot;</span>, <span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
-
-<h4 id="3-XMLInputFactory-StAX"><a href="#3-XMLInputFactory-StAX" class="headerlink" title="3. XMLInputFactory (StAX)"></a>3. XMLInputFactory (StAX)</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">XMLInputFactory</span> <span class="variable">xif</span> <span class="operator">=</span> XMLInputFactory.newInstance();</span><br><span class="line">xif.setProperty(XMLInputFactory.SUPPORT_DTD, <span class="literal">false</span>);</span><br><span class="line">xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, <span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
-
-<h4 id="4-DOM4J-SAXReader"><a href="#4-DOM4J-SAXReader" class="headerlink" title="4. DOM4J (SAXReader)"></a>4. DOM4J (SAXReader)</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SAXReader</span> <span class="variable">reader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SAXReader</span>();</span><br><span class="line">reader.setFeature(<span class="string">&quot;http://apache.org/xml/features/disallow-doctype-decl&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">reader.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-general-entities&quot;</span>, <span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
-
-<h4 id="5-JDOM-SAXBuilder"><a href="#5-JDOM-SAXBuilder" class="headerlink" title="5. JDOM (SAXBuilder)"></a>5. JDOM (SAXBuilder)</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SAXBuilder</span> <span class="variable">builder</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SAXBuilder</span>();</span><br><span class="line">builder.setFeature(<span class="string">&quot;http://apache.org/xml/features/disallow-doctype-decl&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">builder.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-general-entities&quot;</span>, <span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
-
-<h4 id="6-TransformerFactory"><a href="#6-TransformerFactory" class="headerlink" title="6. TransformerFactory"></a>6. TransformerFactory</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">TransformerFactory</span> <span class="variable">tf</span> <span class="operator">=</span> TransformerFactory.newInstance();</span><br><span class="line">tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, <span class="string">&quot;&quot;</span>);</span><br><span class="line">tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, <span class="string">&quot;&quot;</span>);</span><br></pre></td></tr></table></figure>
-
-<h4 id="7-JAXB-Unmarshaller"><a href="#7-JAXB-Unmarshaller" class="headerlink" title="7. JAXB (Unmarshaller)"></a>7. JAXB (Unmarshaller)</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">JAXBContext</span> <span class="variable">context</span> <span class="operator">=</span> JAXBContext.newInstance(SomeClass.class);</span><br><span class="line"><span class="type">Unmarshaller</span> <span class="variable">unmarshaller</span> <span class="operator">=</span> context.createUnmarshaller();</span><br><span class="line">unmarshaller.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, <span class="string">&quot;&quot;</span>);</span><br><span class="line">unmarshaller.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, <span class="string">&quot;&quot;</span>);</span><br></pre></td></tr></table></figure>
-
-<h2 id="四、代码审计要点"><a href="#四、代码审计要点" class="headerlink" title="四、代码审计要点"></a>四、代码审计要点</h2><ol>
+<h3 id="各解析器具体配置">各解析器具体配置</h3>
+<h4 id="1-DocumentBuilderFactory">1. DocumentBuilderFactory</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">DocumentBuilderFactory</span> <span class="variable">dbf</span> <span class="operator">=</span> DocumentBuilderFactory.newInstance();</span><br><span class="line">dbf.setFeature(<span class="string">&quot;http://apache.org/xml/features/disallow-doctype-decl&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">dbf.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-general-entities&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">dbf.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-parameter-entities&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">dbf.setXIncludeAware(<span class="literal">false</span>);</span><br><span class="line">dbf.setExpandEntityReferences(<span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
+<h4 id="2-SAXParserFactory">2. SAXParserFactory</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SAXParserFactory</span> <span class="variable">spf</span> <span class="operator">=</span> SAXParserFactory.newInstance();</span><br><span class="line">spf.setFeature(<span class="string">&quot;http://apache.org/xml/features/disallow-doctype-decl&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">spf.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-general-entities&quot;</span>, <span class="literal">false</span>);</span><br><span class="line">spf.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-parameter-entities&quot;</span>, <span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
+<h4 id="3-XMLInputFactory-StAX">3. XMLInputFactory (StAX)</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">XMLInputFactory</span> <span class="variable">xif</span> <span class="operator">=</span> XMLInputFactory.newInstance();</span><br><span class="line">xif.setProperty(XMLInputFactory.SUPPORT_DTD, <span class="literal">false</span>);</span><br><span class="line">xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, <span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
+<h4 id="4-DOM4J-SAXReader">4. DOM4J (SAXReader)</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SAXReader</span> <span class="variable">reader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SAXReader</span>();</span><br><span class="line">reader.setFeature(<span class="string">&quot;http://apache.org/xml/features/disallow-doctype-decl&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">reader.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-general-entities&quot;</span>, <span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
+<h4 id="5-JDOM-SAXBuilder">5. JDOM (SAXBuilder)</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">SAXBuilder</span> <span class="variable">builder</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SAXBuilder</span>();</span><br><span class="line">builder.setFeature(<span class="string">&quot;http://apache.org/xml/features/disallow-doctype-decl&quot;</span>, <span class="literal">true</span>);</span><br><span class="line">builder.setFeature(<span class="string">&quot;http://xml.org/sax/features/external-general-entities&quot;</span>, <span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
+<h4 id="6-TransformerFactory">6. TransformerFactory</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">TransformerFactory</span> <span class="variable">tf</span> <span class="operator">=</span> TransformerFactory.newInstance();</span><br><span class="line">tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, <span class="string">&quot;&quot;</span>);</span><br><span class="line">tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, <span class="string">&quot;&quot;</span>);</span><br></pre></td></tr></table></figure>
+<h4 id="7-JAXB-Unmarshaller">7. JAXB (Unmarshaller)</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">JAXBContext</span> <span class="variable">context</span> <span class="operator">=</span> JAXBContext.newInstance(SomeClass.class);</span><br><span class="line"><span class="type">Unmarshaller</span> <span class="variable">unmarshaller</span> <span class="operator">=</span> context.createUnmarshaller();</span><br><span class="line">unmarshaller.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, <span class="string">&quot;&quot;</span>);</span><br><span class="line">unmarshaller.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, <span class="string">&quot;&quot;</span>);</span><br></pre></td></tr></table></figure>
+<h2 id="四、代码审计要点">四、代码审计要点</h2>
+<ol>
 <li><strong>查找所有 XML 解析点</strong>：搜索上述12个类的使用情况</li>
 <li><strong>检查安全配置</strong>：确认是否设置了防护措施</li>
 <li><strong>关注输入来源</strong>：特别检查用户可控的 XML 输入</li>
 <li><strong>注意间接解析</strong>：如 WebService、SOAP、REST API 等可能隐式解析 XML</li>
 </ol>
-<h2 id="五、防御深度策略"><a href="#五、防御深度策略" class="headerlink" title="五、防御深度策略"></a>五、防御深度策略</h2><ol>
+<h2 id="五、防御深度策略">五、防御深度策略</h2>
+<ol>
 <li><strong>输入过滤</strong>：对用户输入的 XML 进行严格校验</li>
 <li><strong>输出编码</strong>：对 XML 输出内容进行适当编码</li>
 <li><strong>最小权限</strong>：运行解析器的账户应具有最小权限</li>
 <li><strong>依赖更新</strong>：保持 XML 解析库最新版本</li>
 <li><strong>日志监控</strong>：记录异常解析行为</li>
 </ol>
-<h2 id="六、总结"><a href="#六、总结" class="headerlink" title="六、总结"></a>六、总结</h2><p>理解 XXE 注入的关键在于：</p>
+<h2 id="六、总结">六、总结</h2>
+<p>理解 XXE 注入的关键在于：</p>
 <ol>
 <li><strong>识别所有 XML 解析点</strong>：Java 中有多种 XML 解析方式，都需要防护</li>
 <li><strong>控制外部实体处理</strong>：禁用或严格限制外部实体解析</li>
@@ -510,9 +565,29 @@
 <p>通过系统性地审计和加固这些 XML 处理点，可以有效防御 XXE 注入攻击。</p>
 </blockquote>
 <p>对于靶场中</p>
-<p><img src="/./images/image-20250804144943606.png" alt="image-20250804144943606"></p>
+<p><img src="/images/image-20250804144943606.png" alt="image-20250804144943606"></p>
 <blockquote>
-<p>public String vul1(String payload) {<br>    try {<br>        XMLReader xmlReader &#x3D; XMLReaderFactory.createXMLReader();<br>        StringWriter stringWriter &#x3D; new StringWriter();<br>        xmlReader.setContentHandler(new DefaultHandler() {<br>            public void characters(char[] ch, int start, int length) {<br>                for (int i &#x3D; start; i &lt; start + length; i++) {<br>                    if (ch[i] &#x3D;&#x3D; ‘\n’) {<br>                        stringWriter.write(“<br/>“);<br>                    } else {<br>                        stringWriter.write(ch[i]);<br>                    }<br>                }<br>            }<br>        });<br>        xmlReader.parse(new InputSource(new StringReader(payload)));<br>        return stringWriter.toString();<br>    } catch (Exception e) {<br>        return e.getMessage();<br>    }<br>}</p>
+<p>public String vul1(String payload) {<br>
+try {<br>
+XMLReader xmlReader = XMLReaderFactory.createXMLReader();<br>
+StringWriter stringWriter = new StringWriter();<br>
+xmlReader.setContentHandler(new DefaultHandler() {<br>
+public void characters(char[] ch, int start, int length) {<br>
+for (int i = start; i &lt; start + length; i++) {<br>
+if (ch[i] == ‘\n’) {<br>
+stringWriter.write(“<br/>”);<br>
+} else {<br>
+stringWriter.write(ch[i]);<br>
+}<br>
+}<br>
+}<br>
+});<br>
+xmlReader.parse(new InputSource(new StringReader(payload)));<br>
+return stringWriter.toString();<br>
+} catch (Exception e) {<br>
+return e.getMessage();<br>
+}<br>
+}</p>
 </blockquote>
 <p>代码功能解析</p>
 <ul>
@@ -520,15 +595,17 @@
 <li>设置<code>ContentHandler</code>为自定义的<code>DefaultHandler</code>子类，重写<code>characters</code>方法：遍历解析到的字符，将换行符<code>\n</code>替换为 HTML 的<code>&lt;br/&gt;</code>标签，其他字符直接写入<code>StringWriter</code>。</li>
 <li>最终通过<code>xmlReader.parse(new InputSource(new StringReader(payload)))</code>解析输入的<code>payload</code>（XML 字符串），并返回处理后的结果。</li>
 </ul>
-<p><code>XMLReaderFactory.createXMLReader()</code>创建的 XML 解析器，默认配置下可能<strong>允许解析外部实体</strong>（具体取决于底层使用的 XML 解析器实现，如 Xerces 等）。<br>代码中没有显式禁用外部实体解析（如未设置<code>FEATURE_SECURE_PROCESSING</code>特性，或未禁止<code>ENTITY_EXPANSION_LIMIT</code>等），导致攻击者可以构造包含外部实体的恶意 XML payload。</p>
+<p><code>XMLReaderFactory.createXMLReader()</code>创建的 XML 解析器，默认配置下可能<strong>允许解析外部实体</strong>（具体取决于底层使用的 XML 解析器实现，如 Xerces 等）。<br>
+代码中没有显式禁用外部实体解析（如未设置<code>FEATURE_SECURE_PROCESSING</code>特性，或未禁止<code>ENTITY_EXPANSION_LIMIT</code>等），导致攻击者可以构造包含外部实体的恶意 XML payload。</p>
 <p>假设攻击者传入如下恶意<code>payload</code>：</p>
 <p><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt; </code></p>
 <p><code>&lt;!DOCTYPE root [  &lt;!ENTITY xxe SYSTEM &quot;file:///c:/windows/system32/drivers/etc/hosts&quot;&gt; &lt;!-- 引用本地文件 --&gt; ]&gt; </code></p>
 <p><code>&lt;root&gt;&amp;xxe;&lt;/root&gt;</code></p>
 <blockquote>
-<p>靶场中点击run后是针对于linux环境，修改payload<br><a target="_blank" rel="noopener" href="http://127.0.0.1:8001/xxe/vul1?payload=%3C?xml%20version=%221.0%22%20encoding=%22UTF-8%22?%3E%3C!DOCTYPE%20root%20%5B%3C!ENTITY%20xxe%20SYSTEM%20%22file:///C:/Windows/win.ini%22%3E%5D%3E%3Croot%3E&xxe;%3C/root%3E">http://127.0.0.1:8001/xxe/vul1?payload=%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3C%21DOCTYPE%20root%20%5B%3C%21ENTITY%20xxe%20SYSTEM%20%22file%3A%2F%2F%2FC%3A%2FWindows%2Fwin.ini%22%3E%5D%3E%3Croot%3E%26xxe%3B%3C%2Froot%3E</a></p>
+<p>靶场中点击run后是针对于linux环境，修改payload<br>
+<a target="_blank" rel="noopener" href="http://127.0.0.1:8001/xxe/vul1?payload=%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3C%21DOCTYPE%20root%20%5B%3C%21ENTITY%20xxe%20SYSTEM%20%22file%3A%2F%2F%2FC%3A%2FWindows%2Fwin.ini%22%3E%5D%3E%3Croot%3E%26xxe%3B%3C%2Froot%3E">http://127.0.0.1:8001/xxe/vul1?payload=&lt;%3Fxml version%3D&quot;1.0&quot; encoding%3D&quot;UTF-8&quot;%3F&gt;&lt;!DOCTYPE root [&lt;!ENTITY xxe SYSTEM &quot;file%3A%2F%2F%2FC%3A%2FWindows%2Fwin.ini&quot;&gt;]&gt;&lt;root&gt;%26xxe%3B&lt;%2Froot&gt;</a></p>
 </blockquote>
-<p>就可以看到windows的win.ini配置文件	</p>
+<p>就可以看到windows的win.ini配置文件</p>
 
     </div>
 

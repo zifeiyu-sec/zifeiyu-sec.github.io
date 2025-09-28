@@ -52,6 +52,8 @@
 
   
 
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"cdn":"https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.7.0/mermaid.min.js","integrity":"sha256-4+IKDqhZ/sXjc8Wtl2/MsxI4e0s1KpEVdbEP7V/Lz8U="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
 
 
 
@@ -140,7 +142,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">28</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -197,6 +199,92 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/09/28/Java%E6%94%BB%E9%98%B2/Shiro%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | 子非鱼的博客">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/09/28/Java%E6%94%BB%E9%98%B2/Shiro%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E1/" class="post-title-link" itemprop="url">Shiro反序列化漏洞1</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-09-28 22:31:54 / 修改时间：22:39:15" itemprop="dateCreated datePublished" datetime="2025-09-28T22:31:54+08:00">2025-09-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java%E6%94%BB%E9%98%B2/" itemprop="url" rel="index"><span itemprop="name">Java攻防</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>shiro是java中一个框架，用于管理用户的身份验证，授权，会话及加密。Shiro 安全框架在处理 RememberMe 功能时，若加密密钥泄露或使用默认密钥，攻击者伪造恶意的 RememberMe cookie，服务器对其反序列化时会执行恶意代码 。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/09/28/Java%E6%94%BB%E9%98%B2/Shiro%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E1/">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
     <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/09/26/Java%E6%94%BB%E9%98%B2/Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%B8%8D%E5%87%BA%E7%BD%91%E5%88%A9%E7%94%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -225,9 +313,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2025-09-26 23:37:38 / 修改时间：23:42:31" itemprop="dateCreated datePublished" datetime="2025-09-26T23:37:38+08:00">2025-09-26</time>
+      <time title="创建时间：2025-09-26 23:37:38" itemprop="dateCreated datePublished" datetime="2025-09-26T23:37:38+08:00">2025-09-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-09-27 13:05:15" itemprop="dateModified" datetime="2025-09-27T13:05:15+08:00">2025-09-27</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -311,9 +405,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2025-09-26 23:37:24 / 修改时间：23:45:08" itemprop="dateCreated datePublished" datetime="2025-09-26T23:37:24+08:00">2025-09-26</time>
+      <time title="创建时间：2025-09-26 23:37:24" itemprop="dateCreated datePublished" datetime="2025-09-26T23:37:24+08:00">2025-09-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-09-27 12:45:46" itemprop="dateModified" datetime="2025-09-27T12:45:46+08:00">2025-09-27</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -397,9 +497,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2025-09-26 23:37:24 / 修改时间：23:42:32" itemprop="dateCreated datePublished" datetime="2025-09-26T23:37:24+08:00">2025-09-26</time>
+      <time title="创建时间：2025-09-26 23:37:24" itemprop="dateCreated datePublished" datetime="2025-09-26T23:37:24+08:00">2025-09-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-09-27 12:45:43" itemprop="dateModified" datetime="2025-09-27T12:45:43+08:00">2025-09-27</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -483,9 +589,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2025-09-21 19:45:36 / 修改时间：20:09:29" itemprop="dateCreated datePublished" datetime="2025-09-21T19:45:36+08:00">2025-09-21</time>
+      <time title="创建时间：2025-09-21 19:45:36" itemprop="dateCreated datePublished" datetime="2025-09-21T19:45:36+08:00">2025-09-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-09-27 12:45:56" itemprop="dateModified" datetime="2025-09-27T12:45:56+08:00">2025-09-27</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -507,7 +619,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="JNDI注入"><a href="#JNDI注入" class="headerlink" title="JNDI注入"></a>JNDI注入</h1><h2 id="基础介绍"><a href="#基础介绍" class="headerlink" title="基础介绍"></a>基础介绍</h2><h3 id="1-JNDI-的基本概念"><a href="#1-JNDI-的基本概念" class="headerlink" title="1 JNDI 的基本概念"></a>1 JNDI 的基本概念</h3><p>JNDI（Java Naming and Directory Interface，Java命名和目录接口）是SUN公司提供的一组<strong>应用程序编程接口（API）</strong>，它为Java应用程序提供了访问各种命名和目录服务的<strong>统一客户端接口</strong>。JNDI的核心价值在于其<strong>抽象层设计</strong>，它允许开发人员使用相同的代码与不同类型的命名和目录服务（如RMI、LDAP、DNS、CORBA等）进行交互，而无需关心底层服务的具体实现细节。这使得Java应用程序能够以<strong>标准化的方式</strong>发现和查找各种资源（如数据库连接、远程对象、打印机等）以及其他程序对象，极大地增强了系统的<strong>可维护性</strong>和<strong>灵活性</strong>。例如，当数据库连接参数发生变更时，只需在JNDI环境中修改数据源配置，而无需修改所有应用程序代码，这简化了系统管理并降低了组件间的耦合度。</p>
+          <h1>JNDI注入</h1>
+<h2 id="基础介绍">基础介绍</h2>
+<h3 id="1-JNDI-的基本概念">1 JNDI 的基本概念</h3>
+<p>JNDI（Java Naming and Directory Interface，Java命名和目录接口）是SUN公司提供的一组<strong>应用程序编程接口（API）</strong>，它为Java应用程序提供了访问各种命名和目录服务的<strong>统一客户端接口</strong>。JNDI的核心价值在于其<strong>抽象层设计</strong>，它允许开发人员使用相同的代码与不同类型的命名和目录服务（如RMI、LDAP、DNS、CORBA等）进行交互，而无需关心底层服务的具体实现细节。这使得Java应用程序能够以<strong>标准化的方式</strong>发现和查找各种资源（如数据库连接、远程对象、打印机等）以及其他程序对象，极大地增强了系统的<strong>可维护性</strong>和<strong>灵活性</strong>。例如，当数据库连接参数发生变更时，只需在JNDI环境中修改数据源配置，而无需修改所有应用程序代码，这简化了系统管理并降低了组件间的耦合度。</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2025/09/21/Java%E6%94%BB%E9%98%B2/JNDI%E6%B3%A8%E5%85%A5/#more" rel="contents">
@@ -569,9 +684,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2025-09-21 19:45:25 / 修改时间：20:10:28" itemprop="dateCreated datePublished" datetime="2025-09-21T19:45:25+08:00">2025-09-21</time>
+      <time title="创建时间：2025-09-21 19:45:25" itemprop="dateCreated datePublished" datetime="2025-09-21T19:45:25+08:00">2025-09-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-09-27 12:45:50" itemprop="dateModified" datetime="2025-09-27T12:45:50+08:00">2025-09-27</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -593,7 +714,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="Java反序列化1（原生类）"><a href="#Java反序列化1（原生类）" class="headerlink" title="Java反序列化1（原生类）"></a>Java反序列化1（原生类）</h2><p>序列化是将Java对象转换成字节流的过程。而反序列化是将字节流转换成Java对象的过程，java序列化的数据一般会以标记(ac ed 00 05)开头，base64编码的特征为rO0AB，JAVA常见的序列化和反序列化的方法有JAVA 原生序列化和JSON 类（fastjson、jackson）序列化等。</p>
+          <h2 id="Java反序列化1（原生类）">Java反序列化1（原生类）</h2>
+<p>序列化是将Java对象转换成字节流的过程。而反序列化是将字节流转换成Java对象的过程，java序列化的数据一般会以标记(ac ed 00 05)开头，base64编码的特征为rO0AB，JAVA常见的序列化和反序列化的方法有JAVA 原生序列化和JSON 类（fastjson、jackson）序列化等。</p>
 <p>Java中可分为：原生反序列化类(ObjectInputStream.readObject()、SnakeYaml、XMLDecoder等)、三方组件反序列化(Fastjson、Jackson、Xstream等)</p>
 <p>Java反序列化机制是对象持久化和网络传输的核心，但也因其复杂性成为安全漏洞的高发区。以下从原生反序列化类和第三方组件两方面进行系统性分析：</p>
 <hr>
@@ -658,9 +780,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2025-09-21 19:45:11 / 修改时间：20:11:48" itemprop="dateCreated datePublished" datetime="2025-09-21T19:45:11+08:00">2025-09-21</time>
+      <time title="创建时间：2025-09-21 19:45:11" itemprop="dateCreated datePublished" datetime="2025-09-21T19:45:11+08:00">2025-09-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-09-27 12:45:38" itemprop="dateModified" datetime="2025-09-27T12:45:38+08:00">2025-09-27</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -744,9 +872,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2025-09-21 19:44:57 / 修改时间：20:12:32" itemprop="dateCreated datePublished" datetime="2025-09-21T19:44:57+08:00">2025-09-21</time>
+      <time title="创建时间：2025-09-21 19:44:57" itemprop="dateCreated datePublished" datetime="2025-09-21T19:44:57+08:00">2025-09-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-09-27 12:45:35" itemprop="dateModified" datetime="2025-09-27T12:45:35+08:00">2025-09-27</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -830,9 +964,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2025-09-21 19:44:10 / 修改时间：20:10:11" itemprop="dateCreated datePublished" datetime="2025-09-21T19:44:10+08:00">2025-09-21</time>
+      <time title="创建时间：2025-09-21 19:44:10" itemprop="dateCreated datePublished" datetime="2025-09-21T19:44:10+08:00">2025-09-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-09-27 12:45:53" itemprop="dateModified" datetime="2025-09-27T12:45:53+08:00">2025-09-27</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -854,9 +994,11 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="Sql注入"><a href="#Sql注入" class="headerlink" title="Sql注入"></a>Sql注入</h1><p>学习靶场：<a target="_blank" rel="noopener" href="https://github.com/whgojp/JavaSecLab">https://github.com/whgojp/JavaSecLab</a></p>
+          <h1>Sql注入</h1>
+<p>学习靶场：<a target="_blank" rel="noopener" href="https://github.com/whgojp/JavaSecLab">https://github.com/whgojp/JavaSecLab</a></p>
 <p>按照教程安装启动靶场后进入靶场，</p>
-<h2 id="JDBC中的SQL注入"><a href="#JDBC中的SQL注入" class="headerlink" title="JDBC中的SQL注入"></a>JDBC中的SQL注入</h2><p>JDBC(Java Database Connectivity)是Java连接数据库的标准API。</p>
+<h2 id="JDBC中的SQL注入">JDBC中的SQL注入</h2>
+<p>JDBC(Java Database Connectivity)是Java连接数据库的标准API。</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2025/09/21/Java%E6%94%BB%E9%98%B2/Java%E4%B8%ADSql%E6%B3%A8%E5%85%A5/#more" rel="contents">
@@ -946,92 +1088,6 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2025/09/19/%E9%9D%A2%E8%AF%95%E9%A2%98/%E9%9D%A2%E8%AF%95%E9%A2%98%E6%95%B4%E7%90%86%E4%B8%80_%E8%AF%A6%E7%BB%86%E7%AC%94%E8%AE%B0/">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/09/19/%E9%9D%A2%E8%AF%95%E9%A2%98/%E9%9D%A2%E8%AF%95%E9%A2%98%E9%97%AE%E9%A2%98%E4%B8%80/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/1.png">
-      <meta itemprop="name" content="子非鱼">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="子非鱼的博客">
-      <meta itemprop="description" content="学习过程的记录">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | 子非鱼的博客">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2025/09/19/%E9%9D%A2%E8%AF%95%E9%A2%98/%E9%9D%A2%E8%AF%95%E9%A2%98%E9%97%AE%E9%A2%98%E4%B8%80/" class="post-title-link" itemprop="url">面试题整理一</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2025-09-19 23:06:48 / 修改时间：23:15:13" itemprop="dateCreated datePublished" datetime="2025-09-19T23:06:48+08:00">2025-09-19</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E9%9D%A2%E8%AF%95%E9%A2%98/" itemprop="url" rel="index"><span itemprop="name">面试题</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>网络安全面试题详细解答</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2025/09/19/%E9%9D%A2%E8%AF%95%E9%A2%98/%E9%9D%A2%E8%AF%95%E9%A2%98%E9%97%AE%E9%A2%98%E4%B8%80/">
                 阅读全文 &raquo;
               </a>
             </div>

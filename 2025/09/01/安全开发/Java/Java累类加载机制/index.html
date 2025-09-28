@@ -55,6 +55,8 @@
 
   
 
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"cdn":"https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.7.0/mermaid.min.js","integrity":"sha256-4+IKDqhZ/sXjc8Wtl2/MsxI4e0s1KpEVdbEP7V/Lz8U="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
 
 
 
@@ -129,7 +131,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD"><span class="nav-number">1.</span> <span class="nav-text">类加载</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E7%94%9F%E5%8A%A8%E7%9A%84%E6%AF%94%E5%96%BB%EF%BC%9A%E5%81%9A%E4%B8%80%E9%81%93%E8%8F%9C%EF%BC%88%E7%BA%A2%E7%83%A7%E8%82%89%EF%BC%89"><span class="nav-number">1.0.1.</span> <span class="nav-text">一个生动的比喻：做一道菜（红烧肉）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%98%AF%E5%81%9A%E4%BB%80%E4%B9%88%E7%9A%84%EF%BC%9F%EF%BC%88Why%EF%BC%9F%EF%BC%89"><span class="nav-number">1.0.2.</span> <span class="nav-text">一、类加载是做什么的？（Why？）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E8%B0%81%E6%9D%A5%E5%81%9A%E8%BF%99%E4%BB%B6%E4%BA%8B%EF%BC%9F%EF%BC%88Who%EF%BC%9F%EF%BC%89"><span class="nav-number">1.0.3.</span> <span class="nav-text">二、谁来做这件事？（Who？）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%80%8E%E4%B9%88%E5%81%9A%E7%9A%84%EF%BC%9F%EF%BC%88How%EF%BC%9F%EF%BC%89%E2%80%94%E2%80%94-%E6%A0%B8%E5%BF%83%E6%B5%81%E7%A8%8B%EF%BC%9A%E2%80%9C%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%A8%A1%E5%9E%8B%E2%80%9D"><span class="nav-number">1.0.4.</span> <span class="nav-text">三、怎么做的？（How？）—— 核心流程：“双亲委派模型”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E7%B1%BB%E5%8A%A0%E8%BD%BD%E7%9A%84%E8%AF%A6%E7%BB%86%E6%AD%A5%E9%AA%A4%EF%BC%88What%EF%BC%9F%EF%BC%89"><span class="nav-number">1.0.5.</span> <span class="nav-text">四、类加载的详细步骤（What？）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%E4%B8%8E%E8%AE%B0%E5%BF%86%E6%8A%80%E5%B7%A7"><span class="nav-number">1.0.6.</span> <span class="nav-text">总结与记忆技巧</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E7%A4%BA%E4%BE%8B"><span class="nav-number">1.1.</span> <span class="nav-text">代码示例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B-1%EF%BC%9A%E7%B1%BB%E5%8A%A0%E8%BD%BD%E7%9A%84%E8%A7%A6%E5%8F%91%E6%97%B6%E6%9C%BA"><span class="nav-number">1.1.1.</span> <span class="nav-text">示例 1：类加载的触发时机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B-2%EF%BC%9A%E8%A2%AB%E5%8A%A8%E5%BC%95%E7%94%A8%EF%BC%88%E4%B8%8D%E4%BC%9A%E8%A7%A6%E5%8F%91%E5%88%9D%E5%A7%8B%E5%8C%96%EF%BC%89"><span class="nav-number">1.1.2.</span> <span class="nav-text">示例 2：被动引用（不会触发初始化）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B-3%EF%BC%9A%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%B1%82%E7%BA%A7%E5%85%B3%E7%B3%BB"><span class="nav-number">1.1.3.</span> <span class="nav-text">示例 3：类加载器的层级关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B-4%EF%BC%9A%E7%A0%B4%E5%9D%8F%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%A8%A1%E5%9E%8B%EF%BC%88%E8%87%AA%E5%AE%9A%E4%B9%89%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%EF%BC%89"><span class="nav-number">1.1.4.</span> <span class="nav-text">示例 4：破坏双亲委派模型（自定义类加载器）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B-5%EF%BC%9A%E9%9D%99%E6%80%81%E5%8F%98%E9%87%8F%E7%9A%84%E5%87%86%E5%A4%87%E9%98%B6%E6%AE%B5-vs-%E5%88%9D%E5%A7%8B%E5%8C%96%E9%98%B6%E6%AE%B5"><span class="nav-number">1.1.5.</span> <span class="nav-text">示例 5：静态变量的准备阶段 vs 初始化阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.1.6.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">类加载</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E7%94%9F%E5%8A%A8%E7%9A%84%E6%AF%94%E5%96%BB%EF%BC%9A%E5%81%9A%E4%B8%80%E9%81%93%E8%8F%9C%EF%BC%88%E7%BA%A2%E7%83%A7%E8%82%89%EF%BC%89"><span class="nav-number">1.0.1.</span> <span class="nav-text">一个生动的比喻：做一道菜（红烧肉）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%98%AF%E5%81%9A%E4%BB%80%E4%B9%88%E7%9A%84%EF%BC%9F%EF%BC%88Why%EF%BC%9F%EF%BC%89"><span class="nav-number">1.0.2.</span> <span class="nav-text">一、类加载是做什么的？（Why？）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E8%B0%81%E6%9D%A5%E5%81%9A%E8%BF%99%E4%BB%B6%E4%BA%8B%EF%BC%9F%EF%BC%88Who%EF%BC%9F%EF%BC%89"><span class="nav-number">1.0.3.</span> <span class="nav-text">二、谁来做这件事？（Who？）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%80%8E%E4%B9%88%E5%81%9A%E7%9A%84%EF%BC%9F%EF%BC%88How%EF%BC%9F%EF%BC%89%E2%80%94%E2%80%94-%E6%A0%B8%E5%BF%83%E6%B5%81%E7%A8%8B%EF%BC%9A%E2%80%9C%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%A8%A1%E5%9E%8B%E2%80%9D"><span class="nav-number">1.0.4.</span> <span class="nav-text">三、怎么做的？（How？）—— 核心流程：“双亲委派模型”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E7%B1%BB%E5%8A%A0%E8%BD%BD%E7%9A%84%E8%AF%A6%E7%BB%86%E6%AD%A5%E9%AA%A4%EF%BC%88What%EF%BC%9F%EF%BC%89"><span class="nav-number">1.0.5.</span> <span class="nav-text">四、类加载的详细步骤（What？）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%E4%B8%8E%E8%AE%B0%E5%BF%86%E6%8A%80%E5%B7%A7"><span class="nav-number">1.0.6.</span> <span class="nav-text">总结与记忆技巧</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E7%A4%BA%E4%BE%8B"><span class="nav-number">1.1.</span> <span class="nav-text">代码示例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B-1%EF%BC%9A%E7%B1%BB%E5%8A%A0%E8%BD%BD%E7%9A%84%E8%A7%A6%E5%8F%91%E6%97%B6%E6%9C%BA"><span class="nav-number">1.1.1.</span> <span class="nav-text">示例 1：类加载的触发时机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B-2%EF%BC%9A%E8%A2%AB%E5%8A%A8%E5%BC%95%E7%94%A8%EF%BC%88%E4%B8%8D%E4%BC%9A%E8%A7%A6%E5%8F%91%E5%88%9D%E5%A7%8B%E5%8C%96%EF%BC%89"><span class="nav-number">1.1.2.</span> <span class="nav-text">示例 2：被动引用（不会触发初始化）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B-3%EF%BC%9A%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%B1%82%E7%BA%A7%E5%85%B3%E7%B3%BB"><span class="nav-number">1.1.3.</span> <span class="nav-text">示例 3：类加载器的层级关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B-4%EF%BC%9A%E7%A0%B4%E5%9D%8F%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%A8%A1%E5%9E%8B%EF%BC%88%E8%87%AA%E5%AE%9A%E4%B9%89%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%EF%BC%89"><span class="nav-number">1.1.4.</span> <span class="nav-text">示例 4：破坏双亲委派模型（自定义类加载器）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B-5%EF%BC%9A%E9%9D%99%E6%80%81%E5%8F%98%E9%87%8F%E7%9A%84%E5%87%86%E5%A4%87%E9%98%B6%E6%AE%B5-vs-%E5%88%9D%E5%A7%8B%E5%8C%96%E9%98%B6%E6%AE%B5"><span class="nav-number">1.1.5.</span> <span class="nav-text">示例 5：静态变量的准备阶段 vs 初始化阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.1.6.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -144,7 +146,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">28</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -258,22 +260,25 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><h1 id="类加载"><a href="#类加载" class="headerlink" title="类加载"></a>类加载</h1><p>视频介绍</p>
-<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1a5411g7op">https://www.bilibili.com/video/BV1a5411g7op</a> </p>
+    <div class="post-body" itemprop="articleBody"><h1>类加载</h1>
+<p>视频介绍</p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1a5411g7op">https://www.bilibili.com/video/BV1a5411g7op</a></p>
 <p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1ZY4y1n7tg">https://www.bilibili.com/video/BV1ZY4y1n7tg</a></p>
 <p>文章介绍</p>
 <p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/vFa_n-C2XssixmpOtbfSzA">https://mp.weixin.qq.com/s/vFa_n-C2XssixmpOtbfSzA</a></p>
 <p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/MesrMPZDlF4aVSa-bkObLw">https://mp.weixin.qq.com/s/MesrMPZDlF4aVSa-bkObLw</a></p>
 <p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/qIjslNrsA2OCWhAAd4k_Eg">https://mp.weixin.qq.com/s/qIjslNrsA2OCWhAAd4k_Eg</a></p>
-<h3 id="一个生动的比喻：做一道菜（红烧肉）"><a href="#一个生动的比喻：做一道菜（红烧肉）" class="headerlink" title="一个生动的比喻：做一道菜（红烧肉）"></a>一个生动的比喻：做一道菜（红烧肉）</h3><p>在开始之前，我们先打个比方。你把 Java 程序想象成要做一道“红烧肉”。</p>
+<h3 id="一个生动的比喻：做一道菜（红烧肉）">一个生动的比喻：做一道菜（红烧肉）</h3>
+<p>在开始之前，我们先打个比方。你把 Java 程序想象成要做一道“红烧肉”。</p>
 <ul>
-<li><strong>Java 源代码 (<code>.java</code> 文件)</strong> &#x3D; <strong>菜谱文字版</strong> 它只是用人类和 Java 编译器能懂的语言写的步骤，但没法直接执行。</li>
-<li><strong>编译后的字节码 (<code>.class</code> 文件)</strong> &#x3D; <strong>准备好的食材包</strong> 菜谱 (<code>.java</code>) 被厨师长 (Java 编译器 <code>javac</code>) 处理过了，变成了分门别类、洗净切好的食材包（肉块、香料包等），这些食材包放在冰箱（硬盘）里。它们已经接近可用的状态，但还没下锅。</li>
-<li><strong>JVM 内存中的 Class 对象</strong> &#x3D; <strong>下锅烹饪后的成品菜</strong> 这才是真正可以“吃”（被 JVM 执行）的东西。我们需要把食材包从冰箱里拿出来，解冻、下锅、烹饪，最终变成一道真正的菜。</li>
+<li><strong>Java 源代码 (<code>.java</code> 文件)</strong> = <strong>菜谱文字版</strong> 它只是用人类和 Java 编译器能懂的语言写的步骤，但没法直接执行。</li>
+<li><strong>编译后的字节码 (<code>.class</code> 文件)</strong> = <strong>准备好的食材包</strong> 菜谱 (<code>.java</code>) 被厨师长 (Java 编译器 <code>javac</code>) 处理过了，变成了分门别类、洗净切好的食材包（肉块、香料包等），这些食材包放在冰箱（硬盘）里。它们已经接近可用的状态，但还没下锅。</li>
+<li><strong>JVM 内存中的 Class 对象</strong> = <strong>下锅烹饪后的成品菜</strong> 这才是真正可以“吃”（被 JVM 执行）的东西。我们需要把食材包从冰箱里拿出来，解冻、下锅、烹饪，最终变成一道真正的菜。</li>
 </ul>
 <p>而 <strong>“类加载机制”</strong>，就是描述 <strong>如何从“食材包”（.class 文件）变成“成品菜”（Class 对象）</strong> 的这一整套流程和规则。</p>
 <hr>
-<h3 id="一、类加载是做什么的？（Why？）"><a href="#一、类加载是做什么的？（Why？）" class="headerlink" title="一、类加载是做什么的？（Why？）"></a>一、类加载是做什么的？（Why？）</h3><p>简单来说，Java 程序要运行，需要把编译好的 <code>.class</code> 文件（字节码）加载到内存里，然后才能被虚拟机执行。</p>
+<h3 id="一、类加载是做什么的？（Why？）">一、类加载是做什么的？（Why？）</h3>
+<p>简单来说，Java 程序要运行，需要把编译好的 <code>.class</code> 文件（字节码）加载到内存里，然后才能被虚拟机执行。</p>
 <p>但 Java 的厉害之处在于，它<strong>不是一次性把所有类都加载进内存</strong>，而是 <strong>“按需加载”</strong> —— 即程序在运行过程中，用到哪个类了，才去加载哪个类。</p>
 <p>类加载机制就是负责完成这件事的，它做了三件核心事：</p>
 <ol>
@@ -282,22 +287,26 @@
 <li><strong>初始化</strong>：执行类中的静态代码块和给静态变量赋值，让这个类变得“可用”。</li>
 </ol>
 <hr>
-<h3 id="二、谁来做这件事？（Who？）"><a href="#二、谁来做这件事？（Who？）" class="headerlink" title="二、谁来做这件事？（Who？）"></a>二、谁来做这件事？（Who？）</h3><p>这件事不是由 JVM 亲手做的，而是交给了一个叫做 <strong>“类加载器 (ClassLoader)”</strong> 的模块。</p>
+<h3 id="二、谁来做这件事？（Who？）">二、谁来做这件事？（Who？）</h3>
+<p>这件事不是由 JVM 亲手做的，而是交给了一个叫做 <strong>“类加载器 (ClassLoader)”</strong> 的模块。</p>
 <p>JVM 自带了三个最重要的类加载器，它们各有分工，形成了一种父子关系（注意：这里的父子是<strong>逻辑上的层次关系，不是继承关系</strong>）：</p>
 <p><em>(上图展示了类加载器的双亲委派模型，下文会解释)</em></p>
 <ol>
-<li><strong>Bootstrap ClassLoader (启动类加载器)</strong><ul>
+<li><strong>Bootstrap ClassLoader (启动类加载器)</strong>
+<ul>
 <li><strong>角色</strong>：祖师爷，最高领导。</li>
 <li><strong>工作</strong>：加载 Java 最核心的库，比如 <code>rt.jar</code>（包含 <code>java.lang</code>, <code>java.util</code> 等包）。它是用 C++ 实现的，是 JVM 自身的一部分。</li>
 <li><strong>特点</strong>：你无法在 Java 代码中直接获取到它的引用。</li>
 </ul>
 </li>
-<li><strong>Extension ClassLoader (扩展类加载器)</strong><ul>
+<li><strong>Extension ClassLoader (扩展类加载器)</strong>
+<ul>
 <li><strong>角色</strong>：大佬的儿子。</li>
 <li><strong>工作</strong>：加载 <code>JAVA_HOME/lib/ext</code> 目录下的，或者由 <code>java.ext.dirs</code> 系统变量指定的路径下的类库。这些是 Java 的扩展库。</li>
 </ul>
 </li>
-<li><strong>Application ClassLoader (应用程序类加载器)</strong><ul>
+<li><strong>Application ClassLoader (应用程序类加载器)</strong>
+<ul>
 <li><strong>角色</strong>：大佬的孙子，也是最常用的。</li>
 <li><strong>工作</strong>：加载我们<strong>自己写的 Java 程序</strong>中的类，也就是 <code>classpath</code> 环境变量或命令行参数 <code>-cp</code> 所指定路径下的类。</li>
 <li><strong>别名</strong>：也叫 <code>System ClassLoader</code>。</li>
@@ -306,12 +315,14 @@
 </ol>
 <p>除了这三个，我们还可以自定义类加载器。</p>
 <hr>
-<h3 id="三、怎么做的？（How？）——-核心流程：“双亲委派模型”"><a href="#三、怎么做的？（How？）——-核心流程：“双亲委派模型”" class="headerlink" title="三、怎么做的？（How？）—— 核心流程：“双亲委派模型”"></a>三、怎么做的？（How？）—— 核心流程：“双亲委派模型”</h3><p>这是类加载机制最核心、最重要的原则。它的工作流程就像公司审批流程：</p>
+<h3 id="三、怎么做的？（How？）——-核心流程：“双亲委派模型”">三、怎么做的？（How？）—— 核心流程：“双亲委派模型”</h3>
+<p>这是类加载机制最核心、最重要的原则。它的工作流程就像公司审批流程：</p>
 <p><strong>“双亲委派模型” (Parents Delegation Model) 规则：</strong></p>
 <blockquote>
 <p><strong>一个类加载器收到加载请求时，它首先不会自己去尝试加载，而是把这个请求向上委托给父加载器去完成。每一层都是如此。只有当父加载器反馈自己无法完成这个加载请求（在自己的搜索范围没找到所需的类）时，子加载器才会尝试自己去加载。</strong></p>
 </blockquote>
-<p><strong>还用做菜比喻：</strong><br> 你想吃红烧肉（加载一个类）。</p>
+<p><strong>还用做菜比喻：</strong><br>
+你想吃红烧肉（加载一个类）。</p>
 <ol>
 <li>你先问你家大厨（Application Loader）：“你会做吗？”</li>
 <li>你家大厨说：“我得问我师父（Extension Loader）。”</li>
@@ -326,7 +337,8 @@
 <li><strong>稳定</strong>：保证了 Java 程序的稳定运行，核心类的类型体系不会被破坏。</li>
 </ul>
 <hr>
-<h3 id="四、类加载的详细步骤（What？）"><a href="#四、类加载的详细步骤（What？）" class="headerlink" title="四、类加载的详细步骤（What？）"></a>四、类加载的详细步骤（What？）</h3><p>从 <code>.class</code> 文件到内存中的可用类，具体分为以下 <strong>3 个大阶段，5 个小步骤</strong>：</p>
+<h3 id="四、类加载的详细步骤（What？）">四、类加载的详细步骤（What？）</h3>
+<p>从 <code>.class</code> 文件到内存中的可用类，具体分为以下 <strong>3 个大阶段，5 个小步骤</strong>：</p>
 <p><strong>1. 加载 (Loading)</strong></p>
 <ul>
 <li><strong>做什么</strong>： 通过类的全限定名（包名+类名）来获取定义此类的<strong>二进制字节流</strong>（读 <code>.class</code> 文件）。 将这个字节流所代表的<strong>静态存储结构</strong>转换为<strong>方法区的运行时数据结构</strong>。 在内存中生成一个代表这个类的 <code>java.lang.Class</code> 对象，作为方法区这个类的各种数据的访问入口。</li>
@@ -345,41 +357,45 @@
 <li><strong>所以，在上面的例子中，<code>static int value = 123;</code> 的赋值操作 <code>123</code> 就是在这个阶段完成的！</strong></li>
 </ul>
 <hr>
-<h3 id="总结与记忆技巧"><a href="#总结与记忆技巧" class="headerlink" title="总结与记忆技巧"></a>总结与记忆技巧</h3><table>
+<h3 id="总结与记忆技巧">总结与记忆技巧</h3>
+<table>
 <thead>
 <tr>
-<th align="left">阶段</th>
-<th align="left">核心工作</th>
-<th align="left">简单理解</th>
+<th style="text-align:left">阶段</th>
+<th style="text-align:left">核心工作</th>
+<th style="text-align:left">简单理解</th>
 </tr>
 </thead>
-<tbody><tr>
-<td align="left"><strong>加载</strong></td>
-<td align="left">找文件，读进来，创建 Class 对象</td>
-<td align="left"><strong>从冰箱拿食材包</strong></td>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>加载</strong></td>
+<td style="text-align:left">找文件，读进来，创建 Class 对象</td>
+<td style="text-align:left"><strong>从冰箱拿食材包</strong></td>
 </tr>
 <tr>
-<td align="left"><strong>连接-验证</strong></td>
-<td align="left">检查字节码是否安全、规范</td>
-<td align="left"><strong>检查食材是否变质、有毒</strong></td>
+<td style="text-align:left"><strong>连接-验证</strong></td>
+<td style="text-align:left">检查字节码是否安全、规范</td>
+<td style="text-align:left"><strong>检查食材是否变质、有毒</strong></td>
 </tr>
 <tr>
-<td align="left"><strong>连接-准备</strong></td>
-<td align="left">给 static 变量分内存，赋“零值”</td>
-<td align="left"><strong>把肉拿出来解冻（还没调味）</strong></td>
+<td style="text-align:left"><strong>连接-准备</strong></td>
+<td style="text-align:left">给 static 变量分内存，赋“零值”</td>
+<td style="text-align:left"><strong>把肉拿出来解冻（还没调味）</strong></td>
 </tr>
 <tr>
-<td align="left"><strong>连接-解析</strong></td>
-<td align="left">把符号引用变成直接引用</td>
-<td align="left"><strong>把“香料包”具体化成“八角、桂皮”</strong></td>
+<td style="text-align:left"><strong>连接-解析</strong></td>
+<td style="text-align:left">把符号引用变成直接引用</td>
+<td style="text-align:left"><strong>把“香料包”具体化成“八角、桂皮”</strong></td>
 </tr>
 <tr>
-<td align="left"><strong>初始化</strong></td>
-<td align="left">执行 static 代码块和赋值</td>
-<td align="left"><strong>下锅烹饪，加调料，做成成品菜</strong></td>
+<td style="text-align:left"><strong>初始化</strong></td>
+<td style="text-align:left">执行 static 代码块和赋值</td>
+<td style="text-align:left"><strong>下锅烹饪，加调料，做成成品菜</strong></td>
 </tr>
-</tbody></table>
-<p><strong>触发初始化的时机（什么时候开始做菜？）：</strong><br> “菜”不是随时做的，只有在真正要用到的时候才做。比如：</p>
+</tbody>
+</table>
+<p><strong>触发初始化的时机（什么时候开始做菜？）：</strong><br>
+“菜”不是随时做的，只有在真正要用到的时候才做。比如：</p>
 <ul>
 <li>用 <code>new</code> 关键字创建对象时 (<code>new MyClass()</code>)</li>
 <li>读取或设置一个类的静态字段（被 final static 修饰的常量除外）</li>
@@ -387,59 +403,57 @@
 <li>使用反射 (<code>Class.forName(...)</code>)</li>
 <li>初始化一个类的子类（会先初始化父类）</li>
 </ul>
-<h2 id="代码示例"><a href="#代码示例" class="headerlink" title="代码示例"></a>代码示例</h2><hr>
-<h3 id="示例-1：类加载的触发时机"><a href="#示例-1：类加载的触发时机" class="headerlink" title="示例 1：类加载的触发时机"></a><strong>示例 1：类加载的触发时机</strong></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">public class ClassLoadDemo &#123;</span><br><span class="line">    static &#123;</span><br><span class="line">        System.out.println(&quot;ClassLoadDemo 的静态代码块执行（初始化阶段）&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        System.out.println(&quot;----- 主程序开始 -----&quot;);</span><br><span class="line">        // 场景1：主动引用（触发初始化）</span><br><span class="line">        new SubClass(); // 触发子类初始化（会先初始化父类）</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class SuperClass &#123;</span><br><span class="line">    static &#123;</span><br><span class="line">        System.out.println(&quot;SuperClass 的静态代码块执行（父类初始化）&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class SubClass extends SuperClass &#123;</span><br><span class="line">    static &#123;</span><br><span class="line">        System.out.println(&quot;SubClass 的静态代码块执行（子类初始化）&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<h2 id="代码示例">代码示例</h2>
+<hr>
+<h3 id="示例-1：类加载的触发时机"><strong>示例 1：类加载的触发时机</strong></h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">public class ClassLoadDemo &#123;</span><br><span class="line">    static &#123;</span><br><span class="line">        System.out.println(&quot;ClassLoadDemo 的静态代码块执行（初始化阶段）&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        System.out.println(&quot;----- 主程序开始 -----&quot;);</span><br><span class="line">        // 场景1：主动引用（触发初始化）</span><br><span class="line">        new SubClass(); // 触发子类初始化（会先初始化父类）</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class SuperClass &#123;</span><br><span class="line">    static &#123;</span><br><span class="line">        System.out.println(&quot;SuperClass 的静态代码块执行（父类初始化）&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class SubClass extends SuperClass &#123;</span><br><span class="line">    static &#123;</span><br><span class="line">        System.out.println(&quot;SubClass 的静态代码块执行（子类初始化）&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p><strong>输出结果：</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ClassLoadDemo 的静态代码块执行（初始化阶段）</span><br><span class="line">----- 主程序开始 -----</span><br><span class="line">SuperClass 的静态代码块执行（父类初始化）</span><br><span class="line">SubClass 的静态代码块执行（子类初始化）</span><br></pre></td></tr></table></figure>
-
 <p><strong>关键点：</strong></p>
 <ol>
 <li><strong>主类 <code>ClassLoadDemo</code> 会先被加载并初始化</strong>（因为 <code>main</code> 方法是程序入口）。</li>
 <li>当 <code>new SubClass()</code> 时： JVM 发现 <code>SubClass</code> 未被加载，触发类加载流程。 因为 <code>SubClass</code> 继承 <code>SuperClass</code>，所以会<strong>先加载并初始化父类</strong>（父类优先原则）。 最后初始化子类 <code>SubClass</code>。</li>
 </ol>
 <hr>
-<h3 id="示例-2：被动引用（不会触发初始化）"><a href="#示例-2：被动引用（不会触发初始化）" class="headerlink" title="示例 2：被动引用（不会触发初始化）"></a><strong>示例 2：被动引用（不会触发初始化）</strong></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">public class PassiveReferenceDemo &#123;</span><br><span class="line">    static &#123;</span><br><span class="line">        System.out.println(&quot;PassiveReferenceDemo 初始化&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        System.out.println(&quot;----- 主程序开始 -----&quot;);</span><br><span class="line">        // 场景1：通过子类引用父类的静态字段（不会触发子类初始化）</span><br><span class="line">        System.out.println(SubClass.value); // value是父类的静态字段</span><br><span class="line">        // 场景2：定义对象数组（不会触发类初始化）</span><br><span class="line">        SuperClass[] arr = new SuperClass[10];</span><br><span class="line">        // 场景3：引用常量（常量在编译期已优化，不会触发初始化）</span><br><span class="line">        System.out.println(SubClass.CONSTANT);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class SuperClass &#123;</span><br><span class="line">    static int value = 123;</span><br><span class="line">    static &#123;</span><br><span class="line">        System.out.println(&quot;SuperClass 初始化&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class SubClass extends SuperClass &#123;</span><br><span class="line">    static final String CONSTANT = &quot;HELLO&quot;;</span><br><span class="line">    static &#123;</span><br><span class="line">        System.out.println(&quot;SubClass 初始化&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<h3 id="示例-2：被动引用（不会触发初始化）"><strong>示例 2：被动引用（不会触发初始化）</strong></h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">public class PassiveReferenceDemo &#123;</span><br><span class="line">    static &#123;</span><br><span class="line">        System.out.println(&quot;PassiveReferenceDemo 初始化&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        System.out.println(&quot;----- 主程序开始 -----&quot;);</span><br><span class="line">        // 场景1：通过子类引用父类的静态字段（不会触发子类初始化）</span><br><span class="line">        System.out.println(SubClass.value); // value是父类的静态字段</span><br><span class="line">        // 场景2：定义对象数组（不会触发类初始化）</span><br><span class="line">        SuperClass[] arr = new SuperClass[10];</span><br><span class="line">        // 场景3：引用常量（常量在编译期已优化，不会触发初始化）</span><br><span class="line">        System.out.println(SubClass.CONSTANT);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class SuperClass &#123;</span><br><span class="line">    static int value = 123;</span><br><span class="line">    static &#123;</span><br><span class="line">        System.out.println(&quot;SuperClass 初始化&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class SubClass extends SuperClass &#123;</span><br><span class="line">    static final String CONSTANT = &quot;HELLO&quot;;</span><br><span class="line">    static &#123;</span><br><span class="line">        System.out.println(&quot;SubClass 初始化&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p><strong>输出结果：</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">PassiveReferenceDemo 初始化</span><br><span class="line">----- 主程序开始 -----</span><br><span class="line">SuperClass 初始化</span><br><span class="line">123</span><br><span class="line">HELLO</span><br></pre></td></tr></table></figure>
-
 <p><strong>关键点：</strong></p>
 <ol>
 <li><strong>被动引用场景</strong>（不触发初始化）： 通过子类引用父类的静态字段（<code>SubClass.value</code>）→ 只会初始化父类。 定义对象数组（<code>new SuperClass[10]</code>）→ 不会初始化类。 引用编译期常量（<code>CONSTANT</code>）→ 直接替换为字面量，不触发初始化。</li>
 </ol>
 <hr>
-<h3 id="示例-3：类加载器的层级关系"><a href="#示例-3：类加载器的层级关系" class="headerlink" title="示例 3：类加载器的层级关系"></a><strong>示例 3：类加载器的层级关系</strong></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">public class ClassLoaderHierarchy &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        // 获取当前类的类加载器（Application ClassLoader）</span><br><span class="line">        ClassLoader loader = ClassLoaderHierarchy.class.getClassLoader();</span><br><span class="line">        System.out.println(&quot;当前类的加载器：&quot; + loader); // sun.misc.Launcher$AppClassLoader</span><br><span class="line"></span><br><span class="line">        // 获取父加载器（Extension ClassLoader）</span><br><span class="line">        ClassLoader parent = loader.getParent();</span><br><span class="line">        System.out.println(&quot;父加载器：&quot; + parent); // sun.misc.Launcher$ExtClassLoader</span><br><span class="line"></span><br><span class="line">        // 获取祖父加载器（Bootstrap ClassLoader，由C++实现，返回null）</span><br><span class="line">        ClassLoader grandParent = parent.getParent();</span><br><span class="line">        System.out.println(&quot;祖父加载器：&quot; + grandParent); // null</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<h3 id="示例-3：类加载器的层级关系"><strong>示例 3：类加载器的层级关系</strong></h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">public class ClassLoaderHierarchy &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        // 获取当前类的类加载器（Application ClassLoader）</span><br><span class="line">        ClassLoader loader = ClassLoaderHierarchy.class.getClassLoader();</span><br><span class="line">        System.out.println(&quot;当前类的加载器：&quot; + loader); // sun.misc.Launcher$AppClassLoader</span><br><span class="line"></span><br><span class="line">        // 获取父加载器（Extension ClassLoader）</span><br><span class="line">        ClassLoader parent = loader.getParent();</span><br><span class="line">        System.out.println(&quot;父加载器：&quot; + parent); // sun.misc.Launcher$ExtClassLoader</span><br><span class="line"></span><br><span class="line">        // 获取祖父加载器（Bootstrap ClassLoader，由C++实现，返回null）</span><br><span class="line">        ClassLoader grandParent = parent.getParent();</span><br><span class="line">        System.out.println(&quot;祖父加载器：&quot; + grandParent); // null</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p><strong>输出结果（可能因JDK版本不同略有差异）：</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">当前类的加载器：sun.misc.Launcher$AppClassLoader@18b4aac2</span><br><span class="line">父加载器：sun.misc.Launcher$ExtClassLoader@3feba861</span><br><span class="line">祖父加载器：null</span><br></pre></td></tr></table></figure>
-
 <p><strong>关键点：</strong></p>
 <ol>
 <li><strong>Bootstrap ClassLoader 是顶级加载器</strong>，用 C++ 实现，Java 中无法直接引用，所以返回 <code>null</code>。</li>
 <li>类加载器的父子关系是<strong>逻辑上的层级</strong>，不是继承关系。</li>
 </ol>
 <hr>
-<h3 id="示例-4：破坏双亲委派模型（自定义类加载器）"><a href="#示例-4：破坏双亲委派模型（自定义类加载器）" class="headerlink" title="示例 4：破坏双亲委派模型（自定义类加载器）"></a><strong>示例 4：破坏双亲委派模型（自定义类加载器）</strong></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">public class CustomClassLoader extends ClassLoader &#123;</span><br><span class="line">    @Override</span><br><span class="line">    protected Class&lt;?&gt; findClass(String name) throws ClassNotFoundException &#123;</span><br><span class="line">        // 模拟从非classpath路径加载类（如网络、磁盘其他目录）</span><br><span class="line">        byte[] classData = loadClassData(name); // 需自行实现读取.class文件的逻辑</span><br><span class="line">        if (classData == null) &#123;</span><br><span class="line">            throw new ClassNotFoundException();</span><br><span class="line">        &#125;</span><br><span class="line">        return defineClass(name, classData, 0, classData.length);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private byte[] loadClassData(String name) &#123;</span><br><span class="line">        // 简化示例：实际应从文件或网络读取.class文件字节流</span><br><span class="line">        return null; // 实际开发需替换为真实逻辑</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) throws Exception &#123;</span><br><span class="line">        CustomClassLoader loader = new CustomClassLoader();</span><br><span class="line">        // 强制让自定义加载器直接加载类（跳过双亲委派）</span><br><span class="line">        Class&lt;?&gt; clazz = loader.loadClass(&quot;com.example.MyClass&quot;);</span><br><span class="line">        System.out.println(&quot;类加载器：&quot; + clazz.getClassLoader());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<h3 id="示例-4：破坏双亲委派模型（自定义类加载器）"><strong>示例 4：破坏双亲委派模型（自定义类加载器）</strong></h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">public class CustomClassLoader extends ClassLoader &#123;</span><br><span class="line">    @Override</span><br><span class="line">    protected Class&lt;?&gt; findClass(String name) throws ClassNotFoundException &#123;</span><br><span class="line">        // 模拟从非classpath路径加载类（如网络、磁盘其他目录）</span><br><span class="line">        byte[] classData = loadClassData(name); // 需自行实现读取.class文件的逻辑</span><br><span class="line">        if (classData == null) &#123;</span><br><span class="line">            throw new ClassNotFoundException();</span><br><span class="line">        &#125;</span><br><span class="line">        return defineClass(name, classData, 0, classData.length);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private byte[] loadClassData(String name) &#123;</span><br><span class="line">        // 简化示例：实际应从文件或网络读取.class文件字节流</span><br><span class="line">        return null; // 实际开发需替换为真实逻辑</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) throws Exception &#123;</span><br><span class="line">        CustomClassLoader loader = new CustomClassLoader();</span><br><span class="line">        // 强制让自定义加载器直接加载类（跳过双亲委派）</span><br><span class="line">        Class&lt;?&gt; clazz = loader.loadClass(&quot;com.example.MyClass&quot;);</span><br><span class="line">        System.out.println(&quot;类加载器：&quot; + clazz.getClassLoader());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p><strong>关键点：</strong></p>
 <ol>
 <li>自定义类加载器需继承 <code>ClassLoader</code> 并重写 <code>findClass()</code> 方法。</li>
 <li><strong>破坏双亲委派的场景</strong>： 重写 <code>loadClass()</code> 方法（不推荐）。 使用线程上下文类加载器（如 JDBC、JNDI 等场景）。</li>
 </ol>
 <hr>
-<h3 id="示例-5：静态变量的准备阶段-vs-初始化阶段"><a href="#示例-5：静态变量的准备阶段-vs-初始化阶段" class="headerlink" title="示例 5：静态变量的准备阶段 vs 初始化阶段"></a><strong>示例 5：静态变量的准备阶段 vs 初始化阶段</strong></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public class StaticFieldDemo &#123;</span><br><span class="line">    static int a = 1;      // 准备阶段：a=0 → 初始化阶段：a=1</span><br><span class="line">    static final int b = 2; // 常量（准备阶段直接赋值）</span><br><span class="line"></span><br><span class="line">    static &#123;</span><br><span class="line">        System.out.println(&quot;静态代码块执行：a=&quot; + a + &quot;, b=&quot; + b);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        System.out.println(&quot;main方法执行：a=&quot; + a);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<h3 id="示例-5：静态变量的准备阶段-vs-初始化阶段"><strong>示例 5：静态变量的准备阶段 vs 初始化阶段</strong></h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public class StaticFieldDemo &#123;</span><br><span class="line">    static int a = 1;      // 准备阶段：a=0 → 初始化阶段：a=1</span><br><span class="line">    static final int b = 2; // 常量（准备阶段直接赋值）</span><br><span class="line"></span><br><span class="line">    static &#123;</span><br><span class="line">        System.out.println(&quot;静态代码块执行：a=&quot; + a + &quot;, b=&quot; + b);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        System.out.println(&quot;main方法执行：a=&quot; + a);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p><strong>输出结果：</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">静态代码块执行：a=1, b=2</span><br><span class="line">main方法执行：a=1</span><br></pre></td></tr></table></figure>
-
 <p><strong>关键点：</strong></p>
 <ol>
 <li><strong>准备阶段</strong>：<code>a</code> 被赋默认值 <code>0</code>，<code>b</code> 因是常量直接赋 <code>2</code>。</li>
 <li><strong>初始化阶段</strong>：按顺序执行静态赋值和静态代码块，<code>a</code> 被赋值为 <code>1</code>。</li>
 </ol>
 <hr>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a><strong>总结</strong></h3><p>通过代码示例，可以观察到：</p>
+<h3 id="总结"><strong>总结</strong></h3>
+<p>通过代码示例，可以观察到：</p>
 <ol>
 <li><strong>类加载的触发时机</strong>（主动引用 vs 被动引用）。</li>
 <li><strong>双亲委派模型的实际表现</strong>（类加载器的层级）。</li>

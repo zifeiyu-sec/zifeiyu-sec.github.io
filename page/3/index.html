@@ -52,6 +52,8 @@
 
   
 
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"cdn":"https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.7.0/mermaid.min.js","integrity":"sha256-4+IKDqhZ/sXjc8Wtl2/MsxI4e0s1KpEVdbEP7V/Lz8U="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
 
 
 
@@ -140,7 +142,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">28</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -188,6 +190,96 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/08/06/Web%E6%BC%8F%E6%B4%9E/XSS%E6%BC%8F%E6%B4%9E/dom%E5%9E%8Bxss/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | 子非鱼的博客">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/08/06/Web%E6%BC%8F%E6%B4%9E/XSS%E6%BC%8F%E6%B4%9E/dom%E5%9E%8Bxss/" class="post-title-link" itemprop="url">dom型xss</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-08-06 10:32:06 / 修改时间：14:53:46" itemprop="dateCreated datePublished" datetime="2025-08-06T10:32:06+08:00">2025-08-06</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Web%E6%BC%8F%E6%B4%9E/" itemprop="url" rel="index"><span itemprop="name">Web漏洞</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Web%E6%BC%8F%E6%B4%9E/XSS%E6%BC%8F%E6%B4%9E/" itemprop="url" rel="index"><span itemprop="name">XSS漏洞</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>DOM型XSS，也叫反射型XSS，XSS漏洞类型。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2025/08/06/Web%E6%BC%8F%E6%B4%9E/XSS%E6%BC%8F%E6%B4%9E/dom%E5%9E%8Bxss/">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -349,7 +441,9 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="反射型-XSS：原理、危害与防护解析"><a href="#反射型-XSS：原理、危害与防护解析" class="headerlink" title="反射型 XSS：原理、危害与防护解析"></a>反射型 XSS：原理、危害与防护解析</h1><h2 id="一、引言"><a href="#一、引言" class="headerlink" title="一、引言"></a>一、引言</h2><p>在 Web 安全领域，跨站脚本攻击（Cross - Site Scripting，简称 XSS ）是一类常见且危害较大的攻击方式。反射型 XSS 作为 XSS 的主要类型之一，常常潜伏在网站的交互功能中，威胁着用户的数据安全和浏览体验。本文将深入剖析反射型 XSS 的原理、危害，并给出有效的防护策略，帮助大家更好地理解和防范这类攻击。</p>
+          <h1>反射型 XSS：原理、危害与防护解析</h1>
+<h2 id="一、引言">一、引言</h2>
+<p>在 Web 安全领域，跨站脚本攻击（Cross - Site Scripting，简称 XSS ）是一类常见且危害较大的攻击方式。反射型 XSS 作为 XSS 的主要类型之一，常常潜伏在网站的交互功能中，威胁着用户的数据安全和浏览体验。本文将深入剖析反射型 XSS 的原理、危害，并给出有效的防护策略，帮助大家更好地理解和防范这类攻击。</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2025/08/06/Web%E6%BC%8F%E6%B4%9E/XSS%E6%BC%8F%E6%B4%9E/%E5%8F%8D%E5%B0%84%E6%80%A7xss/#more" rel="contents">
@@ -439,7 +533,7 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="时间盲注"><a href="#时间盲注" class="headerlink" title="时间盲注"></a>时间盲注</h1>
+          <h1>时间盲注</h1>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2025/08/06/Web%E6%BC%8F%E6%B4%9E/Sql%E6%B3%A8%E5%85%A5/%E6%97%B6%E9%97%B4%E7%9B%B2%E6%B3%A8/#more" rel="contents">
@@ -529,8 +623,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="盲注注入"><a href="#盲注注入" class="headerlink" title="盲注注入"></a>盲注注入</h2><p>盲注注入是指攻击者不知道自己在访问的网站是否存在SQL注入漏洞，或者不知道自己输入的SQL查询语句是否正确，而是通过一些方法来猜测数据库的结构，然后通过猜测的结果来构造SQL查询语句，最终获取数据库的敏感信息。</p>
-<h2 id="攻击原理"><a href="#攻击原理" class="headerlink" title="攻击原理"></a>攻击原理</h2>
+          <h2 id="盲注注入">盲注注入</h2>
+<p>盲注注入是指攻击者不知道自己在访问的网站是否存在SQL注入漏洞，或者不知道自己输入的SQL查询语句是否正确，而是通过一些方法来猜测数据库的结构，然后通过猜测的结果来构造SQL查询语句，最终获取数据库的敏感信息。</p>
+<h2 id="攻击原理">攻击原理</h2>
+
       
     </div>
 
@@ -612,9 +708,12 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="联合注入"><a href="#联合注入" class="headerlink" title="联合注入"></a>联合注入</h1><p>联合注入，也叫 UNION 注入，是一种 SQL 注入攻击方式。</p>
-<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>联合注入，是指攻击者通过控制输入数据，将多个 SQL 语句联合成一个 SQL 语句，从而执行多个 SQL 语句，获取数据库中敏感信息。</p>
-<h2 id="攻击原理"><a href="#攻击原理" class="headerlink" title="攻击原理"></a>攻击原理</h2><p>联合注入攻击原理是，攻击者通过控制输入数据，将多个 SQL 语句联合成一个 SQL 语句，从而执行多个 SQL 语句，获取数据库中敏感信息。</p>
+          <h1>联合注入</h1>
+<p>联合注入，也叫 UNION 注入，是一种 SQL 注入攻击方式。</p>
+<h2 id="概述">概述</h2>
+<p>联合注入，是指攻击者通过控制输入数据，将多个 SQL 语句联合成一个 SQL 语句，从而执行多个 SQL 语句，获取数据库中敏感信息。</p>
+<h2 id="攻击原理">攻击原理</h2>
+<p>联合注入攻击原理是，攻击者通过控制输入数据，将多个 SQL 语句联合成一个 SQL 语句，从而执行多个 SQL 语句，获取数据库中敏感信息。</p>
 
       
     </div>
@@ -669,9 +768,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2025-08-06 09:56:31 / 修改时间：16:04:38" itemprop="dateCreated datePublished" datetime="2025-08-06T09:56:31+08:00">2025-08-06</time>
+      <time title="创建时间：2025-08-06 09:56:31" itemprop="dateCreated datePublished" datetime="2025-08-06T09:56:31+08:00">2025-08-06</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-09-27 12:45:33" itemprop="dateModified" datetime="2025-09-27T12:45:33+08:00">2025-09-27</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -786,7 +891,9 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="Java安全编程：从基础到高级防护实践"><a href="#Java安全编程：从基础到高级防护实践" class="headerlink" title="Java安全编程：从基础到高级防护实践"></a>Java安全编程：从基础到高级防护实践</h1><h2 id="一、Java安全概述"><a href="#一、Java安全概述" class="headerlink" title="一、Java安全概述"></a>一、Java安全概述</h2><p>Java作为企业级应用开发的主流语言，其安全性一直是开发者关注的重点。Java安全体系建立在三个核心支柱上：</p>
+          <h1>Java安全编程：从基础到高级防护实践</h1>
+<h2 id="一、Java安全概述">一、Java安全概述</h2>
+<p>Java作为企业级应用开发的主流语言，其安全性一直是开发者关注的重点。Java安全体系建立在三个核心支柱上：</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2025/08/05/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8/#more" rel="contents">
