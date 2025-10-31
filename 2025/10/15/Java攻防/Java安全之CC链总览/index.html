@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Apache Commons Collections（CC链）是Java反序列化漏洞中最具代表性的利用链之一，从CC1到CC7链展示了攻击者如何通过精心构造的序列化对象绕过安全防护机制，实现远程代码执行（RCE）。每条CC链都有其特定的入口点、触发链和执行点，这些链利用了Transformer接口及其子类的反射或类加载机制。本文将详细解析CC1-CC7链的利用流程，帮助安全研究人员和开发人员更好地">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java安全之CC链总览">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/10/15/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC%E9%93%BE%E6%80%BB%E8%A7%88/index.html">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:description" content="Apache Commons Collections（CC链）是Java反序列化漏洞中最具代表性的利用链之一，从CC1到CC7链展示了攻击者如何通过精心构造的序列化对象绕过安全防护机制，实现远程代码执行（RCE）。每条CC链都有其特定的入口点、触发链和执行点，这些链利用了Transformer接口及其子类的反射或类加载机制。本文将详细解析CC1-CC7链的利用流程，帮助安全研究人员和开发人员更好地">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-15T09:10:22.000Z">
+<meta property="article:modified_time" content="2025-10-31T09:32:55.575Z">
+<meta property="article:author" content="子非鱼">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="安全">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/10/15/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC%E9%93%BE%E6%80%BB%E8%A7%88/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/10/15/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC%E9%93%BE%E6%80%BB%E8%A7%88/","path":"2025/10/15/Java攻防/Java安全之CC链总览/","title":"Java安全之CC链总览"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Java安全之CC链总览 | 子非鱼的博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"cdn":"https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.7.0/mermaid.min.js","integrity":"sha256-4+IKDqhZ/sXjc8Wtl2/MsxI4e0s1KpEVdbEP7V/Lz8U="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">子非鱼的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9ECC1-CC7%E9%93%BE%E7%9A%84%E5%88%A9%E7%94%A8%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90"><span class="nav-number">1.</span> <span class="nav-text">Java反序列化漏洞CC1-CC7链的利用流程分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E3%80%81Transformer%E6%8E%A5%E5%8F%A3%E5%8F%8A%E5%85%B6%E5%AE%9E%E7%8E%B0%E7%B1%BB%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">1.1.</span> <span class="nav-text">一、Transformer接口及其实现类的作用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8C%E3%80%81CC1%E9%93%BE%E7%9A%84%E5%88%A9%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="nav-number">1.2.</span> <span class="nav-text">二、CC1链的利用流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%89%E3%80%81CC2%E9%93%BE%E7%9A%84%E5%88%A9%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="nav-number">1.3.</span> <span class="nav-text">三、CC2链的利用流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%9B%E3%80%81CC3%E9%93%BE%E7%9A%84%E5%88%A9%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="nav-number">1.4.</span> <span class="nav-text">四、CC3链的利用流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%94%E3%80%81CC4%E9%93%BE%E7%9A%84%E5%88%A9%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="nav-number">1.5.</span> <span class="nav-text">五、CC4链的利用流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%AD%E3%80%81CC5%E9%93%BE%E7%9A%84%E5%88%A9%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="nav-number">1.6.</span> <span class="nav-text">六、CC5链的利用流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%83%E3%80%81CC6%E9%93%BE%E7%9A%84%E5%88%A9%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="nav-number">1.7.</span> <span class="nav-text">七、CC6链的利用流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%AB%E3%80%81CC7%E9%93%BE%E7%9A%84%E5%88%A9%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="nav-number">1.8.</span> <span class="nav-text">八、CC7链的利用流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B9%9D%E3%80%81CC%E9%93%BE%E7%9A%84%E5%85%B1%E5%90%8C%E7%89%B9%E7%82%B9%E5%92%8C%E9%98%B2%E5%BE%A1%E5%BB%BA%E8%AE%AE"><span class="nav-number">1.9.</span> <span class="nav-text">九、CC链的共同特点和防御建议</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
+  <div class="site-description" itemprop="description">学习过程的记录</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com" rel="noopener" target="_blank">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/10/15/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC%E9%93%BE%E6%80%BB%E8%A7%88/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Java安全之CC链总览 | 子非鱼的博客">
+      <meta itemprop="description" content="Apache Commons Collections（CC链）是Java反序列化漏洞中最具代表性的利用链之一，从CC1到CC7链展示了攻击者如何通过精心构造的序列化对象绕过安全防护机制，实现远程代码执行（RCE）。每条CC链都有其特定的入口点、触发链和执行点，这些链利用了Transformer接口及其子类的反射或类加载机制。本文将详细解析CC1-CC7链的利用流程，帮助安全研究人员和开发人员更好地理解和防御这类漏洞。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java安全之CC链总览
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-10-15 17:10:22" itemprop="dateCreated datePublished" datetime="2025-10-15T17:10:22+08:00">2025-10-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-10-31 17:32:55" itemprop="dateModified" datetime="2025-10-31T17:32:55+08:00">2025-10-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java%E6%94%BB%E9%98%B2/" itemprop="url" rel="index"><span itemprop="name">Java攻防</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Apache Commons Collections（CC链）是Java反序列化漏洞中最具代表性的利用链之一，从CC1到CC7链展示了攻击者如何通过精心构造的序列化对象绕过安全防护机制，实现远程代码执行（RCE）。每条CC链都有其特定的入口点、触发链和执行点，这些链利用了Transformer接口及其子类的反射或类加载机制。本文将详细解析CC1-CC7链的利用流程，帮助安全研究人员和开发人员更好地理解和防御这类漏洞。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="Java反序列化漏洞CC1-CC7链的利用流程分析">Java反序列化漏洞CC1-CC7链的利用流程分析</h2>
+<p>Apache Commons Collections（CC链）是Java反序列化漏洞中最具代表性的利用链之一，从CC1到CC7链展示了攻击者如何通过精心构造的序列化对象绕过安全防护机制，实现远程代码执行（RCE）。<strong>每条CC链都有其特定的入口点、触发链和执行点，这些链利用了Transformer接口及其子类的反射或类加载机制</strong>  。本文将详细解析CC1-CC7链的利用流程，帮助安全研究人员和开发人员更好地理解和防御这类漏洞。</p>
+<h3 id="一、Transformer接口及其实现类的作用">一、Transformer接口及其实现类的作用</h3>
+<p>Transformer接口是Apache Commons Collections中的核心组件，其transform()方法被多个实现类重写，用于在反序列化过程中触发恶意代码执行  ：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Transformer</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">transform</span><span class="params">(Object input)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Transformer接口的主要实现类及其功能如下：</p>
+<table>
+<thead>
+<tr>
+<th>Transformer类</th>
+<th>功能描述</th>
+<th>在CC链中的作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>InvokerTransformer</td>
+<td>通过反射动态调用对象的方法</td>
+<td>执行Runtime.exec()或触发TemplatesImpl类加载</td>
+</tr>
+<tr>
+<td>ChainedTransformer</td>
+<td>串联多个Transformer，按顺序执行transform()方法</td>
+<td>构造Transformer链，传递控制流</td>
+</tr>
+<tr>
+<td>ConstantTransformer</td>
+<td>返回固定值，无论输入参数是什么</td>
+<td>提供Transformer链的初始值，如Runtime.class或TemplatesImpl实例</td>
+</tr>
+<tr>
+<td>TiedMapEntry</td>
+<td>包装Map对象，提供get和put方法</td>
+<td>通过toString()或hashCode()方法触发LazyMap的get()方法</td>
+</tr>
+<tr>
+<td>TransformingComparator</td>
+<td>基于Transformer的比较器</td>
+<td>通过compare()方法触发Transformer链</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Transformer接口的transform()方法是CC链的核心执行点，攻击者通过构造特定的Transformer链，在反序列化过程中触发恶意代码执行</strong>  。不同版本的CC链利用了不同Transformer类的组合，以及不同的触发机制。</p>
+<h3 id="二、CC1链的利用流程">二、CC1链的利用流程</h3>
+<p>CC1链是最早被发现的Commons Collections反序列化漏洞，主要利用了AnnotationInvocationHandler类的反序列化逻辑  ：</p>
+<p><strong>入口点</strong>：<code>AnnotationInvocationHandler.readObject()</code></p>
+<p><strong>触发链</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">AnnotationInvocationHandler.readObject()  <span class="comment">// 反序列化入口</span></span><br><span class="line">    -&gt; map.entrySet()  <span class="comment">// 触发Map的entrySet方法</span></span><br><span class="line">        -&gt; MapEntry.setValue()  <span class="comment">// 触发MapEntry的setValue方法</span></span><br><span class="line">            -&gt; parent.checkSetValue(value)  <span class="comment">// 调用TransformedMap的checkSetValue方法</span></span><br><span class="line">                -&gt; valueTransformer.transform(value)  <span class="comment">// 触发Transformer链</span></span><br><span class="line">                    -&gt; ChainedTransformer.transform()  <span class="comment">// 串联多个Transformer</span></span><br><span class="line">                        -&gt; ConstantTransformer.transform()  <span class="comment">// 返回固定值Runtime.class</span></span><br><span class="line">                            -&gt; InvokerTransformer.transform()  <span class="comment">// 反射调用Runtime exec方法</span></span><br></pre></td></tr></table></figure>
+<p><strong>执行点</strong>：<code>InvokerTransformer.transform()</code> → <code>Runtime.exec()</code></p>
+<p>CC1链的构造过程主要包含以下几个关键步骤：</p>
+<ol>
+<li>创建Transformer链：首先使用ConstantTransformer返回Runtime.class，然后使用两个InvokerTransformer分别获取Runtime的getRuntime()方法和执行exec()方法</li>
+<li>创建TransformedMap：将Transformer链绑定到Map上，当访问Map的value时会触发Transformer链</li>
+<li>创建AnnotationInvocationHandler：通过反射构造AnnotationInvocationHandler实例，将其map属性设置为TransformedMap</li>
+<li>序列化对象：将构造好的AnnotationInvocationHandler对象序列化为字节流</li>
+<li>触发反序列化：当目标系统反序列化该字节流时，会自动执行Transformer链，最终调用Runtime.exec()执行恶意命令</li>
+</ol>
+<p>CC1链的漏洞利用条件包括：使用JDK7或JDK8u65之前的版本，以及存在Apache Commons Collections 3.2.1或更早版本  。</p>
+<h3 id="三、CC2链的利用流程">三、CC2链的利用流程</h3>
+<p>CC2链是针对Commons Collections 4.0版本的漏洞利用链，主要利用了PriorityQueue类的反序列化逻辑和TransformingComparator类  ：</p>
+<p><strong>入口点</strong>：<code>PriorityQueue.readObject()</code></p>
+<p><strong>触发链</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">PriorityQueue.readObject()  <span class="comment">// 反序列化入口</span></span><br><span class="line">    -&gt; heapify()  <span class="comment">// 堆化操作</span></span><br><span class="line">        -&gt; siftDownUsingComparator()  <span class="comment">// 堆排序操作</span></span><br><span class="line">            -&gt; comparator.compare()  <span class="comment">// 调用TransformingComparator的compare方法</span></span><br><span class="line">                -&gt; ChainedTransformer.transform()  <span class="comment">// 串联多个Transformer</span></span><br><span class="line">                    -&gt; ConstantTransformer.transform()  <span class="comment">// 返回固定值TemplatesImpl实例</span></span><br><span class="line">                        -&gt; InvokerTransformer.transform()  <span class="comment">// 反射调用TemplatesImpl newTransformer方法</span></span><br><span class="line">                            -&gt; defineTransletClasses()  <span class="comment">// 加载恶意类字节码</span></span><br></pre></td></tr></table></figure>
+<p><strong>执行点</strong>：<code>TemplatesImpl#defineTransletClasses()</code> → <code>defineClass()</code>加载恶意类字节码并执行静态代码块</p>
+<p>CC2链的构造过程与CC1链有所不同，主要区别在于触发机制：</p>
+<ol>
+<li>创建恶意类字节码：编写一个包含恶意代码的Java类，将其编译为字节码</li>
+<li>创建TemplatesImpl实例：通过反射设置TemplatesImpl的_bytecodes、_name等属性，使其指向恶意类字节码</li>
+<li>创建TransformingComparator：将InvokerTransformer绑定到TransformingComparator上</li>
+<li>创建PriorityQueue：使用PriorityQueue作为反序列化入口，设置其comparator为TransformingComparator</li>
+<li>序列化对象：将构造好的PriorityQueue对象序列化为字节流</li>
+<li>触发反序列化：当目标系统反序列化该字节流时，会自动执行Transformer链，最终通过defineTransletClasses()加载恶意类并执行静态代码块</li>
+</ol>
+<p>CC2链的漏洞利用条件包括：使用JDK8u71或更高版本，以及存在Apache Commons Collections 4.0版本  。</p>
+<h3 id="四、CC3链的利用流程">四、CC3链的利用流程</h3>
+<p>CC3链可以视为CC1链的扩展，主要利用了LazyMap类的反序列化逻辑  ：</p>
+<p><strong>入口点</strong>：<code>AnnotationInvocationHandler.readObject()</code></p>
+<p><strong>触发链</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">AnnotationInvocationHandler.readObject()  <span class="comment">// 反序列化入口</span></span><br><span class="line">    -&gt; map.entrySet()  <span class="comment">// 触发Map的entrySet方法</span></span><br><span class="line">        -&gt; LazyMap.get()  <span class="comment">// 触发LazyMap的get方法</span></span><br><span class="line">            -&gt; factory.transform()  <span class="comment">// 调用Transformer链</span></span><br><span class="line">                -&gt; ChainedTransformer.transform()  <span class="comment">// 串联多个Transformer</span></span><br><span class="line">                    -&gt; ConstantTransformer.transform()  <span class="comment">// 返回固定值TemplatesImpl实例</span></span><br><span class="line">                        -&gt; InvokerTransformer.transform()  <span class="comment">// 反射调用TemplatesImpl newTransformer方法</span></span><br><span class="line">                            -&gt; defineTransletClasses()  <span class="comment">// 加载恶意类字节码</span></span><br></pre></td></tr></table></figure>
+<p><strong>执行点</strong>：<code>TemplatesImpl#defineTransletClasses()</code> → <code>defineClass()</code>加载恶意类字节码并执行静态代码块</p>
+<p>CC3链的构造过程与CC1链相似，但触发机制不同：</p>
+<ol>
+<li>创建Transformer链：首先使用ConstantTransformer返回TemplatesImpl实例，然后使用InvokerTransformer反射调用newTransformer()方法</li>
+<li>创建LazyMap：将Transformer链绑定到LazyMap上，当访问不存在的key时会触发Transformer链</li>
+<li>创建AnnotationInvocationHandler：通过反射构造AnnotationInvocationHandler实例，将其map属性设置为LazyMap</li>
+<li>序列化对象：将构造好的AnnotationInvocationHandler对象序列化为字节流</li>
+<li>触发反序列化：当目标系统反序列化该字节流时，会自动执行Transformer链，最终通过defineTransletClasses()加载恶意类并执行静态代码块</li>
+</ol>
+<p>CC3链的漏洞利用条件与CC1链类似，但需要确保LazyMap的触发机制能够正常工作，例如确保访问不存在的key。</p>
+<h3 id="五、CC4链的利用流程">五、CC4链的利用流程</h3>
+<p>CC4链是CC2链的扩展，主要利用了InstanciateTransformer类和TrAXFilter类的构造方法  ：</p>
+<p><strong>入口点</strong>：<code>PriorityQueue.readObject()</code></p>
+<p><strong>触发链</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">PriorityQueue.readObject()  <span class="comment">// 反序列化入口</span></span><br><span class="line">    -&gt; heapify()  <span class="comment">// 堆化操作</span></span><br><span class="line">        -&gt; siftDownUsingComparator()  <span class="comment">// 堆排序操作</span></span><br><span class="line">            -&gt; comparator.compare()  <span class="comment">// 调用TransformingComparator的compare方法</span></span><br><span class="line">                -&gt; ChainedTransformer.transform()  <span class="comment">// 串联多个Transformer</span></span><br><span class="line">                    -&gt; ConstantTransformer.transform()  <span class="comment">// 返回固定值TrAXFilter.class</span></span><br><span class="line">                        -&gt; InstanciateTransformer.transform()  <span class="comment">// 实例化TrAXFilter对象</span></span><br><span class="line">                            -&gt; TrAXFilter.Templates()  <span class="comment">// 调用Templates构造方法</span></span><br><span class="line">                                -&gt; Templates.newTransformer()  <span class="comment">// 调用newTransformer方法</span></span><br><span class="line">                                    -&gt; defineTransletClasses()  <span class="comment">// 加载恶意类字节码</span></span><br></pre></td></tr></table></figure>
+<p><strong>执行点</strong>：<code>TemplatesImpl#defineTransletClasses()</code> → <code>defineClass()</code>加载恶意类字节码并执行静态代码块</p>
+<p>CC4链的构造过程比CC2链更复杂，主要增加了InstanciateTransformer的使用：</p>
+<ol>
+<li>创建恶意类字节码：编写一个包含恶意代码的Java类，将其编译为字节码</li>
+<li>创建TemplatesImpl实例：通过反射设置TemplatesImpl的_bytecodes、_name等属性，使其指向恶意类字节码</li>
+<li>创建InstanciateTransformer：指定目标类为TrAXFilter，并传递TemplatesImpl实例作为参数</li>
+<li>创建TransformingComparator：将InstanciateTransformer绑定到TransformingComparator上</li>
+<li>创建PriorityQueue：使用PriorityQueue作为反序列化入口，设置其comparator为TransformingComparator</li>
+<li>序列化对象：将构造好的PriorityQueue对象序列化为字节流</li>
+<li>触发反序列化：当目标系统反序列化该字节流时，会自动执行Transformer链，最终通过defineTransletClasses()加载恶意类并执行静态代码块</li>
+</ol>
+<p>CC4链的漏洞利用条件与CC2链类似，但需要确保InstanciateTransformer能够正确实例化TrAXFilter对象。</p>
+<h3 id="六、CC5链的利用流程">六、CC5链的利用流程</h3>
+<p>CC5链是针对JDK8u71修复后的漏洞利用链，主要利用了BadAttributeValueExpException类的反序列化逻辑  ：</p>
+<p><strong>入口点</strong>：<code>BadAttributeValueExpException.readObject()</code></p>
+<p><strong>触发链</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">BadAttributeValueExpException.readObject()  <span class="comment">// 反序列化入口</span></span><br><span class="line">    -&gt; ois.readFields()  <span class="comment">// 读取对象字段</span></span><br><span class="line">        -&gt; valObj.toString()  <span class="comment">// 调用val对象的toString方法</span></span><br><span class="line">            -&gt; TiedMapEntry.toString()  <span class="comment">// 触发TiedMapEntry的toString方法</span></span><br><span class="line">                -&gt; TiedMapEntry.getValue()  <span class="comment">// 触发TiedMapEntry的getValue方法</span></span><br><span class="line">                    -&gt; LazyMap.get()  <span class="comment">// 触发LazyMap的get方法</span></span><br><span class="line">                        -&gt; factory.transform()  <span class="comment">// 调用Transformer链</span></span><br><span class="line">                            -&gt; ChainedTransformer.transform()  <span class="comment">// 串联多个Transformer</span></span><br><span class="line">                                -&gt; ConstantTransformer.transform()  <span class="comment">// 返回固定值Runtime.class</span></span><br><span class="line">                                    -&gt; InvokerTransformer.transform()  <span class="comment">// 反射调用Runtime exec方法</span></span><br></pre></td></tr></table></figure>
+<p><strong>执行点</strong>：<code>InvokerTransformer.transform()</code> → <code>Runtime.exec()</code></p>
+<p>CC5链的构造过程与CC1链相似，但入口点和触发机制不同：</p>
+<ol>
+<li>创建Transformer链：与CC1链相同，使用ConstantTransformer和两个InvokerTransformer</li>
+<li>创建LazyMap：将Transformer链绑定到LazyMap上，当访问不存在的key时会触发Transformer链</li>
+<li>创建TiedMapEntry：将LazyMap和特定key绑定到TiedMapEntry对象上</li>
+<li>创建BadAttributeValueExpException：通过反射构造BadAttributeValueExpException实例，将其val属性设置为TiedMapEntry对象</li>
+<li>序列化对象：将构造好的BadAttributeValueExpException对象序列化为字节流</li>
+<li>触发反序列化：当目标系统反序列化该字节流时，会自动执行Transformer链，最终调用Runtime.exec()执行恶意命令</li>
+</ol>
+<p>CC5链的漏洞利用条件包括：使用JDK8u71或更高版本，以及存在Apache Commons Collections 3.2.1或更早版本  。</p>
+<h3 id="七、CC6链的利用流程">七、CC6链的利用流程</h3>
+<p>CC6链是CC5链的变种，主要利用了HashSet类的反序列化逻辑和TiedMapEntry类的hashCode()方法  ：</p>
+<p><strong>入口点</strong>：<code>HashSet.readObject()</code></p>
+<p><strong>触发链</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">HashSet.readObject()  <span class="comment">// 反序列化入口</span></span><br><span class="line">    -&gt; HashMap.put()  <span class="comment">// 添加元素到HashMap</span></span><br><span class="line">        -&gt; TiedMapEntry.getValue()  <span class="comment">// 触发TiedMapEntry的getValue方法</span></span><br><span class="line">            -&gt; LazyMap.get()  <span class="comment">// 触发LazyMap的get方法</span></span><br><span class="line">                -&gt; factory.transform()  <span class="comment">// 调用Transformer链</span></span><br><span class="line">                    -&gt; ChainedTransformer.transform()  <span class="comment">// 串联多个Transformer</span></span><br><span class="line">                        -&gt; ConstantTransformer.transform()  <span class="comment">// 返回固定值Runtime.class</span></span><br><span class="line">                            -&gt; InvokerTransformer.transform()  <span class="comment">// 反射调用Runtime exec方法</span></span><br></pre></td></tr></table></figure>
+<p><strong>执行点</strong>：<code>InvokerTransformer.transform()</code> → <code>Runtime.exec()</code></p>
+<p>CC6链的构造过程与CC5链类似，但触发机制不同：</p>
+<ol>
+<li>创建Transformer链：与CC1链相同，使用ConstantTransformer和两个InvokerTransformer</li>
+<li>创建LazyMap：将Transformer链绑定到LazyMap上，当访问不存在的key时会触发Transformer链</li>
+<li>创建TiedMapEntry：将LazyMap和特定key绑定到TiedMapEntry对象上</li>
+<li>创建HashSet：通过反射构造HashSet实例，将其内部的HashMap设置为包含TiedMapEntry对象</li>
+<li>序列化对象：将构造好的HashSet对象序列化为字节流</li>
+<li>触发反序列化：当目标系统反序列化该字节流时，会自动执行Transformer链，最终调用Runtime.exec()执行恶意命令</li>
+</ol>
+<p>CC6链的漏洞利用条件与CC5链类似，但需要确保HashSet的反序列化逻辑能够正确触发TiedMapEntry的hashCode()方法。</p>
+<h3 id="八、CC7链的利用流程">八、CC7链的利用流程</h3>
+<p>CC7链是CC6链的变种，主要利用了Hashtable类的反序列化逻辑和AbstractMap的equals()方法  ：</p>
+<p><strong>入口点</strong>：<code>Hashtable.readObject()</code></p>
+<p><strong>触发链</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Hashtable.readObject()  <span class="comment">// 反序列化入口</span></span><br><span class="line">    -&gt; restitutionPut()  <span class="comment">// 重建hashtable</span></span><br><span class="line">        -&gt; AbstractMap.equals()  <span class="comment">// 比较Map对象</span></span><br><span class="line">            -&gt; TiedMapEntry.getValue()  <span class="comment">// 触发TiedMapEntry的getValue方法</span></span><br><span class="line">                -&gt; LazyMap.get()  <span class="comment">// 触发LazyMap的get方法</span></span><br><span class="line">                    -&gt; factory.transform()  <span class="comment">// 调用Transformer链</span></span><br><span class="line">                        -&gt; ChainedTransformer.transform()  <span class="comment">// 串联多个Transformer</span></span><br><span class="line">                            -&gt; ConstantTransformer.transform()  <span class="comment">// 返回固定值Runtime.class</span></span><br><span class="line">                                -&gt; InvokerTransformer.transform()  <span class="comment">// 反射调用Runtime exec方法</span></span><br></pre></td></tr></table></figure>
+<p><strong>执行点</strong>：<code>InvokerTransformer.transform()</code> → <code>Runtime.exec()</code></p>
+<p>CC7链的构造过程与CC6链类似，但触发机制不同：</p>
+<ol>
+<li>创建Transformer链：与CC1链相同，使用ConstantTransformer和两个InvokerTransformer</li>
+<li>创建LazyMap：将Transformer链绑定到LazyMap上，当访问不存在的key时会触发Transformer链</li>
+<li>创建TiedMapEntry：将LazyMap和特定key绑定到TiedMapEntry对象上</li>
+<li>创建Hashtable：通过反射构造Hashtable实例，将其内部的AbstractMap设置为包含TiedMapEntry对象</li>
+<li>序列化对象：将构造好的Hashtable对象序列化为字节流</li>
+<li>触发反序列化：当目标系统反序列化该字节流时，会自动执行Transformer链，最终调用Runtime.exec()执行恶意命令</li>
+</ol>
+<p>CC7链的漏洞利用条件与CC6链类似，但需要确保Hashtable的反序列化逻辑能够正确触发AbstractMap的equals()方法。</p>
+<h3 id="九、CC链的共同特点和防御建议">九、CC链的共同特点和防御建议</h3>
+<p>尽管CC1-CC7链的利用流程各不相同，但它们都共享一些共同特点：</p>
+<ol>
+<li><strong>依赖Transformer接口</strong>：所有CC链都利用了Transformer接口的transform()方法，通过精心构造的Transformer链实现恶意代码执行</li>
+<li><strong>利用反射机制</strong>：CC链中的InvokerTransformer和InstanciateTransformer都利用了Java反射机制，绕过安全检查</li>
+<li><strong>利用类加载机制</strong>：CC2-CC4链利用了TemplatesImpl类的defineTransletClasses()方法，通过动态加载恶意类字节码实现命令执行</li>
+<li><strong>利用集合类的反序列化逻辑</strong>：CC链的入口点多为集合类（如PriorityQueue、HashSet、Hashtable）的readObject()方法，通过集合类的特定操作触发Transformer链</li>
+</ol>
+<p>针对CC链的防御，建议采取以下措施：</p>
+<ol>
+<li><strong>升级Apache Commons Collections版本</strong>：使用4.4或更高版本，这些版本已经修复了CC链相关漏洞</li>
+<li><strong>限制反序列化入口</strong>：避免直接反序列化来自不可信来源的数据，如网络请求、用户输入等</li>
+<li><strong>使用白名单机制</strong>：在反序列化过程中，只允许特定的类和方法被调用，阻止恶意Transformer链的执行</li>
+<li><strong>使用安全的序列化框架</strong>：考虑使用Gson、Jackson等更安全的序列化框架，替代Java原生序列化</li>
+<li><strong>监控和审计序列化数据</strong>：对序列化数据进行监控和审计，及时发现异常的序列化对象</li>
+</ol>
+<p><strong>随着Java安全机制的不断改进，CC链的利用难度也在不断增加，但其核心思想——利用Transformer接口的transform()方法触发恶意代码执行——仍然值得安全研究人员深入理解和研究</strong>  。</p>
+<p>说明：报告内容由通义AI生成，仅供参考。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="子非鱼 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="子非鱼 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E5%AE%89%E5%85%A8/" rel="tag"># 安全</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/10/12/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC4%E9%93%BE%E5%88%86%E6%9E%90/" rel="prev" title="Java安全之CC4链分析">
+                  <i class="fa fa-angle-left"></i> Java安全之CC4链分析
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/10/17/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BFilter%E5%86%85%E5%AD%98%E9%A9%AC/" rel="next" title="Java安全之Filter内存马">
+                  Java安全之Filter内存马 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

